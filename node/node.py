@@ -1,14 +1,13 @@
+import signal
+import sys
 import socket
 import time
 import picamera
 import io
-import signal
-import sys
 from io import BytesIO
 import threading
-from socket import _socketobject, AF_INET, SOCK_STREAM, _fileobject
 
-class IOWrapper(BytesIO):
+class MultiOutputStream(BytesIO):
 	def __init__(self, strm):
 		self._str = strm
 		self._secondary = None
@@ -19,15 +18,17 @@ class IOWrapper(BytesIO):
 		for output in self._outputs:
 			try:
 				output.write(data)
-			except socket.error, e:
+			except Exception, e:
 				print "Error code: %d" % e[0]
-				self._outputs.remove(output)
+				self.removeOutput(output)
 		return op
 
 	def addOutput(self, newo):
+		print "Adding output of type %s..." % type(newo).__name__
 		self._outputs.append(newo)
 
 	def removeOutput(self, rmo):
+		print "Removing output of type %s..." % type(rmo).__name__
 		self._outputs.remove(rmo)
 
 	def __getattr__(self, attr):
@@ -43,7 +44,7 @@ class Capture(threading.Thread):
 		self._format = format_
 		self._keepRecording = True
 
-	def configure(self, resolution = (640, 480), framerate = 24):
+	def configure(self, resolution = (1280, 720), framerate = 24):
 		self._camera.resolution = resolution
 		self._camera.framerate = framerate
 
@@ -67,16 +68,19 @@ class Capture(threading.Thread):
 	def stop(self):
 		self._camera.stop_recording()
 
-server_socket = socket.socket()
-server_socket.bind(('0.0.0.0', 8002))
-server_socket.listen(0)
+def signal_handler(self, signal):
+	print "quit"
+	capture.stop()
+	sys.exit(0)
 
-stream = IOWrapper(io.BytesIO())
+signal.signal(signal.SIGINT, signal_handler)
+
+stream = MultiOutputStream(io.BytesIO())
 capture = Capture(stream)
-capture.daemon = True
 capture.configure()
 capture.start()
 
-while True:
-	connection = server_socket.accept()[0].makefile('wb')
-	stream.addOutput(connection)
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.connect(('cctv', 8000))
+
+stream.addOutput(sock.makefile('rw'))
