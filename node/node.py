@@ -1,109 +1,71 @@
 import socket
 import time
 import picamera
+from socket import _socketobject, AF_INET, SOCK_STREAM, _fileobject
 
-# Connect a client socket to my_server:8000 (change my_server to the
-# hostname of your server)
-client_socket = socket.socket()
-client_socket.connect(('cctv', 8000))
+class FOWrapper(_fileobject):
+	def __init__(self, file_):
+		self._file = file_
 
-# Make a file-like object out of the connection
-connection = client_socket.makefile('wb')
+	def write(self, data):
+		print 'write'
+		try:
+			return self._file.write(data)
+		except socket.error, e:
+			print "caught exception in wrapper"
+			raise
+
+	def __getattr__(self, attr):
+		return getattr(self._file, attr)
+
+
+class Capture(object):
+
+	def __init__(self, output, format_='h264', camera = picamera.PiCamera()):
+		self._camera = camera
+		self._output = output
+		self._format = format_
+
+	def configure(self, resolution = (640, 480), framerate = 24):
+		self._camera.resolution = resolution
+		self._camera.framerate = framerate
+
+	def start(self):
+		try:
+			self._camera.start_recording(self._output, self._format)
+			self._camera.wait_recording(30)
+		except:
+			raise
+
+
+	def stop(self):
+		self._camera.stop_recording()
+
+def begin():
+	try:
+		connection = FOWrapper(server_socket.accept()[0].makefile('wb'))
+		capture = Capture(connection)
+		capture.configure()
+		capture.start()
+	except socket.error, e:
+		pass
+		print "socket.errno %d" % e[0]
+	    	if(e.errno == 32):
+	    		print "connection closed (errno. 32)"
+	    		begin()
+	    		
+	except:
+		raise
+
+server_socket = socket.socket()
+server_socket.bind(('0.0.0.0', 8002))
+server_socket.listen(0)
+
+connection = FOWrapper(server_socket.accept()[0].makefile('wb'))
+
+
 try:
-    with picamera.PiCamera() as camera:
-        camera.resolution = (640, 480)
-        camera.framerate = 24
-        # Start a preview and let the camera warm up for 2 seconds
-        camera.start_preview()
-        time.sleep(2)
-        # Start recording, sending the output to the connection for 60
-        # seconds, then stop
-        camera.start_recording(connection, format='h264')
-        camera.wait_recording(60)
-        camera.stop_recording()
+	begin()
 finally:
-    connection.close()
-    client_socket.close()
-
-#from __future__ import print_function#
-
-#import io
-#import time
-#import cv2
-#import cv2.cv as cv
-#import numpy as np
-#import picamera
-#import picamera.array
-#from PIL import Image#
-
-#class VideoProcessor(object):
-#	def write(self, s):
-#		print("write")#
-#
-
-#def currentTime():
-#	return int(time.time())#
-#
-
-##out = cv2.VideoWriter(capturePath, cv2.cv.CV_FOURCC('X','V','I','D'), fps, resolution, True)
-#bOut = io.BytesIO()#
-
-#with picamera.PiCamera() as camera:
-#    with picamera.array.PiMotionArray(camera) as stream:
-#        camera.resolution = (640, 480)
-#        camera.framerate = 30
-#        camera.start_recording(VideoProcessor(), format='h264', motion_output=stream)
-#
-#
-
-#maxVideoLengthMillis = 10000
-#cameraId = 0
-#storagePath = "/recording-bin/%d/" % cameraId 
-#fps = 15
-#resolutionX = 960
-#resolutionY = 540
-#resolution = (resolutionX, resolutionY)
-#capturePath = storagePath + 'capture-%d.avi' % currentTime()#
-#
-
-##cap = cv2.VideoCapture(0)
-##cap.set(3,resolutionX)
-##cap.set(4,resolutionY)
-## Define the codec and create VideoWriter object
-#print("Opening file " + capturePath)
-#out = cv2.VideoWriter(capturePath, cv2.cv.CV_FOURCC('X','V','I','D'), fps, resolution, True)
-#numFrames = 0#
-
-##while(cap.isOpened()):
-#with picamera.PiCamera() as camera:
-#	camera.framerate = fps
-#	camera.resolution = resolution
-#	camera.start_recording(VideoProcessor(), [format='h264'])#
-
-##	currentTimeMillis = 1000 * (numFrames * (1.0 / fps));
-##	if(currentTimeMillis >= maxVideoLengthMillis):
-##		#reset video file
-##		out.release()
-##		print "Finished writing " + capturePath
-##		capturePath = storagePath + 'capture-%d.avi' % currentTime()
-##		print "Opening file " + capturePath
-##		out = cv2.VideoWriter(capturePath, cv2.cv.CV_FOURCC('X','V','I','D'), fps, resolution, True)
-##		numFrames = 0
-##	
-##	print "frame capture %d,  %.3fs in" % ( numFrames, numFrames * (1.0 / fps) )
-##	numFrames += 1
-##	ret, frame = cap.read()
-##	if ret==True:
-##		frame = cv2.flip(frame,0)
-##		# write the flipped frame
-##		out.write(frame)#
-
-#	#cv2.imshow('frame',frame)
-##	if cv2.waitKey(int(1000 * (1.0 / fps))) & 0xFF == ord('q'):
-##		break
-#print ("ended")#
-
-## Release everything if job is finished
-##cap.release()
-#out.release()
-##cv2.destroyAllWindows()
+	connection.close()
+	server_socket.close()
