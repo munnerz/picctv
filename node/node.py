@@ -3,6 +3,7 @@ import sys
 import socket
 import time
 import picamera
+import queue
 import io
 from io import BytesIO
 import threading
@@ -10,25 +11,31 @@ import threading
 class MultiOutputStream(BytesIO):
 	def __init__(self, strm):
 		self._str = strm
-		self._secondary = None
 		self._outputs = []
+		self._retryList = {}
 
 	def write(self, data):
 		op = self._str.write(data)
 		for output in self._outputs:
 			try:
 				output.write(data)
-			except Exception, e:
-				print "Error code: %d" % e[0]
+			except Exception as e:
+				print ("[Stream] Exception on stream output: %s" % e)
 				self.removeOutput(output)
 		return op
 
-	def addOutput(self, newo):
-		print "Adding output of type %s..." % type(newo).__name__
+	def addOutput(self, newo, retry = None):
+		print ("[Stream] Adding output of type %s..." % type(newo).__name__)
+		if retry:
+			print ("Retrying...")
+			self._retryList.update({newo: retry})
 		self._outputs.append(newo)
 
 	def removeOutput(self, rmo):
-		print "Removing output of type %s..." % type(rmo).__name__
+		print ("[Stream] Removing output of type %s..." % type(rmo).__name__)
+		if self._retryList.keys.contains(rmo):
+			retryFunction = self._retryList.pop(rmo)
+			engine.addFunctionToQueue(retryFunction())
 		self._outputs.remove(rmo)
 
 	def __getattr__(self, attr):
@@ -37,12 +44,13 @@ class MultiOutputStream(BytesIO):
 
 class Capture(threading.Thread):
 
-	def __init__(self, output = None, format_='h264', camera = picamera.PiCamera()):
+	def __init__(self, output = MultiOutputStream(io.BytesIO()), format_='h264', camera = picamera.PiCamera()):
 		threading.Thread.__init__(self)
 		self._camera = camera
 		self._output = output
 		self._format = format_
 		self._keepRecording = True
+		self.configure()
 
 	def configure(self, resolution = (1280, 720), framerate = 24):
 		self._camera.resolution = resolution
@@ -52,35 +60,129 @@ class Capture(threading.Thread):
 		self._output = output
 
 	def run(self):
-		print "Starting capturing..."
+		print ("[Capture] Starting capturing...")
 		if self._output == None:
 			return False
 		try:
 			self._camera.start_recording(self._output, self._format)
-			while True:
-				self._camera.wait_recording(30)
-		except:
+		except Exception as e:
+			print ("[Capture] Exception raised: %s " % e)
 			raise
 
 	def keepRecording(self):
-		return True
+		return self._keepRecording
 
 	def stop(self):
+		print ("[Capture] Stopping...")
 		self._camera.stop_recording()
+		print ("[Capture] Stopped.")
 
-def signal_handler(self, signal):
-	print "quit"
-	capture.stop()
-	sys.exit(0)
 
-signal.signal(signal.SIGINT, signal_handler)
+class Engine(threading.Thread):
 
-stream = MultiOutputStream(io.BytesIO())
-capture = Capture(stream)
-capture.configure()
-capture.start()
+	def __init__(self):
+		threading.Thread.__init__(self)
+		self._engineRunning = True
+		self.callback_queue = queue.Queue()
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect(('cctv', 8000))
+	def run(self):
+		print ("[Engine] Engine running...")
+		while self._engineRunning:
+			callback = self.callback_queue.get()
+			if callable(callback):
+				callback()
+			else:
+				alert ("[Engine] Uncallable function in engine - discarding!")
 
-stream.addOutput(sock.makefile('rw'))
+	def addFunctionToQueue(self, func):
+		self.callback_queue.put(func)
+
+	def stop(self):
+		print ("[Engine] Stopping...")
+		self._engineRunning = False
+		print ("[Engine] Stopped.")
+
+class Network(object):
+
+	def __init__(self, ip='cctv', port=8000):
+		self._ip = ip
+		self._port = port
+		self._connected = False
+		self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self._sock.settimeout(2)
+
+	def connect(self, retry=True):
+		if not self.init_connection():
+			if retry:
+				print ("[Network] Retrying connection...")
+				engine.addFunctionToQueue(network.connect(retry))
+			return False
+		print ("[Network] Connected to server.")
+		capture._output.addOutput(self.fileObject(False), lambda: engine.addFunctionToQueue(network.connect(retry)))
+
+	def init_connection(self):
+		try:
+			print ("[Network] Attempting connection...")
+			self._sock.connect((self._ip, self._port))
+			self._connected = True
+		except Exception as e:
+			print ("[Network] Failed to connect to server... exception type is %s" % e)
+			self._connected = False
+			return False
+		return self._sock
+
+	# get a file object for this network object
+	# autoconnect - if true, this function will call connect() if the socket is closed
+	def fileObject(self, autoconnect=True):
+		if autoconnect:
+			if not connect(self):
+				return False
+		return self._sock.makefile('rwb')
+
+	def stop(self):
+		print ("[Network] Stopping...")
+		if self._connected:
+			self._sock.close()
+			self._connected = False
+		print ("[Network] Stopped.")
+
+
+class Utils(object):
+	def signal_handler(self, signal):
+		network.stop()
+		capture.stop()
+		engine.stop()
+		print ("Exiting...")
+		sys.exit()
+
+class StreamServer(threading.Thread):
+	def __init__(self):
+		threading.Thread.__init__(self)
+		self.sock_addr = ('0.0.0.0', 8001)
+
+	def listen(self):
+		self.server_socket = socket.socket()
+		self.server_socket.bind(self.sock_addr)
+		self.server_socket.listen(0)
+		print ("[StreamServer] Listening...")
+
+	def run(self):
+		self.listen()
+		while True:
+			fos = self.server_socket.accept()[0].makefile('wb')
+			print ("[StreamServer] Accepted connection")
+			capture._output.addOutput(fos)
+
+signal.signal(signal.SIGINT, Utils.signal_handler)
+
+network = Network()
+engine = Engine()
+capture = Capture()
+streamServer = StreamServer()
+
+
+engine.addFunctionToQueue(lambda: capture.start())
+engine.addFunctionToQueue(lambda: network.connect(True))
+engine.addFunctionToQueue(lambda: streamServer.start())
+
+engine.start()

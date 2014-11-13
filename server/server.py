@@ -30,13 +30,13 @@ sock_addr = ('0.0.0.0', 8000)
 server_socket = socket.socket()
 server_socket.bind(sock_addr)
 server_socket.listen(0)
-print "Listening for connections on %s:%d" % sock_addr
+print ("Listening for connections on %s:%d" % sock_addr)
 try:
     while True:
         # Accept a single connection and make a file-like object out of it
         connection = server_socket.accept()[0].makefile('rb')
         connectionHandler = CaptureStream(connection, open('capture-%d.h264' % int(time.time()), 'wb'))
         connectionHandler.start()
-        print "Accepted connection"
+        print ("Accepted connection")
 finally:
     server_socket.close()
