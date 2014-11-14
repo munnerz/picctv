@@ -11,8 +11,7 @@ import threading
 class MultiOutputStream(BytesIO):
 	def __init__(self, strm):
 		self._str = strm
-		self._outputs = []
-		self._retryList = {}
+		self._outputs = {}
 
 	def write(self, data):
 		op = self._str.write(data)
@@ -26,16 +25,13 @@ class MultiOutputStream(BytesIO):
 
 	def addOutput(self, newo, retry = None):
 		print ("[Stream] Adding output of type %s..." % type(newo).__name__)
-		if retry:
-			print ("Retrying...")
-			self._retryList.update({newo: retry})
-		self._outputs.append(newo)
+		self._outputs.update({newo: retry})
 
 	def removeOutput(self, rmo):
 		print ("[Stream] Removing output of type %s..." % type(rmo).__name__)
-		if self._retryList.keys.contains(rmo):
-			retryFunction = self._retryList.pop(rmo)
-			engine.addFunctionToQueue(retryFunction())
+		retry = self._outputs.get(rmo)
+		if not retry == None:
+			engine.addFunctionToQueue(retry)
 		self._outputs.remove(rmo)
 
 	def __getattr__(self, attr):
@@ -92,7 +88,8 @@ class Engine(threading.Thread):
 			if callable(callback):
 				callback()
 			else:
-				alert ("[Engine] Uncallable function in engine - discarding!")
+				print ("[Engine] Uncallable function in engine - discarding!")
+			time.sleep(1)
 
 	def addFunctionToQueue(self, func):
 		self.callback_queue.put(func)
@@ -115,7 +112,7 @@ class Network(object):
 		if not self.init_connection():
 			if retry:
 				print ("[Network] Retrying connection...")
-				engine.addFunctionToQueue(network.connect(retry))
+				engine.addFunctionToQueue(lambda: network.connect(retry))
 			return False
 		print ("[Network] Connected to server.")
 		capture._output.addOutput(self.fileObject(False), lambda: engine.addFunctionToQueue(network.connect(retry)))
