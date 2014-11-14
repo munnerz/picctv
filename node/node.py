@@ -15,12 +15,15 @@ class MultiOutputStream(BytesIO):
 
 	def write(self, data):
 		op = self._str.write(data)
-		for output in self._outputs:
+		toRemove = []
+		for output in self._outputs.keys():
 			try:
 				output.write(data)
 			except Exception as e:
 				print ("[Stream] Exception on stream output: %s" % e)
-				self.removeOutput(output)
+				toRemove.append(output)
+		for r in toRemove:
+			self.removeOutput(r)
 		return op
 
 	def addOutput(self, newo, retry = None):
@@ -32,7 +35,7 @@ class MultiOutputStream(BytesIO):
 		retry = self._outputs.get(rmo)
 		if not retry == None:
 			engine.addFunctionToQueue(retry)
-		self._outputs.remove(rmo)
+		self._outputs.pop(rmo)
 
 	def __getattr__(self, attr):
 		return getattr(self._str, attr)
@@ -149,13 +152,14 @@ class Utils(object):
 		network.stop()
 		capture.stop()
 		engine.stop()
+		streamServer.stop()
 		print ("Exiting...")
 		sys.exit()
 
 class StreamServer(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
-		self.sock_addr = ('0.0.0.0', 8001)
+		self.sock_addr = ('0.0.0.0', 8000)
 
 	def listen(self):
 		self.server_socket = socket.socket()
@@ -170,16 +174,21 @@ class StreamServer(threading.Thread):
 			print ("[StreamServer] Accepted connection")
 			capture._output.addOutput(fos)
 
-signal.signal(signal.SIGINT, Utils.signal_handler)
+	def stop(self):
+		print ("[StreamServer] Stopping...")
+		self.server_socket.close()
+		print ("[StreamServer] Stopped.")
 
-network = Network()
-engine = Engine()
-capture = Capture()
-streamServer = StreamServer()
+if __name__ == '__main__':
+	signal.signal(signal.SIGINT, Utils.signal_handler)
 
+	network = Network()
+	engine = Engine()
+	capture = Capture()
+	streamServer = StreamServer()
 
-engine.addFunctionToQueue(lambda: capture.start())
-engine.addFunctionToQueue(lambda: network.connect(True))
-engine.addFunctionToQueue(lambda: streamServer.start())
+	engine.start()
 
-engine.start()
+	capture.start()
+	network.connect(True)
+	streamServer.start()
