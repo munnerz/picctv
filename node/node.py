@@ -14,7 +14,7 @@ class MultiOutputStream(BytesIO):
 		self._outputs = {}
 
 	def write(self, data):
-		op = self._str.write(data)
+		#op = self._str.write(data) #discarding (don't store a buffer in memory)
 		toRemove = []
 		for output in self._outputs.keys():
 			try:
@@ -24,7 +24,7 @@ class MultiOutputStream(BytesIO):
 				toRemove.append(output)
 		for r in toRemove:
 			self.removeOutput(r)
-		return op
+		return len(data)
 
 	def addOutput(self, newo, retry = None):
 		print ("[Stream] Adding output of type %s..." % type(newo).__name__)
@@ -54,6 +54,10 @@ class Capture(threading.Thread):
 	def configure(self, resolution = (1280, 720), framerate = 24):
 		self._camera.resolution = resolution
 		self._camera.framerate = framerate
+		self._camera.iso = 0
+		self._camera.exposure_mode = 'night'
+		self._camera.vflip = True
+		self._camera.hflip = True #hflip should always be on as the camera captures mirrored
 
 	def setOutput(self, output):
 		self._output = output
