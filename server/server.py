@@ -35,7 +35,7 @@ try:
     while True:
         # Accept a single connection and make a file-like object out of it
         connection = server_socket.accept()[0].makefile('rb')
-        connectionHandler = CaptureStream(connection, open('capture-%d.h264' % int(time.time()), 'wb'))
+        connectionHandler = CaptureStream(connection, open('/recordings/capture-%d.h264' % int(time.time()), 'wb'))
         connectionHandler.start()
         print ("Accepted connection")
 finally:
