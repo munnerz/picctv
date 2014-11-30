@@ -39,7 +39,7 @@ class Settings:
 	}
 
 	captureSettings = {
-					"serverPort": 8001,
+					"serverPort": 8000,
 					"serverIp": "0.0.0.0",
 					"chunkSize": 15, #15 chunks, each chunk is currently 4s (60s per chunk)
 	}
