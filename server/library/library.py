@@ -29,19 +29,30 @@ class Library:
 		f = self._fs.put(clipBytes,
 						filename="camera%s-%s.h264" % (cameraId, now),
 						contentType="video/H264",
-						camera_id=cameraId, 
-						save_time=now)
+						cameraId=cameraId, 
+						saveTime=now)
 		Utils.dbg(__class__.__name__, "Saved to file '%s' (filename: '%s')" % (f, "camera%s-%s.h264" % (cameraId, now)))
 
 	def newClip(self):
 		return self.Clip()
 
 	def getVideos(self, cameraId=None):
-		return None
+		Utils.dbg(__class__.__name__, "Looking for videos from cameraId: %s" % cameraId)
+		if cameraId == None:
+			return []
+		return self._fs.find({"cameraId":cameraId})
 
 	def getCameras(self):
 		Utils.dbg(__class__.__name__, "Getting camera list")
-		return self._fs.find().distinct("camera_id")
+		cameras = self._fs.find().distinct("cameraId")
+		cameraDetails = {}
+		for camera in cameras:
+			numberOfVideos = self.getVideos(camera).count()
+			cameraDetails[camera] = {
+									"cameraId": camera,
+									"numberOfVideos": numberOfVideos,
+									}
+		return cameraDetails
 
 	def __init__(self):
 		self._client = MongoClient()
