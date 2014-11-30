@@ -30,7 +30,7 @@ class CaptureStream(threading.Thread):
 		finally:
 			Utils.dbg(__class__.__name__, "Closing connection...")
 			self._output.seek(0)
-			self._callback(camera_id, self._output)
+			self._callback(self._cameraId, self._output)
 			self._connection.close()
 
 class Capture(threading.Thread):
