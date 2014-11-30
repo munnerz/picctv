@@ -1,42 +1,20 @@
-import socket
-import threading
-import time
+from web.WebServer import WebServer
+from capture.capture import Capture
+from library.library import Library
 
-class CaptureStream(threading.Thread):
-    def __init__(self, connection, output=open('out.h264', 'wb')):
-        threading.Thread.__init__(self)
-        self._connection = connection
-        self._output = output
-        self._recording = True
+def getLibrary():
+    return Library.getDefaultLibrary()
 
-    def run(self):
-        try:
-            while self._recording:
-                data = self._connection.read(1024)
-                if not data:
-                    break
-                self._output.write(data)
-        finally:
-            connection.close()
+def main():
+    global library, webServer, capture
 
-    def stop(self):
-        self._recording = False
+    library = getLibrary()
 
+    webServer = WebServer(library)
+    capture = Capture(library)
 
-# Start a socket listening for connections on 0.0.0.0:8000 (0.0.0.0 means
-# all interfaces)
-sock_addr = ('0.0.0.0', 8000)
+    capture.start()
+    webServer.start()
 
-server_socket = socket.socket()
-server_socket.bind(sock_addr)
-server_socket.listen(0)
-print ("Listening for connections on %s:%d" % sock_addr)
-try:
-    while True:
-        # Accept a single connection and make a file-like object out of it
-        connection = server_socket.accept()[0].makefile('rb')
-        connectionHandler = CaptureStream(connection, open('/recordings/capture-%d.h264' % int(time.time()), 'wb'))
-        connectionHandler.start()
-        print ("Accepted connection")
-finally:
-    server_socket.close()
+if __name__ == "__main__":
+    main()
