@@ -50,6 +50,7 @@ class NetworkManager(threading.Thread):
 			Utils.dbg(self.__class__.__name__, "Sweeping for functions to execute")
 			nextExec = None
 			self._toExecuteLock.acquire()
+			Utils.dbg(self.__class__.__name__, "There are %d calls in the queue" % len(self._toExecute))
 			try:
 				nextExec = self._toExecute.pop(0)
 			except IndexError as e:
