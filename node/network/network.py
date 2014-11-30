@@ -65,7 +65,7 @@ class NetworkManager(threading.Thread):
 
 class NetworkConnection(threading.Thread):
 
-	def __init__(self, ip='cctv', port=8001):
+	def __init__(self, ip='cctv', port=8000):
 		self._ip = ip
 		self._port = port
 		self._connected = False
