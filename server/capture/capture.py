@@ -30,7 +30,7 @@ class CaptureStream(threading.Thread):
 		finally:
 			Utils.dbg(__class__.__name__, "Closing connection...")
 			self._output.seek(0)
-			self._callback(self._cameraId, self._output)
+			self._callback(self)
 			self._connection.close()
 
 class Capture(threading.Thread):
@@ -40,22 +40,27 @@ class Capture(threading.Thread):
 		try:
 			wholeVideo = []
 			while True:
+				Utils.dbg(__class__.__name__, "There are %d open connections" % len(self._connections))
 				chunk = BytesIO()
 				# Accept a single connection and make a file-like object out of it
 				connection = self.server_socket.accept()[0].makefile('rb')
-				captureStream = CaptureStream(connection, chunk, lambda x,y: self.recordingFinished(x,y))
+				captureStream = CaptureStream(connection, chunk, lambda x: self.recordingFinished(x))
 				captureStream.start()
+				self._connectionsLock.acquire()
+				self._connections.append(captureStream)
+				self._connectionsLock.release()
 				Utils.dbg(__class__.__name__, "Accepted connection")
 
 		finally:
 		    self.server_socket.close()
 		    Utils.dbg(__class__.__name__, "Closed server socket, no longer accepting connections")
 
-	def recordingFinished(self, cameraId, data):
+	def recordingFinished(self, outputStream):
+		cameraId = outputStream._cameraId
 		self._recordingsLock.acquire()
 
 		ls = self._recordings.get(cameraId, [])
-		ls.append(data)
+		ls.append(outputStream._output)
 		self._recordings[cameraId] = ls
 
 		Utils.dbg(__class__.__name__, "There are now %d recordings for %s" % (len(self._recordings.get(cameraId)), cameraId))
@@ -63,24 +68,31 @@ class Capture(threading.Thread):
 		if len(self._recordings.get(cameraId)) >= Settings.get(__class__.__name__, "chunkSize"):
 			listOfClips = self._recordings.pop(cameraId)
 			self._recordingsLock.release()
-			output = library.lib.newClip()
-			output.setCameraId(cameraId)
+			dboutput = library.lib.newClip()
+			dboutput.setCameraId(cameraId)
 			for clip in listOfClips:
-				output.write(clip.getbuffer())
+				dboutput.write(clip.getbuffer())
 				clip.close()
-			output.close()
+			dboutput.close()
 		else:
 			self._recordingsLock.release()
+
+		self._connectionsLock.acquire()
+		self._connections.remove(outputStream)
+		self._connectionsLock.release()
 		
 
 	def __init__(self, library):
 		threading.Thread.__init__(self)
 		self._library = library
 		self._recordingsLock = threading.Lock()
+		self._connectionsLock = threading.Lock()
 		self._recordings = {}
+		self._connections = []
 		sock_addr = (Settings.get(__class__.__name__, "serverIp"), Settings.get(__class__.__name__, "serverPort"))
 
 		self.server_socket = socket.socket()
 		self.server_socket.bind(sock_addr)
 		self.server_socket.listen(0)
+
 		Utils.dbg(__class__.__name__, "Listening for connections on %s:%d" % sock_addr)
