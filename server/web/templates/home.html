@@ -9,8 +9,8 @@
 		<span>We'll put the list of recordings here...</span>
 
 		<ul>
-		{% for camera in cameras %}
-			<li>{{camera}}</li>
+		{% for cameraId,details in cameras.items() %}
+			<li>{{details["cameraId"]}} ({{details["numberOfVideos"]}} recording)</li>
 		{% end %}
 		</ul>
 	</body>
