@@ -41,7 +41,7 @@ class Settings:
 	}
 
 	captureSettings = {
-
+					"chunkLength": 4,
 	}
 
 	utilsSettings = {

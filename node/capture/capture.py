@@ -12,7 +12,7 @@ class Capture(threading.Thread):
 		self._format = _format
 		self._networkManager = networkManager
 
-		self._chunk_length = 5 #5 seconds
+		self._chunk_length = Settings.get(__class__.__name__, "chunkLength")
 		self._keepRecording = True
 
 		self.configure()
@@ -73,6 +73,5 @@ class Capture(threading.Thread):
 
 	def stop(self):
 		Utils.msg(self.__class__.__name__, "Stopping...")
-		print ("[Capture] Stopping...")
 		self._camera.stop_recording()
 		Utils.msg(self.__class__.__name__, "Stopped...")
