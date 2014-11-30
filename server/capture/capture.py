@@ -4,6 +4,7 @@ import threading
 import struct
 import asyncio
 from io import BytesIO
+from utils import Utils, Settings
 
 class CaptureStream(threading.Thread):
 	def __init__(self, connection, output):
@@ -25,33 +26,32 @@ class CaptureStream(threading.Thread):
 				old_read_bytes = read_bytes
 				read_bytes += self._output.write(data)
 		finally:
-			print ("Connections closing")
+			Utils.dbg(__class__.__name__, "Closing connection...")
 			self._output.close()
 			self._connection.close()
 
 class Capture(threading.Thread):
 
 	def run(self):
-		print ("Begin accepting connections...")
+		Utils.msg(__class__.__name__, "Begin accepting connections...")
 		try:
 			while True:
 				# Accept a single connection and make a file-like object out of it
 				connection = self.server_socket.accept()[0].makefile('rb')
 				connectionHandler = CaptureStream(connection, self._library.newClip())
 				connectionHandler.start()
-				print ("Accepted connection")
+				Utils.dbg(__class__.__name__, "Accepted connection")
 		finally:
 		    self.server_socket.close()
-		    print ("Closed socket, capturing stopped")
+		    Utils.dbg(__class__.__name__, "Closed server socket, no longer accepting connections")
 
 	def __init__(self, library):
 		threading.Thread.__init__(self)
 		self._library = library
-		print("Started capture")
 
-		sock_addr = ('0.0.0.0', 8001)
+		sock_addr = (Settings.get(__class__.__name__, "serverIp"), Settings.get(__class__.__name__, "serverPort"))
 
 		self.server_socket = socket.socket()
 		self.server_socket.bind(sock_addr)
 		self.server_socket.listen(0)
-		print ("Listening for connections on %s:%d" % sock_addr)
+		Utils.dbg(__class__.__name__, "Listening for connections on %s:%d" % sock_addr)

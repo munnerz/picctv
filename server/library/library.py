@@ -1,11 +1,10 @@
 from pymongo import MongoClient
 from gridfs import GridFS
 from datetime import datetime
-from config import Config
-from library.tables import *
 import time, sched
 from threading import Timer
 from io import BytesIO
+from utils import Utils, Settings
 
 
 class Library:
@@ -14,7 +13,7 @@ class Library:
 
 		def close(self):
 			super().seek(0)
-			print ("Closed file")
+			Utils.dbg(__class__.__name__, "Closing and flushing file")
 			self._library.saveVideo(self._cameraId, self)
 			super().close()
 
@@ -27,7 +26,6 @@ class Library:
 
 
 	def getDefaultLibrary():
-		print("Getting default")
 		return Library()
 
 	def saveVideo(self, cameraId, clipBytes):
@@ -38,7 +36,7 @@ class Library:
 						contentType="video/H264",
 						camera_id=cameraId, 
 						save_time=now)
-		print("Saved: %s" % f)
+		Utils.dbg(__class__.__name__, "Saved to file '%s' (filename: '%s')" % (f, "camera%s-%s.h264" % (cameraId, now)))
 
 	def newClip(self):
 		return self.Clip(self)
@@ -50,4 +48,4 @@ class Library:
 		self._client = MongoClient()
 		self._db = self._client.cctv
 		self._fs = GridFS(self._db)
-		print("Initialised cctv db")
+		Utils.msg(__class__.__name__, "Initialised connection to MongoDB")
