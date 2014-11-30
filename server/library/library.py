@@ -6,7 +6,6 @@ from threading import Timer
 from io import BytesIO
 from utils import Utils, Settings
 
-
 class Library:
 
 	class Clip(BytesIO):
@@ -14,19 +13,15 @@ class Library:
 		def close(self):
 			super().seek(0)
 			Utils.dbg(__class__.__name__, "Closing and flushing file")
-			self._library.saveVideo(self._cameraId, self)
+			lib.saveVideo(self._cameraId, self)
 			super().close()
 
 		def setCameraId(self, cameraId):
 			self._cameraId = cameraId
 
-		def __init__(self, library):
+		def __init__(self):
 			super().__init__()
-			self._library = library
 
-
-	def getDefaultLibrary():
-		return Library()
 
 	def saveVideo(self, cameraId, clipBytes):
 		now = datetime.utcnow()
@@ -39,13 +34,19 @@ class Library:
 		Utils.dbg(__class__.__name__, "Saved to file '%s' (filename: '%s')" % (f, "camera%s-%s.h264" % (cameraId, now)))
 
 	def newClip(self):
-		return self.Clip(self)
+		return self.Clip()
 
 	def getVideos(self, cameraId=None):
 		return None
+
+	def getCameras(self):
+		Utils.dbg(__class__.__name__, "Getting camera list")
+		return self._client.fs.files.find().distinct("camera_id")
 
 	def __init__(self):
 		self._client = MongoClient()
 		self._db = self._client.cctv
 		self._fs = GridFS(self._db)
 		Utils.msg(__class__.__name__, "Initialised connection to MongoDB")
+
+lib = Library()
