@@ -41,7 +41,7 @@ class Library:
 
 	def getCameras(self):
 		Utils.dbg(__class__.__name__, "Getting camera list")
-		return self._client.fs.files.find().distinct("camera_id")
+		return self._fs.find().distinct("camera_id")
 
 	def __init__(self):
 		self._client = MongoClient()

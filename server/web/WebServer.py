@@ -1,6 +1,7 @@
 import threading
 
-from library.library import Library
+from library import library
+from utils import Utils
 
 from tornado.ioloop import IOLoop
 from tornado.web import RequestHandler, Application, url, asynchronous
@@ -9,7 +10,10 @@ class HelloHandler(RequestHandler):
 
 	@asynchronous
 	def get(self):
-		self.render("templates/home.html", title="PiCCTV Control")
+		Utils.dbg(__class__.__name__, "Processing incoming connection connection")
+		cameras = library.lib.getCameras()
+		Utils.dbg(__class__.__name__, "Cameras: %s" % cameras)
+		self.render("templates/home.html", title="PiCCTV Control", cameras=cameras)
 
 class WebServer(threading.Thread):
 
@@ -23,6 +27,8 @@ class WebServer(threading.Thread):
 
 	def __init__(self, library):
 		threading.Thread.__init__(self)
+		Utils.msg(__class__.__name__, "Starting WebServer...")
 		app = self.make_app()
 		app.listen(8888)
+		Utils.msg(__class__.__name__, "Started WebServer...")
 
