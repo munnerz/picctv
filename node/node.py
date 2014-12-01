@@ -9,7 +9,6 @@ class Root:
 		self._networkManager = NetworkManager()
 		self._networkManager.start()
 		self._capture = Capture(self._networkManager)
-		self._capture.start()
 
 
 if __name__ == "__main__":

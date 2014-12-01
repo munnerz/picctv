@@ -4,10 +4,10 @@ import picamera
 from utils import Utils, Settings
 
 
-class Capture(threading.Thread):
+class Capture():
 
 	def __init__(self, networkManager, _format='h264', camera = picamera.PiCamera()):
-		threading.Thread.__init__(self)
+		self.thread = threading.Thread(target=self.run)
 		self._camera = camera
 		self._format = _format
 		self._networkManager = networkManager
@@ -16,6 +16,8 @@ class Capture(threading.Thread):
 		self._keepRecording = True
 
 		self.configure()
+
+		self.thread.start()
 
 	def configure(self, resolution = (1280, 720), framerate = 24):
 		self._camera.resolution = resolution
@@ -47,7 +49,6 @@ class Capture(threading.Thread):
 					pass
 				except Exception as e:
 					Utils.err(self.__class__.__name__, "Unhandled exception in recording loop %s" % e)
-					rerun = True
 					pass
 					break
 				finally:
@@ -57,15 +58,15 @@ class Capture(threading.Thread):
 						oldVidOut = None
 		except Exception as e:
 			Utils.err(self.__class__.__name__, "Capturing failed, exception: %s" % e)
-			raise
-		if rerun:
-			try:
-				self._camera.stop_recording()
-			except Exception as e:
-				Utils.err(self.__class__.__name__, "Unhandled exception closing camera, continuing anyway... Exception: %s" % e)
-				pass
-			rerun = False
-			self.run()
+			pass
+		try:
+			Utils.dbg(self.__class__.__name__, "Stopping recording")
+			self._camera.stop_recording()
+		except Exception as e:
+			Utils.err(self.__class__.__name__, "Unhandled exception closing camera, continuing anyway... Exception: %s" % e)
+			pass
+		self.thread = threading.Thread(target=self.run)
+		self.thread.start()
 
 
 	def keepRecording(self):
