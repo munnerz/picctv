@@ -51,11 +51,10 @@ class Library:
 			return []
 		return list(self._fs.find({"cameraId":cameraId}))
 
-	def getVideo(self, clipId):
+	def getVideo(self, clipId, limit=2):
 		cameraId = list(self._fs.find({"_id": ObjectId(clipId)}))[0].cameraId
 
-		Utils.dbg(self.__class__.__name__, "Getting video with ID: %s" % clipId)
-		return list(self._fs.find({"_id": {'$gte': ObjectId(clipId)}, "cameraId": cameraId}).limit(2))
+		return list(self._fs.find({"_id": {'$gte': ObjectId(clipId)}, "cameraId": cameraId}).limit(limit))
 
 	def getCameras(self):
 		Utils.dbg(self.__class__.__name__, "Getting camera list")
