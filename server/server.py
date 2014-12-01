@@ -17,6 +17,10 @@ def main():
     capture.start()
     webServer.start()
 
+def getCapture():
+	global capture
+	return capture
+
 if __name__ == "__main__":
 	#set signals behaviour
 	signal.signal(signal.SIGINT, Utils.signal_handler)
