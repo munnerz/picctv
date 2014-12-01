@@ -20,7 +20,7 @@ class Settings:
 					"showDebug": True,
 					"showError": True,
 					"showInfo": True,
-					"logPath": "/home/james/picctv/server.log",
+					"logPath": "/recordings/log/server.log",
 					"mp4TempStoragePath": "/recordings/tmp/"
 	}
 
@@ -91,18 +91,8 @@ class Utils:
 		Utils.dbg(Utils.className, "Closing log file...")
 		Utils.file_out.close()
 
-	def h264ToMP4(_in, id):
-		try:
-			_outFile = open(("%s%s.mp4" % (Settings.get(Utils.className, "mp4TempStoragePath"), id)), "rb")
-			if os.path.getsize("%s%s.mp4" % (Settings.get(Utils.className, "mp4TempStoragePath"), id)) > 0:
-				return _outFile
-			else:
-				_outFile.close()
-		except OSError as e:
-			pass
-
-		_outFile = open(("%s%s.mp4" % (Settings.get(Utils.className, "mp4TempStoragePath"), id)), "wb")
-
+	def h264ToMP4(_in):
+		_outFile = NamedTemporaryFile(dir="/recordings/tmp/")
 		_inFile = SpooledTemporaryFile(50*1024*1024) #TODO: Make this load from config
 		while True:
 			data = _in.read(4096)
@@ -114,10 +104,11 @@ class Utils:
 
 		_inFile.seek(0)
 
-		p = Popen(["/usr/local/bin/ffmpeg", "-y", "-an", "-i", "-", "-vcodec", "copy", "-movflags", "faststart", "-f", "mp4", _outFile.name], 
-			stdin=_inFile)
-		p.wait()
-		Utils.dbg(Utils.className, "Finished creating MP4...")
-		_outFile.close()
-		_outFile = open(("%s%s.mp4" % (Settings.get(Utils.className, "mp4TempStoragePath"), id)), "rb")
-		return _outFile
+		with Popen(["/usr/local/bin/ffmpeg", "-y", "-an", "-i", "-", "-vcodec", "copy", "-movflags", "faststart", "-f", "mp4", _outFile.name], 
+			stdin=_inFile) as p:
+			p.wait()
+			_inFile.close()
+			Utils.dbg(Utils.className, "Finished creating MP4...")
+			return _outFile
+
+		return None
