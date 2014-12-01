@@ -7,3 +7,9 @@ Resources:
 http://picamera.readthedocs.org/en/latest/recipes1.html - PiCamera capturing example code
 http://fossies.org/dox/Python-2.7.8/classsocket_1_1__socketobject.html#abe96e0334e72cd111557dd9bec0e12bb - python _socketobject class ref
 http://www.tornadoweb.org/en/stable/guide/structure.html - Tornado for web server
+http://api.mongodb.org/python/current/api/gridfs/ - GridFS docs
+
+FFMPEG command to copy H264 video into an MP4 wrapper:
+ffmpeg -i "cameraFront Door-2014-12-01 00:53:22.250299.h264" -vcodec copy -movflags faststart test.mp4
+
+Info on piping in and out of FFMPEG: https://stackoverflow.com/questions/10400556/how-do-i-use-ffmpeg-with-python-by-passing-file-objects-instead-of-locations-to
