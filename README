@@ -21,3 +21,6 @@ pip3 install tornado
 apt-get install mongo mongod python3
 
 ffmpeg built with "--enable-gpl --enable-libx264 --enable-demuxer=mov" options
+
+Useful information for generating subtitles:
+https://developer.mozilla.org/en-US/Apps/Build/Audio_and_video_delivery/Adding_captions_and_subtitles_to_HTML5_video
