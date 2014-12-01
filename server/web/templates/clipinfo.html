@@ -8,6 +8,9 @@
 			    player.addEventListener('loadedmetadata', function() {
     				$('#duration').html(player.duration + ' seconds');
 				});
+				player.addEventListener('onended', function(){
+					window.location.href = "/clip/{{ nextClip._id }}/";
+				});
 			    $('#gettime').click(function(){
 			            if(player){
 			                current_time=player.currentTime;
@@ -27,6 +30,7 @@
   		<ul>
 			<li><b>Download</b>: <a href="/clip/{{ clip_id }}/download">{{ clip.filename }}.mp4</a></li>
 			<li><b>Duration</b>: <span id="duration">loading...</span></li>
+			<li><b><a href="/clip/{{ nextClip._id }}/">Next Video</a></b></li>
 		</ul>
   		<p>
   		<span>Seeking doesn't work in chrome - use Safari (Firefox untested)</span>

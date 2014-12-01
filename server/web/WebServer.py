@@ -27,14 +27,16 @@ class ClipHandler(RequestHandler):
 	@asynchronous
 	def get(self, clipId):
 		Utils.dbg(__class__.__name__, "Processing incoming connection")
-		clip = library.lib.getVideo(clipId)
-		self.render("templates/clipinfo.html", clip=clip, clip_id=clipId)
+		clips = library.lib.getVideo(clipId)
+		clip = clips[0]
+		nextClip = clips[1] #TODO: catch index out of bounds
+		self.render("templates/clipinfo.html", clip=clip, clip_id=clipId, nextClip=nextClip)
 
 class ClipDownloader(RequestHandler):
 	@asynchronous
 	def get(self, clipId):
 		Utils.dbg(__class__.__name__, "Processing incoming connection, clipId=%s" % clipId)
-		videoObject = library.lib.getVideo(clipId)
+		videoObject = library.lib.getVideo(clipId)[0]
 		toSend = Utils.h264ToMP4(videoObject)
 		self.set_header("Content-Type", 'video/mp4; charset="utf-8"')
 		self.set_header("Content-Disposition", "attachment; filename=%s.mp4" % videoObject.filename)
