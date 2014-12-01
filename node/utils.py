@@ -35,9 +35,8 @@ class Settings:
 
 	networkManagerSettings = {
 					"connectionsToBuffer" : 3,
-			  		"topUpConnectionRetryDelay": 1,
-			  		"connectionRetryDelay": 0.2,
-			  		"functionExecutionSweepDelay": 2,
+			  		"connectionRetryDelay": 1,
+			  		"functionExecutionSweepDelay": 0.5,
 	}
 
 	captureSettings = {
@@ -45,7 +44,7 @@ class Settings:
 	}
 
 	utilsSettings = {
-					"showDebug": True,
+					"showDebug": False,
 					"showError": True,
 					"showInfo": True,
 	}

@@ -22,13 +22,12 @@ class NetworkManager(threading.Thread):
 			if con.connect() != False:
 				self._connections.append(con)
 			else:
-				delay = Settings.get(__class__.__name__, "topUpConnectionRetryDelay")
-				Utils.dbg(self.__class__.__name__, "Couldn't connect to server - retrying in %fs" % delay)
-				time.sleep(delay)
+				Utils.dbg(self.__class__.__name__, "Couldn't top up connections to server")
+				break;
 
 	# returns the next connection - blocks until it's available
-	def connection(self, topUp=True):
-		if topUp:
+	def connection(self, topup=True):
+		if topup:
 			self.executeLater(lambda: self.topUpConnections())
 		try:
 			return self._connections.pop(0)
@@ -36,7 +35,7 @@ class NetworkManager(threading.Thread):
 			delay = Settings.get(__class__.__name__, "connectionRetryDelay")
 			Utils.dbg(self.__class__.__name__, "No connections available... waiting for %fs" % delay)
 			time.sleep(delay)
-			return self.connection(False)
+			return self.connection(True)
 
 	def executeLater(self, x):
 		self._toExecuteLock.acquire()
@@ -64,7 +63,7 @@ class NetworkManager(threading.Thread):
 			time.sleep(Settings.get(__class__.__name__, "functionExecutionSweepDelay"))
 
 
-class NetworkConnection(threading.Thread):
+class NetworkConnection:
 
 	def __init__(self, ip='cctv', port=8000):
 		self._ip = ip
