@@ -1,11 +1,12 @@
 import threading
 import time
+from io import BytesIO
 
 from library import library
 from utils import Utils
 
 from tornado.ioloop import IOLoop
-from tornado.web import RequestHandler, Application, url, asynchronous
+from tornado.web import RequestHandler, Application, url, asynchronous, StaticFileHandler
 
 class RootHandler(RequestHandler):
 
@@ -38,22 +39,48 @@ class ClipHandler(RequestHandler):
 		clip = clips[0]
 		self.render("templates/clipinfo.html", clip=clip, clip_id=clipId, nextClip=nextClip)
 
-class ClipDownloader(RequestHandler):
-	@asynchronous
-	def get(self, clipId):
-		Utils.dbg(__class__.__name__, "Processing incoming connection, clipId=%s" % clipId)
-		videoObject = library.lib.getVideo(clipId)[0]
-		self.set_header("Content-Type", 'video/mp4; charset="utf-8"')
-		self.set_header("Content-Disposition", "attachment; filename=%s.mp4" % videoObject.filename)
-
+class ClipDownloader(StaticFileHandler):
+	@classmethod
+	def get_content(cls, abspath, start=0, end=None):
+		file = library.lib.getVideo(abspath, 1)[0]
+		if start is not None:
+			file.seek(start)
+		if end is not None:
+			remaining = end - (start or 0)
+		else:
+			remaining = None
 		while True:
-			data = videoObject.read(4096)
-			if not data: break
-			written = self.write(data)
-			self.flush()
-		self.finish()
-		videoObject.close()
-		Utils.dbg(__class__.__name__, "File sent, clipId=%s" % clipId)
+			chunk_size = 64 * 1024
+			if remaining is not None and remaining < chunk_size:
+				chunk_size = remaining
+			chunk = file.read(chunk_size)
+			if chunk:
+				if remaining is not None:
+					remaining -= len(chunk)
+				yield chunk
+			else:
+				if remaining is not None:
+					assert remaining == 0
+				return
+
+	def get_content_size(self):
+		videoObject = library.lib.getVideo(self.path, 1)[0]
+		return videoObject.length
+
+	def get_modified_time(self):
+		return None
+
+	@classmethod
+	def get_absolute_path(cls, root, path):
+		return path
+
+	def validate_absolute_path(self, root, absolute_path):
+		try:
+			videoObject = library.lib.getVideo(self.path, 1)[0]
+			return absolute_path
+		except exceptions.IndexException:
+			raise HTTPError(404)
+
 
 class WebServer(threading.Thread):
 
@@ -61,12 +88,12 @@ class WebServer(threading.Thread):
 		IOLoop.current().start()
 
 	def make_app(self):
-	    return Application([
-	    	url(r"/camera/(.*?)/?", CameraClipList),
-	    	url(r"/clip/(.*?)/download/?", ClipDownloader),
-	    	url(r"/clip/(.*?)/?", ClipHandler),
+		return Application([
+			url(r"/camera/(.*?)/?", CameraClipList),
+			url(r"/clip/(.*?)/download/?", ClipDownloader, {'path': ""}),
+			url(r"/clip/(.*?)/?", ClipHandler),
 			url(r"/?", RootHandler),
-	        ])
+			])
 
 	def __init__(self, library):
 		threading.Thread.__init__(self)
