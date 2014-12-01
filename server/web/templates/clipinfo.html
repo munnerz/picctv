@@ -15,18 +15,11 @@
 			    player.addEventListener('loadedmetadata', function() {
     				$('#duration').html(secondsTimeSpanToHMS(Math.ceil(player.duration)));
 				});
-				player.addEventListener('onended', function(){
+				player.addEventListener('ended', function(){
 					{% if nextClip != False %}
 					window.location.href = "/clip/{{ nextClip._id }}/";
 					{% end %}
 				});
-			    $('#gettime').click(function(){
-			            if(player){
-			                current_time=player.currentTime;
-			                $('#showtime').html(current_time+" seconds");
-			                player.currentTime=current_time+10;
-			            }
-			        });
 			}
 			);
 		</script>
@@ -34,7 +27,7 @@
 
 	<body>
 		<h4><a href="/camera/{{ clip.cameraId }}/"> &lt; Back to list of clips for {{ clip.cameraId }}</a></h4>
-		<video width="1280" height="720" id="vid" controls>
+		<video width="1280" height="720" id="vid" controls autoplay>
   			<source src="/clip/{{ clip_id }}/download" type="video/mp4">
   		</video>
   		<ul>
@@ -43,12 +36,5 @@
 			<li><b>Duration</b>: <span id="duration">loading...</span></li>
 			<li>{% if nextClip != False %}<b><a href="/clip/{{ nextClip._id }}/">Next Video</a></b>{% else %}<b>Last Recording</b>{% end %}</li>
 		</ul>
-  		<p>
-  		<span>Seeking doesn't work in chrome - use Safari (Firefox untested)</span>
-  		<br />
-  		<a id="gettime" href="#">current time (and seek 10 secs)</a>
-  		<br />
-		you clicked at:<span id="showtime"> </span> 
-		</p>
 	</body>
 </html>
