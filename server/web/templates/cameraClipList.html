@@ -1,15 +1,50 @@
+{% from utils import Utils %}
 <html>
 	<head>
 		<title>Clips for {{ cameraId }}</title>
+		<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.4/css/jquery.dataTables.css">
+
+		<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+		<script src="//cdn.datatables.net/1.10.4/js/jquery.dataTables.min.js"></script>
+
+		<script type="text/javascript">
+			$(document).ready(function() {
+			    $('#clips').dataTable( {
+			    	"order": [[ 2, "desc" ]]
+			    });
+			} );
+		</script>
 	</head>
 
 	<body>
+		<h4><a href="/"> &lt; Back to list of cameras</a></h4>
 		<h3>Clip list for {{ cameraId}}</h3>
 
-		<ul>
-		{% for clip in clips %}
-			<li><a href="/clip/{{ clip._id }}/">{{ clip._id }}</a> ({{ clip.filename }})</li>
-		{% end %}
-		</ul>
+		<table id="clips" class="display" cellspacing="0" width="100%">
+			<thead>
+				<th>ObjectID</th>
+				<th>Name</th>
+				<th>Date Saved</th>
+				<th>Size</th>
+			</thead>
+			<tfoot>
+				<th>ObjectID</th>
+				<th>Name</th>
+				<th>Date Saved</th>
+				<th>Size</th>
+			</tfoot>
+
+			<tbody>
+				{% for clip in clips %}
+				<tr>
+					<td><a href="/clip/{{ clip._id }}/">{{ clip._id }}</a></td>
+					<td>{{ clip.filename }}</td>
+					<td>{{ clip.saveTime }}
+					<td>{{ Utils.sizeof_fmt(clip.length) }}</td>
+				</tr>
+				{% end %}
+			</tbody>
+		</table>
+
 	</body>
 </html>
