@@ -46,19 +46,20 @@ class NetworkManager(threading.Thread):
 		self.topUpConnections()
 		Utils.msg(self.__class__.__name__, "Connections to server opened (%d/%d)" % (len(self._connections), self._connectionsToBuffer))
 		while self._running:
-			Utils.dbg(self.__class__.__name__, "Sweeping for functions to execute")
+			Utils.dbg2(self.__class__.__name__, "Sweeping for functions to execute")
 			nextExec = None
 			self._toExecuteLock.acquire()
-			Utils.dbg(self.__class__.__name__, "There are %d calls in the queue" % len(self._toExecute))
+			Utils.dbg2(self.__class__.__name__, "There are %d calls in the queue" % len(self._toExecute))
 			try:
 				nextExec = self._toExecute.pop(0)
 			except IndexError as e:
 				nextExec = None
-				Utils.dbg(self.__class__.__name__, "Nothing to execute...")
+				Utils.dbg2(self.__class__.__name__, "Nothing to execute...")
 				pass
 			finally:
 				self._toExecuteLock.release()
 			if nextExec != None:
+				Utils.dbg2(self.__class__.__name__, "Executing function...")
 				nextExec()
 			time.sleep(Settings.get(__class__.__name__, "functionExecutionSweepDelay"))
 

@@ -21,6 +21,10 @@ class Utils:
 		if Settings.get(Utils.className, "showDebug"):
 			print ("[%s] DEBUG: %s" % (sender, text))
 
+	def dbg2(sender, text):
+		if Settings.get(Utils.className, "showDebug2"):
+			print ("[%s] DEBUG2: %s" % (sender, text))
+
 class Settings:
 
 	def lookup(a, x, default=lambda x2, y2: Settings.notFound(x2, y2)):
@@ -44,7 +48,8 @@ class Settings:
 	}
 
 	utilsSettings = {
-					"showDebug": False,
+					"showDebug2": False,
+					"showDebug": True,
 					"showError": True,
 					"showInfo": True,
 	}
