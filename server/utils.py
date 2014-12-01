@@ -1,25 +1,5 @@
 import sys
 
-class Utils:
-
-	className = "Utils"
-
-	def signal_handler(s, signal):
-		Utils.dbg(Utils.className, "Signal received")
-		sys.exit()
-
-	def msg(sender, text):
-		print ("[%s] INFO: %s" % (sender, text))
-
-	def err(sender, text, quit=False):
-		print ("[%s] ERROR: %s" % (sender, text))
-		if quit:
-			Utils.err(Utils.className, "Err quit functionality not added yet", False)
-
-	def dbg(sender, text):
-		if Settings.get(Utils.className, "showDebug"):
-			print ("[%s] DEBUG: %s" % (sender, text))
-
 class Settings:
 
 	className = "Settings"
@@ -36,10 +16,11 @@ class Settings:
 					"showDebug": True,
 					"showError": True,
 					"showInfo": True,
+					"logPath": "/home/james/picctv/server.log"
 	}
 
 	captureSettings = {
-					"serverPort": 8000,
+					"serverPort": 8001,
 					"serverIp": "0.0.0.0",
 					"chunkSize": 50, #15 chunks, each chunk is currently 4s (60s per chunk)
 	}
@@ -62,5 +43,41 @@ class Settings:
 		return m
 
 	def notFound(owner, name):
-		Utils.err(Settings.className, "Setting '%s' for class '%s' not found" % (owner, name))
+		#Utils.err(Settings.className, "Setting '%s' for class '%s' not found" % (owner, name))
 		return None
+
+class Utils:
+	className = "Utils"
+	file_out = open(Settings.get(className, "logPath"), "w")
+
+	def signal_handler(s, signal):
+		Utils.dbg(Utils.className, "Signal received")
+		Utils.closeFile()
+		sys.exit()
+
+	def msg(sender, text):
+		t = ("[%s] INFO: %s" % (sender, text))
+		Utils.file_out.write("%s\n" % t)
+		Utils.file_out.flush()
+		if Settings.get(Utils.className, "showInfo"):
+			print (t)
+
+	def err(sender, text, quit=False):
+		t = ("[%s] ERROR: %s" % (sender, text))
+		Utils.file_out.write("%s\n" % t)
+		Utils.file_out.flush()
+		if Settings.get(Utils.className, "showError"):
+			print (t)
+		if quit:
+			Utils.err(Utils.className, "Err quit functionality not added yet", False)
+
+	def dbg(sender, text):
+		t = ("[%s] DEBUG: %s" % (sender, text))
+		Utils.file_out.write("%s\n" % t)
+		Utils.file_out.flush()
+		if Settings.get(Utils.className, "showDebug"):
+			print (t)
+
+	def closeFile():
+		Utils.dbg(Utils.className, "Closing log file...")
+		Utils.file_out.close()
