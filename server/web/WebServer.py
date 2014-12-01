@@ -43,17 +43,16 @@ class ClipDownloader(RequestHandler):
 	def get(self, clipId):
 		Utils.dbg(__class__.__name__, "Processing incoming connection, clipId=%s" % clipId)
 		videoObject = library.lib.getVideo(clipId)[0]
-		toSend = Utils.h264ToMP4(videoObject, clipId)
 		self.set_header("Content-Type", 'video/mp4; charset="utf-8"')
 		self.set_header("Content-Disposition", "attachment; filename=%s.mp4" % videoObject.filename)
 
 		while True:
-			data = toSend.read(4096)
+			data = videoObject.read(4096)
 			if not data: break
 			written = self.write(data)
 			self.flush()
 		self.finish()
-		toSend.close()
+		videoObject.close()
 		Utils.dbg(__class__.__name__, "File sent, clipId=%s" % clipId)
 
 class WebServer(threading.Thread):
