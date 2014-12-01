@@ -1,9 +1,39 @@
 <html>
 	<head>
 		<title>Clip #{{ clip_id }}</title>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+		<script type="text/javascript">
+			$(document).ready(function(){
+			    var player = $('#vid').get(0);
+			    player.addEventListener('loadedmetadata', function() {
+    				$('#duration').html(player.duration + ' seconds');
+				});
+			    $('#gettime').click(function(){
+			            if(player){
+			                current_time=player.currentTime;
+			                $('#showtime').html(current_time+" seconds");
+			                player.currentTime=current_time+10;
+			            }
+			        });
+			}
+			);
+		</script>
 	</head>
 
 	<body>
-		<h3><a href="/clip/{{ clip_id }}/download">Download Clip #{{ clip_id }}</a></h3>
+		<video width="1280" height="720" id="vid" controls>
+  			<source src="/clip/{{ clip_id }}/download" type="video/mp4">
+  		</video>
+  		<ul>
+			<li><b>Download</b>: <a href="/clip/{{ clip_id }}/download">{{ clip.filename }}.mp4</a></li>
+			<li><b>Duration</b>: <span id="duration">loading...</span></li>
+		</ul>
+  		<p>
+  		<span>Seeking doesn't work in chrome - use Safari (Firefox untested)</span>
+  		<br />
+  		<a id="gettime" href="#">current time (and seek 10 secs)</a>
+  		<br />
+		you clicked at:<span id="showtime"> </span> 
+		</p>
 	</body>
 </html>

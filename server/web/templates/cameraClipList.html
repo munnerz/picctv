@@ -8,7 +8,7 @@
 
 		<ul>
 		{% for clip in clips %}
-			<li><a href="/clip/{{ clip._id }}/download">{{ clip._id }}</a> ({{ clip.filename }})</li>
+			<li><a href="/clip/{{ clip._id }}/">{{ clip._id }}</a> ({{ clip.filename }})</li>
 		{% end %}
 		</ul>
 	</body>

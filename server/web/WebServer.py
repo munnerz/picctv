@@ -1,4 +1,5 @@
 import threading
+import time
 
 from library import library
 from utils import Utils
@@ -26,21 +27,25 @@ class ClipHandler(RequestHandler):
 	@asynchronous
 	def get(self, clipId):
 		Utils.dbg(__class__.__name__, "Processing incoming connection")
-		self.render("templates/clipinfo.html", clip_id=clipId)
+		clip = library.lib.getVideo(clipId)
+		self.render("templates/clipinfo.html", clip=clip, clip_id=clipId)
 
 class ClipDownloader(RequestHandler):
 	@asynchronous
 	def get(self, clipId):
 		Utils.dbg(__class__.__name__, "Processing incoming connection, clipId=%s" % clipId)
-		toSend = library.lib.getVideo(clipId)
-		self.set_header("Content-Type", 'video/h264; charset="utf-8"')
-		self.set_header("Content-Disposition", "attachment; filename=%s" % toSend.filename)
+		videoObject = library.lib.getVideo(clipId)
+		toSend = Utils.h264ToMP4(videoObject)
+		self.set_header("Content-Type", 'video/mp4; charset="utf-8"')
+		self.set_header("Content-Disposition", "attachment; filename=%s.mp4" % videoObject.filename)
+
 		while True:
 			data = toSend.read(4096)
 			if not data: break
 			written = self.write(data)
 			self.flush()
 		self.finish()
+		toSend.close()
 		Utils.dbg(__class__.__name__, "File sent, clipId=%s" % clipId)
 
 class WebServer(threading.Thread):
@@ -50,9 +55,9 @@ class WebServer(threading.Thread):
 
 	def make_app(self):
 	    return Application([
-	    	url(r"/camera/(.*)/?", CameraClipList),
-	    	url(r"/clip/(.*)/download/?", ClipDownloader),
-	    	url(r"/clip/(.*)/?", ClipHandler),
+	    	url(r"/camera/(.*?)/?", CameraClipList),
+	    	url(r"/clip/(.*?)/download/?", ClipDownloader),
+	    	url(r"/clip/(.*?)/?", ClipHandler),
 			url(r"/?", RootHandler),
 	        ])
 
