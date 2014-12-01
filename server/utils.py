@@ -93,7 +93,7 @@ class Utils:
 
 	def h264ToMP4(_in):
 		_outFile = NamedTemporaryFile(dir="/recordings/tmp/")
-		_inFile = SpooledTemporaryFile(50*1024*1024) #TODO: Make this load from config
+		_inFile = SpooledTemporaryFile()
 		while True:
 			data = _in.read(4096)
 			if not data:
@@ -112,3 +112,10 @@ class Utils:
 			return _outFile
 
 		return None
+
+	def sizeof_fmt(num, suffix='B'):
+		for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+			if abs(num) < 1024.0:
+				return "%3.1f%s%s" % (num, unit, suffix)
+			num /= 1024.0
+		return "%.1f%s%s" % (num, 'Yi', suffix)
