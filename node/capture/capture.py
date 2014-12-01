@@ -47,6 +47,7 @@ class Capture():
 				except picamera.exc.PiCameraRuntimeError as e:
 					Utils.err(self.__class__.__name__, "PiCamera runtime error: %s" % e)
 					pass
+					break
 				except Exception as e:
 					Utils.err(self.__class__.__name__, "Unhandled exception in recording loop %s" % e)
 					pass
@@ -59,12 +60,13 @@ class Capture():
 		except Exception as e:
 			Utils.err(self.__class__.__name__, "Capturing failed, exception: %s" % e)
 			pass
-		try:
-			Utils.dbg(self.__class__.__name__, "Stopping recording")
-			self._camera.stop_recording()
-		except Exception as e:
-			Utils.err(self.__class__.__name__, "Unhandled exception closing camera, continuing anyway... Exception: %s" % e)
-			pass
+		finally:
+			try:
+				Utils.dbg(self.__class__.__name__, "Stopping recording")
+				self._camera.stop_recording()
+			except Exception as e:
+				Utils.err(self.__class__.__name__, "Unhandled exception closing camera, continuing anyway... Exception: %s" % e)
+				pass
 		self.thread = threading.Thread(target=self.run)
 		self.thread.start()
 
