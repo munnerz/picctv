@@ -28,8 +28,14 @@ class ClipHandler(RequestHandler):
 	def get(self, clipId):
 		Utils.dbg(__class__.__name__, "Processing incoming connection")
 		clips = library.lib.getVideo(clipId)
+		if(len(clips) == 0):
+			self.write("Clip not found...")
+			self.finish()
+		elif(len(clips) == 1):
+			nextClip = False
+		else:
+			nextClip = clips[1]
 		clip = clips[0]
-		nextClip = clips[1] #TODO: catch index out of bounds
 		self.render("templates/clipinfo.html", clip=clip, clip_id=clipId, nextClip=nextClip)
 
 class ClipDownloader(RequestHandler):
@@ -37,7 +43,7 @@ class ClipDownloader(RequestHandler):
 	def get(self, clipId):
 		Utils.dbg(__class__.__name__, "Processing incoming connection, clipId=%s" % clipId)
 		videoObject = library.lib.getVideo(clipId)[0]
-		toSend = Utils.h264ToMP4(videoObject)
+		toSend = Utils.h264ToMP4(videoObject, clipId)
 		self.set_header("Content-Type", 'video/mp4; charset="utf-8"')
 		self.set_header("Content-Disposition", "attachment; filename=%s.mp4" % videoObject.filename)
 
