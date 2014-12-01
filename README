@@ -13,3 +13,11 @@ FFMPEG command to copy H264 video into an MP4 wrapper:
 ffmpeg -i "cameraFront Door-2014-12-01 00:53:22.250299.h264" -vcodec copy -movflags faststart test.mp4
 
 Info on piping in and out of FFMPEG: https://stackoverflow.com/questions/10400556/how-do-i-use-ffmpeg-with-python-by-passing-file-objects-instead-of-locations-to
+
+server deps:
+
+pip3 install tornado 
+
+apt-get install mongo mongod python3
+
+ffmpeg built with "--enable-gpl --enable-libx264 --enable-demuxer=mov" options
