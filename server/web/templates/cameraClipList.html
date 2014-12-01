@@ -39,7 +39,7 @@
 				<tr>
 					<td><a href="/clip/{{ clip._id }}/">{{ clip._id }}</a></td>
 					<td>{{ clip.filename }}</td>
-					<td>{{ clip.saveTime }}
+					<td><b>{{ clip.saveTime }}</b></td>
 					<td>{{ Utils.sizeof_fmt(clip.length) }}</td>
 				</tr>
 				{% end %}
