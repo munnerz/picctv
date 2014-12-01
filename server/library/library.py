@@ -40,14 +40,18 @@ class Library:
 		Utils.dbg(__class__.__name__, "Looking for videos from cameraId: %s" % cameraId)
 		if cameraId == None:
 			return []
-		return self._fs.find({"cameraId":cameraId})
+		return list(self._fs.find({"cameraId":cameraId}))
+
+	def getVideo(self, clipId):
+		Utils.dbg(__class__.__name__, "Getting video with ID: %s" % clipId)
+		return self._fs.find({"_id":ObjectId(clipId)})
 
 	def getCameras(self):
 		Utils.dbg(__class__.__name__, "Getting camera list")
 		cameras = self._fs.find().distinct("cameraId")
 		cameraDetails = {}
 		for camera in cameras:
-			numberOfVideos = self.getVideos(camera).count()
+			numberOfVideos = len(self.getVideos(camera))
 			cameraDetails[camera] = {
 									"cameraId": camera,
 									"numberOfVideos": numberOfVideos,
