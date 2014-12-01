@@ -4,12 +4,21 @@
 		<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 		<script type="text/javascript">
 			$(document).ready(function(){
+				function secondsTimeSpanToHMS(s) {
+				    var h = Math.floor(s/3600); //Get whole hours
+				    s -= h*3600;
+				    var m = Math.floor(s/60); //Get remaining minutes
+				    s -= m*60;
+				    return h+":"+(m < 10 ? '0'+m : m)+":"+(s < 10 ? '0'+s : s); //zero padding on minutes and seconds
+				}
 			    var player = $('#vid').get(0);
 			    player.addEventListener('loadedmetadata', function() {
-    				$('#duration').html(player.duration + ' seconds');
+    				$('#duration').html(secondsTimeSpanToHMS(Math.ceil(player.duration)));
 				});
 				player.addEventListener('onended', function(){
+					{% if nextClip != False %}
 					window.location.href = "/clip/{{ nextClip._id }}/";
+					{% end %}
 				});
 			    $('#gettime').click(function(){
 			            if(player){
@@ -30,7 +39,7 @@
   		<ul>
 			<li><b>Download</b>: <a href="/clip/{{ clip_id }}/download">{{ clip.filename }}.mp4</a></li>
 			<li><b>Duration</b>: <span id="duration">loading...</span></li>
-			<li><b><a href="/clip/{{ nextClip._id }}/">Next Video</a></b></li>
+			<li>{% if nextClip != False %}<b><a href="/clip/{{ nextClip._id }}/">Next Video</a></b>{% else %}<b>Last Recording</b>{% end %}</li>
 		</ul>
   		<p>
   		<span>Seeking doesn't work in chrome - use Safari (Firefox untested)</span>
