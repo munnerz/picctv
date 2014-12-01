@@ -20,13 +20,18 @@ class Settings:
 					"showDebug": True,
 					"showError": True,
 					"showInfo": True,
-					"logPath": "/home/james/picctv/server.log"
+					"logPath": "/home/james/picctv/server.log",
+					"mp4TempStoragePath": "/recordings/tmp/"
 	}
 
 	captureSettings = {
 					"serverPort": 8000,
 					"serverIp": "0.0.0.0",
 					"chunkSize": 22,
+	}
+
+	webServerSettings = {
+
 	}
 
 	def get(owner, name):
@@ -86,7 +91,18 @@ class Utils:
 		Utils.dbg(Utils.className, "Closing log file...")
 		Utils.file_out.close()
 
-	def h264ToMP4(_in):
+	def h264ToMP4(_in, id):
+		try:
+			_outFile = open(("%s%s.mp4" % (Settings.get(Utils.className, "mp4TempStoragePath"), id)), "rb")
+			if os.path.getsize("%s%s.mp4" % (Settings.get(Utils.className, "mp4TempStoragePath"), id)) > 0:
+				return _outFile
+			else:
+				_outFile.close()
+		except OSError as e:
+			pass
+
+		_outFile = open(("%s%s.mp4" % (Settings.get(Utils.className, "mp4TempStoragePath"), id)), "wb")
+
 		_inFile = SpooledTemporaryFile(50*1024*1024) #TODO: Make this load from config
 		while True:
 			data = _in.read(4096)
@@ -97,22 +113,11 @@ class Utils:
 		Utils.dbg(Utils.className, "%d bytes going into ffmpeg" % _inFile.tell())
 
 		_inFile.seek(0)
-		_outFile = NamedTemporaryFile() 
 
 		p = Popen(["/usr/local/bin/ffmpeg", "-y", "-an", "-i", "-", "-vcodec", "copy", "-movflags", "faststart", "-f", "mp4", _outFile.name], 
 			stdin=_inFile)
 		p.wait()
 		Utils.dbg(Utils.className, "Finished creating MP4...")
-		_outFile.seek(0)
+		_outFile.close()
+		_outFile = open(("%s%s.mp4" % (Settings.get(Utils.className, "mp4TempStoragePath"), id)), "rb")
 		return _outFile
-#			output = BytesIO()
-#			length = 0
-#			while True:
-#				data = p.stdout.read(1024)
-#				if len(data) == 0:
-#					break
-#				length += output.write(data)
-#				# do something with data...
-#			Utils.dbg(Utils.className, "Read %d bytes from ffmpeg" % length)
-#			output.seek(0)
-#			return output # should have finisted anyway
