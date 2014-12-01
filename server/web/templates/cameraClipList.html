@@ -1,0 +1,15 @@
+<html>
+	<head>
+		<title>Clips for {{ cameraId }}</title>
+	</head>
+
+	<body>
+		<h3>Clip list for {{ cameraId}}</h3>
+
+		<ul>
+		{% for clip in clips %}
+			<li><a href="/clip/{{ clip._id }}/download">{{ clip._id }}</a> ({{ clip.filename }})</li>
+		{% end %}
+		</ul>
+	</body>
+</html>

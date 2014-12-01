@@ -10,7 +10,7 @@
 
 		<ul>
 		{% for cameraId,details in cameras.items() %}
-			<li>{{details["cameraId"]}} ({{details["numberOfVideos"]}} recordings)</li>
+			<li><a href="/camera/{{ details["cameraId"] }}">{{details["cameraId"]}}</a> ({{details["numberOfVideos"]}} recordings)</li>
 		{% end %}
 		</ul>
 	</body>
