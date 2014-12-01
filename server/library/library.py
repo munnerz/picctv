@@ -1,4 +1,5 @@
 from pymongo import MongoClient
+from bson.objectid import ObjectId
 from gridfs import GridFS
 from datetime import datetime
 import time, sched
@@ -44,7 +45,7 @@ class Library:
 
 	def getVideo(self, clipId):
 		Utils.dbg(__class__.__name__, "Getting video with ID: %s" % clipId)
-		return self._fs.find({"_id":ObjectId(clipId)})
+		return list(self._fs.find({"_id":ObjectId(clipId)}))[0]
 
 	def getCameras(self):
 		Utils.dbg(__class__.__name__, "Getting camera list")
