@@ -45,7 +45,7 @@ class Library:
 
 	def getVideo(self, clipId):
 		Utils.dbg(__class__.__name__, "Getting video with ID: %s" % clipId)
-		return list(self._fs.find({"_id": {'$gt': ObjectId(clipId)}}).limit(2))
+		return list(self._fs.find({"_id": {'$gte': ObjectId(clipId)}}).limit(2))
 
 	def getCameras(self):
 		Utils.dbg(__class__.__name__, "Getting camera list")
