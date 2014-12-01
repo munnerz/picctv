@@ -57,6 +57,10 @@ class Capture(threading.Thread):
 		    Utils.dbg(__class__.__name__, "Closed server socket, no longer accepting connections")
 
 	def recordingFinished(self, outputStream):
+		self._connectionsLock.acquire()
+		self._connections.remove(outputStream)
+		self._connectionsLock.release()
+		
 		cameraId = outputStream._cameraId
 		self._recordingsLock.acquire()
 
@@ -81,10 +85,6 @@ class Capture(threading.Thread):
 			dboutput.close()
 		else:
 			self._recordingsLock.release()
-
-		self._connectionsLock.acquire()
-		self._connections.remove(outputStream)
-		self._connectionsLock.release()
 		
 
 	def __init__(self, library):
