@@ -14,10 +14,11 @@ class CaptureStream(threading.Thread):
 		self._output = output
 		self._callback = callback
 		self._cameraId = None
+		self._read_bytes = 0
 
 	def run(self):
 		try:
-			read_bytes = 0
+			self._read_bytes = 0
 			camera_id_length = struct.unpack("I", self._connection.read(4))[0] #read the camera ID
 			camera_id = struct.unpack(str(camera_id_length) + 's', self._connection.read(camera_id_length))[0]
 			self._cameraId = str(camera_id.decode(encoding='UTF-8'))
@@ -25,8 +26,8 @@ class CaptureStream(threading.Thread):
 				data = self._connection.read(1024)
 				if not data:
 					break
-				old_read_bytes = read_bytes
-				read_bytes += self._output.write(data)
+				old_read_bytes = self._read_bytes
+				self._read_bytes += self._output.write(data)
 		finally:
 			Utils.dbg(__class__.__name__, "Closing connection...")
 			self._output.seek(0)
@@ -65,7 +66,11 @@ class Capture(threading.Thread):
 
 		Utils.dbg(__class__.__name__, "There are now %d recordings for %s" % (len(self._recordings.get(cameraId)), cameraId))
 		
-		if len(self._recordings.get(cameraId)) >= Settings.get(__class__.__name__, "chunkSize"):
+		flush = False
+		if(outputStream._read_bytes == 0 and len(ls) > 1):
+			Utils.dbg(__class__.__name__, "Received a zero length buffer from a node. Saving all chunks...")
+			flush = True
+		if flush or len(self._recordings.get(cameraId)) >= Settings.get(__class__.__name__, "chunkSize"):
 			listOfClips = self._recordings.pop(cameraId)
 			self._recordingsLock.release()
 			dboutput = library.lib.newClip()
