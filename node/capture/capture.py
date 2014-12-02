@@ -12,7 +12,7 @@ class Capture():
 		self._format = _format
 		self._networkManager = networkManager
 
-		self._chunk_length = Settings.get(__class__.__name__, "chunkLength")
+		self._chunk_length = Settings.get(self.__class__.__name__, "chunkLength")
 		self._keepRecording = True
 
 		self.configure()

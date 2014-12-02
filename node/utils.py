@@ -5,29 +5,35 @@ class Utils:
 
 	className = "Utils"
 
-	def signal_handler(s, signal):
+	@classmethod
+	def signal_handler(ut, s, signal):
 		Utils.dbg(Utils.className, "Signal received")
 		sys.exit()
 
-	def msg(sender, text):
+	@classmethod
+	def msg(ut, sender, text):
 		print ("[%s] INFO: %s" % (sender, text))
 
-	def err(sender, text, quit=False):
+	@classmethod
+	def err(ut, sender, text, quit=False):
 		print ("[%s] ERROR: %s" % (sender, text))
 		if quit:
 			Utils.err(Utils.className, "Err quit functionality not added yet", False)
 
-	def dbg(sender, text):
+	@classmethod
+	def dbg(ut, sender, text):
 		if Settings.get(Utils.className, "showDebug"):
 			print ("[%s] DEBUG: %s" % (sender, text))
 
-	def dbg2(sender, text):
+	@classmethod
+	def dbg2(ut, sender, text):
 		if Settings.get(Utils.className, "showDebug2"):
 			print ("[%s] DEBUG2: %s" % (sender, text))
 
 class Settings:
 
-	def lookup(a, x, default=lambda x2, y2: Settings.notFound(x2, y2)):
+	@classmethod
+	def lookup(sc, a, x, default=lambda x2, y2: Settings.notFound(x2, y2)):
 		return a.get(x, default)
 
 	settingMappings = {
@@ -58,38 +64,41 @@ class Settings:
 					"cameraId": "Front Door",
 	}
 
-	def get(owner, name):
+	@classmethod
+	def get(sc, owner, name):
 		toExec = Settings.lookup(Settings.settingMappings, owner)
 		if(toExec != None):
 			return toExec(owner, name)
 
-
-
-	def getNetworkManager(owner, name):
+	@classmethod
+	def getNetworkManager(sc, owner, name):
 		m = Settings.lookup(Settings.networkManagerSettings, name, None)
 		if m == None:
 			return Settings.notFound(owner, name)
 		return m
 
-	def getCapture(owner, name):
+	@classmethod
+	def getCapture(sc, owner, name):
 		m = Settings.lookup(Settings.captureSettings, name, None)
 		if m == None:
 			return Settings.notFound(owner, name)
 		return m
 
-	def getUtils(owner, name):
+	@classmethod
+	def getUtils(sc, owner, name):
 		m = Settings.lookup(Settings.utilsSettings, name, None)
 		if m == None:
 			return Settings.notFound(owner, name)
 		return m
 
-	def getNetworkConnection(owner, name):
+	@classmethod
+	def getNetworkConnection(sc, owner, name):
 		m = Settings.lookup(Settings.networkConnectionSettings, name, None)
 		if m == None:
 			return Settings.notFound(owner, name)
 		return m
 
-
-	def notFound(owner, name):
+	@classmethod
+	def notFound(sc, owner, name):
 		Utils.err("Settings", "Setting '%s' for class '%s' not found" % (owner, name))
 		return None

@@ -12,7 +12,7 @@ class NetworkManager(threading.Thread):
 		self._toExecute = []
 		self._running = True
 		self._toExecuteLock = threading.Lock()
-		self._connectionsToBuffer = Settings.get(__class__.__name__, "connectionsToBuffer")
+		self._connectionsToBuffer = Settings.get(self.__class__.__name__, "connectionsToBuffer")
 
 
 	def topUpConnections(self):
@@ -61,7 +61,7 @@ class NetworkManager(threading.Thread):
 			if nextExec != None:
 				Utils.dbg2(self.__class__.__name__, "Executing function...")
 				nextExec()
-			time.sleep(Settings.get(__class__.__name__, "functionExecutionSweepDelay"))
+			time.sleep(Settings.get(self.__class__.__name__, "functionExecutionSweepDelay"))
 
 
 class NetworkConnection:
