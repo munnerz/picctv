@@ -119,3 +119,7 @@ class Utils:
 				return "%3.1f%s%s" % (num, unit, suffix)
 			num /= 1024.0
 		return "%.1f%s%s" % (num, 'Yi', suffix)
+
+	def get_git_revision_short_hash():
+		import subprocess
+		return subprocess.check_output(['git', 'describe'])
