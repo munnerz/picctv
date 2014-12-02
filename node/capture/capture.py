@@ -23,6 +23,7 @@ class Capture():
 		self._camera.resolution = resolution
 		self._camera.framerate = framerate
 		self._camera.iso = 0
+		self._camera.brightness = 60
 		self._camera.exposure_mode = 'night'
 		self._camera.vflip = True
 		self._camera.hflip = True #hflip should always be on as the camera captures mirrored
