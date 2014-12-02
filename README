@@ -24,3 +24,5 @@ ffmpeg built with "--enable-gpl --enable-libx264 --enable-demuxer=mov" options
 
 Useful information for generating subtitles:
 https://developer.mozilla.org/en-US/Apps/Build/Audio_and_video_delivery/Adding_captions_and_subtitles_to_HTML5_video
+
+Info about OpenCV (specifically getting number of msec into video): http://docs.opencv.org/modules/highgui/doc/reading_and_writing_images_and_video.html
