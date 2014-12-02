@@ -12,16 +12,16 @@ class Utils:
 	@staticmethod
 	def getPiCamera():
 		if Utils.piCam == None:
-			cameraInitLock.acquire()
+			Utils.cameraInitLock.acquire()
 			Utils.piCam = picamera.PiCamera()
-			Utils.configurePiCamera(piCam)
-			cameraInitLock.release()
+			Utils.configurePiCamera(Utils.piCam)
+			Utils.cameraInitLock.release()
 		return Utils.piCam
 
 	@staticmethod
 	def configurePiCamera(piCam): #TODO: Make these load from file
-		piCam.resolution = resolution
-		piCam.framerate = framerate
+		piCam.resolution = (1280, 720)
+		piCam.framerate = 24
 		piCam.iso = 0
 		piCam.brightness = 60
 		piCam.exposure_mode = 'night'
