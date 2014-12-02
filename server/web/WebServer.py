@@ -8,6 +8,8 @@ from utils import Utils
 from tornado.ioloop import IOLoop
 from tornado.web import RequestHandler, Application, url, asynchronous, StaticFileHandler
 
+APP_NAME = "PiCCTV" #TODO: Load this more gracefully
+
 class RootHandler(RequestHandler):
 
 	@asynchronous
@@ -15,14 +17,14 @@ class RootHandler(RequestHandler):
 		Utils.dbg(__class__.__name__, "Processing incoming connection")
 		cameras = library.lib.getCameras()
 		Utils.dbg(__class__.__name__, "Cameras: %s" % cameras)
-		self.render("templates/home.html", title="PiCCTV Control", cameras=cameras)
+		self.render("templates/home.html", app_name=APP_NAME, title="PiCCTV Control", cameras=cameras)
 
 class CameraClipList(RequestHandler):
 	@asynchronous
 	def get(self, cameraId):
 		Utils.dbg(__class__.__name__, "Processing incoming request")
 		videos = library.lib.getVideos(cameraId)
-		self.render("templates/cameraClipList.html", cameraId=cameraId, clips=videos)
+		self.render("templates/cameraClipList.html", app_name=APP_NAME, cameraId=cameraId, clips=videos)
 
 class ClipHandler(RequestHandler):
 	@asynchronous
@@ -37,7 +39,7 @@ class ClipHandler(RequestHandler):
 		else:
 			nextClip = clips[1]
 		clip = clips[0]
-		self.render("templates/clipinfo.html", clip=clip, clip_id=clipId, nextClip=nextClip)
+		self.render("templates/clipinfo.html", app_name=APP_NAME, clip=clip, clip_id=clipId, nextClip=nextClip)
 
 class ClipDownloader(StaticFileHandler):
 	@classmethod
