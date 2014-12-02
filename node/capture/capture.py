@@ -22,7 +22,7 @@ class Capture():
 		try:
 			vidOut = self._networkManager.connection()
 			oldVidOut = None
-			Utils.getPiCamera().start_recording(vidOut.fileObject(), self._format, quality=25)
+			Utils.getPiCamera().start_recording(vidOut.fileObject(), self._format, quality=25, profile='baseline')
 			while self.keepRecording():
 				try:
 					Utils.dbg(self.__class__.__name__, "Waiting for %d seconds" % self._chunk_length)
