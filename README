@@ -22,6 +22,8 @@ apt-get install mongo mongod python3
 
 ffmpeg built with "--enable-gpl --enable-libx264 --enable-demuxer=mov" options
 
+https://zulko.github.io/blog/2013/09/27/read-and-write-video-frames-in-python-using-ffmpeg/
+
 Useful information for generating subtitles:
 https://developer.mozilla.org/en-US/Apps/Build/Audio_and_video_delivery/Adding_captions_and_subtitles_to_HTML5_video
 
