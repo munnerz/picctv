@@ -22,7 +22,6 @@ class Analyser(PiRGBAnalysis):
 			self.frames.pop(len(self.frames) - 1)
 
 	def analyse(self, frame):
-		cv2.imshow('image',frame)
 		self.addFrameToStack(frame)
 		if len(self.frames) >= 3:
 			motion = self._getMotion()
