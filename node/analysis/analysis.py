@@ -74,7 +74,7 @@ class Analysis:
 
 	def run(self):
 		global pool, lock
-		self._camera.capture_sequence(self.streams(), use_video_port=True, resize=(1280,720), splitter_port=2)
+		self._camera.capture_sequence(self.streams(), format='bgr', use_video_port=True, resize=(1280,720), splitter_port=2)
 
 		# Shut down the processors in an orderly fashion
 		while pool:
