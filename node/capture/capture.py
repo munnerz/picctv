@@ -8,7 +8,6 @@ class Multiplexer:
 	def __init__(self):
 		self.outputs = []
 		self.lock = threading.Lock()
-		print ("started")
 
 	def close(self):
 		with self.lock:
@@ -21,11 +20,9 @@ class Multiplexer:
 					pass
 
 	def addOutput(self, outputs):
-		print ("adding an output")
 		with self.lock:
 			if isinstance(outputs, list):
 				for output in outputs:
-					print ("added another")
 					self.outputs.append(output)
 
 			else:
@@ -44,7 +41,6 @@ class Multiplexer:
 			return list(self.outputs)
 
 	def flush(self):
-		print ("flushing")
 		num = 0
 		with self.lock:
 			for output in self.outputs:
@@ -57,7 +53,6 @@ class Multiplexer:
 		return num
 
 	def write(self, data):
-		print ("writing")
 		with self.lock:
 			sendTo = list(self.outputs)
 		for output in sendTo:
