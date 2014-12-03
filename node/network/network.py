@@ -32,7 +32,7 @@ class NetworkManager(threading.Thread):
 		try:
 			return self._connections.pop(0)
 		except IndexError as e:
-			delay = Settings.get(__class__.__name__, "connectionRetryDelay")
+			delay = Settings.get(self.__class__.__name__, "connectionRetryDelay")
 			Utils.dbg(self.__class__.__name__, "No connections available... waiting for %fs" % delay)
 			time.sleep(delay)
 			return self.connection(True)
