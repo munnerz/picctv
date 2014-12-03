@@ -90,6 +90,7 @@ class Capture():
 			vidOut = self._networkManager.connection()
 			vidOutFO = vidOut.fileObject()
 			oldVidOut = None
+			oldVidOutFO = None
 			self._camera.start_recording(self._multiplexer, self._format, (1280, 720), quality=25)
 			self._multiplexer.addOutput(vidOutFO)
 			while self.keepRecording():
@@ -98,15 +99,21 @@ class Capture():
 					self._camera.wait_recording(self._chunk_length)
 
 					Utils.dbg(self.__class__.__name__, "Splitting recording...")
+
 					oldVidOut = vidOut
+					oldVidOutFO = vidOutFO
+
 					nextVidOut = self._networkManager.connection()	
-					nextVidOutFO = nextVidOut.fileObject()				
+					nextVidOutFO = nextVidOut.fileObject()	
+
+					#prepare new multiplexer
 					nextMultiplexer = Multiplexer()
 					self._streamServer.multiplexer = nextMultiplexer
 					nextMultiplexer.addOutput(self._multiplexer.outputs)
-					nextMultiplexer.removeOutput(vidOutFO)
 					nextMultiplexer.addOutput(nextVidOutFO)
 					self._multiplexer = nextMultiplexer
+
+					#now split the recording
 					self._camera.split_recording(self._multiplexer)
 					Utils.dbg(self.__class__.__name__, "Recording split!")
 
@@ -114,20 +121,22 @@ class Capture():
 					vidOutFO = nextVidOutFO
 				except picamera.exc.PiCameraRuntimeError as e:
 					Utils.err(self.__class__.__name__, "PiCamera runtime error: %s" % e)
-					raise
+					pass
 					break
 				except Exception as e:
 					Utils.err(self.__class__.__name__, "Unhandled exception in recording loop %s" % e)
 					pass
 					break
 				finally:
-					if(oldVidOut != None):
+					if(oldVidOutFO != None):
 						Utils.dbg(self.__class__.__name__, "Closing old vidout")
+						self._multiplexer.removeOutput(oldVidOutFO)
 						oldVidOut.close()
 						oldVidOut = None
+						oldVidOutFO = None
 		except Exception as e:
 			Utils.err(self.__class__.__name__, "Capturing failed, exception: %s" % e)
-			raise
+			pass
 		finally:
 			try:
 				Utils.dbg(self.__class__.__name__, "Stopping recording")
