@@ -32,7 +32,7 @@ class NetworkManager(threading.Thread):
 		try:
 			return self._connections.pop(0)
 		except IndexError as e:
-			delay = Settings.get(__class__.__name__, "connectionRetryDelay")
+			delay = Settings.get(self.__class__.__name__, "connectionRetryDelay")
 			Utils.dbg(self.__class__.__name__, "No connections available... waiting for %fs" % delay)
 			time.sleep(delay)
 			return self.connection(True)
@@ -95,9 +95,12 @@ class NetworkConnection:
 	def fileObject(self):
 		return self._sock.makefile('rwb')
 
-	def stop(self):
-		Utils.msg(self.__class__.__name__, "Stopping...")
+	def close(self):
+		Utils.dbg2(self.__class__.__name__, "Closing...")
 		if self._connected:
 			self._sock.close()
 			self._connected = False
-		Utils.msg(self.__class__.__name__, "Stopped")
+		Utils.dbg2(self.__class__.__name__, "Closed")
+	
+	def stop(self):
+		self.close()

@@ -1,2 +1,2 @@
 #!/bin/bash
-/usr/bin/python3 node/node.py
+/usr/bin/python2 node/node.py
