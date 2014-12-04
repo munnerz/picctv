@@ -24,7 +24,7 @@ class Utils:
 
 	@staticmethod
 	def configurePiCamera(piCam): #TODO: Make these load from file
-		piCam.resolution = (1280, 720)
+		piCam.resolution = (640, 360)
 		piCam.framerate = 24
 		piCam.iso = 0
 		piCam.brightness = 60

@@ -91,7 +91,7 @@ class Capture():
 			vidOutFO = vidOut.fileObject()
 			oldVidOut = None
 			oldVidOutFO = None
-			self._camera.start_recording(self._multiplexer, self._format, (1280, 720), quality=25, profile='baseline')
+			self._camera.start_recording(self._multiplexer, self._format, (640, 360), quality=25, profile='baseline')
 			self._multiplexer.addOutput(vidOutFO)
 			while self.keepRecording():
 				try:

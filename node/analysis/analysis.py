@@ -13,7 +13,7 @@ class Analyser(PiRGBAnalysis):
 		PiRGBAnalysis.__init__(self, camera)
 		self.frames = []
 		self.stackLimit = 5
-		self._MOTION_LEVEL = 500000
+		self._MOTION_LEVEL = 200000
 		self._THRESHOLD = 35
 
 	def addFrameToStack(self, frame):
@@ -22,7 +22,6 @@ class Analyser(PiRGBAnalysis):
 			self.frames.pop(len(self.frames) - 1)
 
 	def analyse(self, frame):
-		cv2.imshow('image',frame)
 		self.addFrameToStack(frame)
 		if len(self.frames) >= 3:
 			motion = self._getMotion()
@@ -59,7 +58,12 @@ class Analysis:
 
 
 	def run(self):
-		self._camera.capture_sequence(self.streams(), format='bgr', use_video_port=True, resize=(1280,720), splitter_port=2)
-		cv2.destroyAllWindows()
-
+		try:
+			while self._keepRecording:
+				millis = int(round(time.time() * 1000))
+				self._camera.capture(self.analyser, format='bgr', resize=(640,360), use_video_port=True, splitter_port=3)
+				millis2 = int(round(time.time() * 1000))
+		except picamera.exc.PiCameraRuntimeError as e:
+			Utils.err(self.__class__.__name__, "PiCamera runtime error: %s" % e)
+			pass
 
