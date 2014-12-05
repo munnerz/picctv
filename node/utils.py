@@ -24,12 +24,13 @@ class Utils:
 
 	@staticmethod
 	def configurePiCamera(piCam): #TODO: Make these load from file
-		piCam.resolution = (640, 360)
+		piCam.resolution = (1280, 720)
+		piCam.annotate_background = True 
 		piCam.framerate = 24
 		piCam.iso = 0
 		piCam.brightness = 60
 		piCam.exposure_mode = 'night'
-		piCam.vflip = True
+		piCam.vflip = False
 		piCam.hflip = True
 
 	@staticmethod
