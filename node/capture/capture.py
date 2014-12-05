@@ -10,6 +10,7 @@ class Multiplexer:
 		self.outputs = []
 		self.lock = threading.Lock()
 		self.camera = camera
+		self.first = True
 
 	def close(self):
 		with self.lock:
@@ -58,6 +59,9 @@ class Multiplexer:
 		if not self.camera == None:
 			daytime = datetime.now().strftime("%d/%m/%y %H:%M:%S.%f")  
 			daytime = daytime[:-3]
+			if self.first:
+				print ("First frame of segment: %d" % self.camera.frame.index)
+				self.first = False
 			self.camera.annotate_text = "%d: %s" % (self.camera.frame.index, daytime) 
 		rem = list()
 		with self.lock:
