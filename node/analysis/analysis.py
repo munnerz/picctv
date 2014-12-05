@@ -13,7 +13,7 @@ class Analyser(PiRGBAnalysis):
 		PiRGBAnalysis.__init__(self, camera)
 		self.frames = []
 		self.stackLimit = 5
-		self._MOTION_LEVEL = 200000
+		self._MOTION_LEVEL = 20000
 		self._THRESHOLD = 35
 
 	def addFrameToStack(self, frame):
@@ -37,7 +37,7 @@ class Analyser(PiRGBAnalysis):
 
 		scalar = cv2.sumElems(result)
 
-		print (" - scalar:", scalar[0], scalar)
+		print ("Scalar: %d" % scalar[0])
 		return scalar
 
 
@@ -48,7 +48,6 @@ class Analysis:
 		self._keepRecording = True
 		self._camera = camera
 		self.analyser = Analyser(self._camera)
-
 		self.thread.start()
 
 
@@ -65,5 +64,4 @@ class Analysis:
 				millis2 = int(round(time.time() * 1000))
 		except picamera.exc.PiCameraRuntimeError as e:
 			Utils.err(self.__class__.__name__, "PiCamera runtime error: %s" % e)
-			pass
-
+			pass 
