@@ -13,7 +13,7 @@ class Analyser(PiRGBAnalysis):
 		PiRGBAnalysis.__init__(self, camera)
 		self.frames = []
 		self.stackLimit = 5
-		self._MOTION_LEVEL = 20000
+		self._MOTION_LEVEL = 10000
 		self._THRESHOLD = 35
 
 	def addFrameToStack(self, frame):
@@ -26,7 +26,7 @@ class Analyser(PiRGBAnalysis):
 		if len(self.frames) >= 3:
 			motion = self._getMotion()
 			if motion and motion[0] > self._MOTION_LEVEL:
-				print ("Detected motion!")
+				print ("Detected motion level: %d" % motion[0])
 
 	def _getMotion(self):
 		d1 = cv2.absdiff(self.frames[1], self.frames[0])
@@ -37,7 +37,7 @@ class Analyser(PiRGBAnalysis):
 
 		scalar = cv2.sumElems(result)
 
-		print ("Scalar: %d" % scalar[0])
+		#print ("Scalar: %d" % scalar[0])
 		return scalar
 
 
@@ -59,9 +59,19 @@ class Analysis:
 	def run(self):
 		try:
 			while self._keepRecording:
-				millis = int(round(time.time() * 1000))
-				self._camera.capture(self.analyser, format='bgr', resize=(640,360), use_video_port=True, splitter_port=3)
-				millis2 = int(round(time.time() * 1000))
+				startTime = time.time()
+				#print ("start time %.4f" % startTime)
+				stream=open('/run/shm/picamtemp.dat','w+b')
+				self._camera.capture(stream, format='yuv', resize=(128,64), use_video_port=True, splitter_port=2)
+				frameIndex = self._camera.frame.index
+				stream.seek(0)
+				self.analyser.analyse(np.fromfile(stream, dtype=np.uint8, count=128*64).reshape((64, 128)))
+				endTime = time.time()
+				#print ("ended at %.4f (duration: %.4f)" % (endTime, (endTime - startTime)))
+				toWait = 0.1 - (endTime - startTime)
+				if toWait > 0:
+					time.sleep(0.1 - (endTime - startTime))
+
 		except picamera.exc.PiCameraRuntimeError as e:
 			Utils.err(self.__class__.__name__, "PiCamera runtime error: %s" % e)
 			pass 
