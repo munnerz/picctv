@@ -56,9 +56,9 @@ class Multiplexer:
 
 	def write(self, data):
 		if not self.camera == None:
-			daytime = datetime.now().strftime(" - %d/%m/%y %H:%M:%S.%f - ")  
+			daytime = datetime.now().strftime("%d/%m/%y %H:%M:%S.%f")  
 			daytime = daytime[:-3]
-			self.camera.annotate_text = daytime 
+			self.camera.annotate_text = "%d: %s" % (self.camera.frame.index, daytime) 
 		with self.lock:
 			sendTo = list(self.outputs)
 		for output in sendTo:
