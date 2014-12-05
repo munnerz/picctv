@@ -26,6 +26,8 @@ class Analyser:
 			motion = self._getMotion()
 			if motion and motion[0] > self._MOTION_LEVEL:
 				print ("Detected motion level: %d" % motion[0])
+				return True
+		return False
 
 	def _getMotion(self):
 		d1 = cv2.absdiff(self.frames[1], self.frames[0])
@@ -64,7 +66,8 @@ class Analysis:
 				self._camera.capture(stream, format='yuv', resize=(128,64), use_video_port=True, splitter_port=2)
 				frameIndex = self._camera.frame.index
 				stream.seek(0)
-				self.analyser.analyse(np.fromfile(stream, dtype=np.uint8, count=128*64).reshape((64, 128)))
+				if self.analyser.analyse(np.fromfile(stream, dtype=np.uint8, count=128*64).reshape((64, 128))):
+					print ("Detected motion at frame %d" % frameIndex)
 				endTime = time.time()
 				#print ("ended at %.4f (duration: %.4f)" % (endTime, (endTime - startTime)))
 				toWait = 0.1 - (endTime - startTime)
