@@ -73,7 +73,7 @@ class Settings:
 					}
 
 	networkManagerSettings = {
-					"connectionsToBuffer" : 3,
+					"connectionsToBuffer" : 2,
 			  		"connectionRetryDelay": 1,
 			  		"functionExecutionSweepDelay": 0.5,
 	}
@@ -90,7 +90,7 @@ class Settings:
 	}
 
 	networkConnectionSettings = {
-					"cameraId": "Front Door",
+					"cameraId": "Test",
 	}
 
 	analysisSettings = {
