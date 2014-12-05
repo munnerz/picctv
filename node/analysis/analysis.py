@@ -61,15 +61,13 @@ class Analysis:
 		try:
 			while self._keepRecording:
 				startTime = time.time()
-				#print ("start time %.4f" % startTime)
-				stream=open('/run/shm/picamtemp.dat','w+b')
+				stream=open('/run/shm/picamtemp.dat','w+b') # stored to a ramdisk for faster access
 				self._camera.capture(stream, format='yuv', resize=(128,64), use_video_port=True, splitter_port=2)
-				frameIndex = self._camera.frame.index
-				stream.seek(0)
+				frameIndex = self._camera.frame.index # get the current frame index
+				stream.seek(0) # seek back to start of captured yuv data
 				if self.analyser.analyse(np.fromfile(stream, dtype=np.uint8, count=128*64).reshape((64, 128))):
 					print ("Detected motion at frame %d" % frameIndex)
 				endTime = time.time()
-				#print ("ended at %.4f (duration: %.4f)" % (endTime, (endTime - startTime)))
 				toWait = 0.1 - (endTime - startTime)
 				if toWait > 0:
 					time.sleep(0.1 - (endTime - startTime))
