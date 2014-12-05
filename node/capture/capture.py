@@ -56,6 +56,7 @@ class Multiplexer:
 		return num
 
 	def write(self, data):
+		rem = list()
 		if not self.camera == None:
 			daytime = datetime.now().strftime("%d/%m/%y %H:%M:%S.%f")  
 			daytime = daytime[:-3]
@@ -63,7 +64,6 @@ class Multiplexer:
 				print ("First frame of segment: %d" % self.camera.frame.index)
 				self.first = False
 			self.camera.annotate_text = "%d: %s" % (self.camera.frame.index, daytime) 
-		rem = list()
 		with self.lock:
 			for output in self.outputs:
 				try:
