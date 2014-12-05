@@ -7,10 +7,9 @@ import cv2
 import numpy as np
 from utils import Utils, Settings
 
-class Analyser(PiRGBAnalysis):
+class Analyser:
 
-	def __init__(self, camera):
-		PiRGBAnalysis.__init__(self, camera)
+	def __init__(self):
 		self.frames = []
 		self.stackLimit = 5
 		self._MOTION_LEVEL = 10000
@@ -47,7 +46,7 @@ class Analysis:
 
 		self._keepRecording = True
 		self._camera = camera
-		self.analyser = Analyser(self._camera)
+		self.analyser = Analyser()
 		self.thread.start()
 
 
