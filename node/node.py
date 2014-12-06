@@ -1,6 +1,7 @@
 from utils import Utils
 from network.network import NetworkManager
 from capture.capture import Capture
+from analysis.analysis import Analysis
 import signal
 
 
@@ -10,6 +11,7 @@ class Root:
 		self._networkManager.start()
 		camera = Utils.getPiCamera()
 		self._capture = Capture(self._networkManager, camera)
+		self._analysis = Analysis(camera)
 
 
 if __name__ == "__main__":

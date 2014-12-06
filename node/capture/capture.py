@@ -2,12 +2,15 @@ from io import BytesIO
 import threading
 import picamera
 import stream
+from datetime import datetime
 from utils import Utils, Settings
 
 class Multiplexer:
-	def __init__(self):
+	def __init__(self, camera = None):
 		self.outputs = []
 		self.lock = threading.Lock()
+		self.camera = camera
+		self.first = True
 
 	def close(self):
 		with self.lock:
@@ -54,6 +57,13 @@ class Multiplexer:
 
 	def write(self, data):
 		rem = list()
+		if not self.camera == None:
+			daytime = datetime.now().strftime("%d/%m/%y %H:%M:%S.%f")  
+			daytime = daytime[:-3]
+			if self.first:
+				print ("First frame of segment: %d" % self.camera.frame.index)
+				self.first = False
+			self.camera.annotate_text = "%d: %s" % (self.camera.frame.index, daytime) 
 		with self.lock:
 			for output in self.outputs:
 				try:
@@ -80,7 +90,7 @@ class Capture():
 		
 		self._chunk_length = Settings.get(self.__class__.__name__, "chunkLength")
 		self._keepRecording = True
-		self._multiplexer = Multiplexer()
+		self._multiplexer = Multiplexer(self._camera)
 		self._streamServer = stream.StreamServer(self._multiplexer)
 
 		self._streamServer.start()
@@ -93,7 +103,7 @@ class Capture():
 			vidOutFO = vidOut.fileObject()
 			oldVidOut = None
 			oldVidOutFO = None
-			self._camera.start_recording(self._multiplexer, self._format, (1280, 720), quality=25)
+			self._camera.start_recording(self._multiplexer, self._format, (1280, 720), quality=25, profile='baseline')
 			self._multiplexer.addOutput(vidOutFO)
 			while self.keepRecording():
 				try:
@@ -109,7 +119,7 @@ class Capture():
 					nextVidOutFO = nextVidOut.fileObject()	
 
 					#prepare new multiplexer
-					nextMultiplexer = Multiplexer()
+					nextMultiplexer = Multiplexer(self._camera)
 					self._streamServer.multiplexer = nextMultiplexer
 					nextMultiplexer.addOutput(self._multiplexer.outputs)
 					nextMultiplexer.addOutput(nextVidOutFO)

@@ -3,29 +3,34 @@ import inspect
 import threading
 import picamera
 
+ 
+piCam = None
+cameraInitLock = threading.Lock()
+
 class Utils:
 
 	className = "Utils"
-	piCam = None
-	cameraInitLock = threading.Lock()
 
 	@staticmethod
 	def getPiCamera():
-		if Utils.piCam == None:
-			Utils.cameraInitLock.acquire()
-			Utils.piCam = picamera.PiCamera()
-			Utils.configurePiCamera(Utils.piCam)
-			Utils.cameraInitLock.release()
-		return Utils.piCam
+		global piCam, cameraInitLock
+		if piCam == None:
+			Utils.dbg(Utils.className, "Construction PiCam")
+			cameraInitLock.acquire()
+			piCam = picamera.PiCamera()
+			Utils.configurePiCamera(piCam)
+			cameraInitLock.release()
+		return piCam
 
 	@staticmethod
 	def configurePiCamera(piCam): #TODO: Make these load from file
 		piCam.resolution = (1280, 720)
+		piCam.annotate_background = True 
 		piCam.framerate = 24
 		piCam.iso = 0
 		piCam.brightness = 60
 		piCam.exposure_mode = 'night'
-		piCam.vflip = True
+		piCam.vflip = False
 		piCam.hflip = True
 
 	@staticmethod
@@ -64,10 +69,11 @@ class Settings:
 				 	"Capture":			lambda x, y: Settings.getCapture(x, y),
 				 	"Utils":			lambda x, y: Settings.getUtils(x, y),
 				 	"NetworkConnection":lambda x, y: Settings.getNetworkConnection(x, y),
+				 	"Analysis":			lambda x, y: Settings.getAnalysis(x, y),
 					}
 
 	networkManagerSettings = {
-					"connectionsToBuffer" : 3,
+					"connectionsToBuffer" : 2,
 			  		"connectionRetryDelay": 1,
 			  		"functionExecutionSweepDelay": 0.5,
 	}
@@ -84,7 +90,11 @@ class Settings:
 	}
 
 	networkConnectionSettings = {
-					"cameraId": "Front Door",
+					"cameraId": "Test",
+	}
+
+	analysisSettings = {
+					"splitterPort": 2,
 	}
 
 	@staticmethod
@@ -117,6 +127,13 @@ class Settings:
 	@staticmethod
 	def getNetworkConnection(owner, name):
 		m = Settings.lookup(Settings.networkConnectionSettings, name, None)
+		if m == None:
+			return Settings.notFound(owner, name)
+		return m
+
+	@staticmethod
+	def getAnalysis(owner, name):
+		m = Settings.lookup(Settings.analysisSettings, name, None)
 		if m == None:
 			return Settings.notFound(owner, name)
 		return m
