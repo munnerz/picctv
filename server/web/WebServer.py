@@ -39,6 +39,7 @@ class ClipHandler(RequestHandler):
 		else:
 			nextClip = clips[1]
 		clip = clips[0]
+		clip.motionEvents = library.lib.numberOfMotionEvents(clipId)
 		self.render("templates/clipinfo.html", app_name=APP_NAME, clip=clip, clip_id=clipId, nextClip=nextClip)
 
 class ClipDownloader(StaticFileHandler):
