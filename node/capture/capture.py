@@ -10,6 +10,7 @@ class Multiplexer:
 		self.outputs = []
 		self.lock = threading.Lock()
 		self.camera = camera
+		self.first = True
 
 	def close(self):
 		with self.lock:
@@ -33,7 +34,7 @@ class Multiplexer:
 	def removeOutput(self, outputs):
 		with self.lock:
 			if isinstance(outputs, list):
-				for output in o:
+				for output in outputs:
 					self.outputs.remove(output)
 			else:
 				self.outputs.remove(outputs)
@@ -55,19 +56,24 @@ class Multiplexer:
 		return num
 
 	def write(self, data):
+		rem = list()
 		if not self.camera == None:
-			daytime = datetime.now().strftime(" - %d/%m/%y %H:%M:%S.%f - ")  
+			daytime = datetime.now().strftime("%d/%m/%y %H:%M:%S.%f")  
 			daytime = daytime[:-3]
-			self.camera.annotate_text = daytime 
+			if self.first:
+				print ("First frame of segment: %d" % self.camera.frame.index)
+				self.first = False
+			self.camera.annotate_text = "%d: %s" % (self.camera.frame.index, daytime) 
 		with self.lock:
-			sendTo = list(self.outputs)
-		for output in sendTo:
-			try:
-				output.write(data)
-			except Exception as e:
-				Utils.err(self.__class__.__name__, "Exception whilst writing to output: %s" % e)
-				self.removeOutput(output)
-				pass
+			for output in self.outputs:
+				try:
+					output.write(data)
+				except Exception as e:
+					Utils.err(self.__class__.__name__, "Exception whilst writing to output: %s" % e)
+					rem.append(output)
+					pass
+		for r in rem:
+			self.removeOutput(rem)
 		return None
 
 	def __getattr__(self, attr):
@@ -117,10 +123,13 @@ class Capture():
 					self._streamServer.multiplexer = nextMultiplexer
 					nextMultiplexer.addOutput(self._multiplexer.outputs)
 					nextMultiplexer.addOutput(nextVidOutFO)
+					nextMultiplexer.removeOutput(oldVidOutFO)
 					self._multiplexer = nextMultiplexer
 
 					#now split the recording
 					self._camera.split_recording(self._multiplexer)
+					oldVidOutFO.close()
+					oldVidOutFO = None
 					Utils.dbg(self.__class__.__name__, "Recording split!")
 
 					vidOut = nextVidOut
