@@ -36,6 +36,7 @@
 			<li><b>Download</b>: <a href="/clip/{{ clip_id }}/download">{{ clip.filename }}.mp4</a></li>
 			<li><b>Camera</b>: <a href="/camera/{{ clip.cameraId }}/">{{ clip.cameraId }}</a></li>
 			<li><b>Duration</b>: <span id="duration">loading...</span></li>
+			<li><b>Motion events</b>: <span>{{ clip.motionEvents }}</span></li>
 			<li>{% if nextClip != False %}<b><a href="/clip/{{ nextClip._id }}/">Next Video</a></b>{% else %}<b>Last Recording</b>{% end %}</li>
 		</ul>
 
