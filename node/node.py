@@ -10,8 +10,8 @@ class Root:
 		self._networkManager = NetworkManager()
 		self._networkManager.start()
 		camera = Utils.getPiCamera()
-		self._capture = Capture(self._networkManager, camera)
 		self._analysis = Analysis(camera)
+		self._capture = Capture(self._networkManager, camera, self._analysis)
 
 
 if __name__ == "__main__":
