@@ -2,6 +2,8 @@ import io
 import time
 import threading
 import picamera
+import struct
+import socket
 from picamera.array import PiRGBAnalysis
 import cv2
 import numpy as np
@@ -44,6 +46,47 @@ class Analyser:
 		#print ("Scalar: %d" % scalar[0])
 		return scalar
 
+class AnalysisNetwork:
+	def __init__(self):
+		self._ip = 'cctv'
+		self._port = 7000
+
+		self.thread = threading.Thread(target=self.run)
+		self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self._sock.settimeout(2)
+		self._sock.connect((self._ip, self._port))
+		self._queue = []
+		self._queueLock = threading.Lock()
+		self.thread.start()
+
+		#TODO: catch exceptions here!!!! URGENT
+
+	def addToQueue(self, d):
+		with self._queueLock:
+			self._queue.append(d)
+
+	def pop(self):
+		with self._queueLock:
+			try:
+				return self._queue.pop(0)
+			except IndexError as e:
+				return None
+
+	def run(self):
+		try:
+			while True:
+				toSend = self.pop()
+				if toSend == None:
+					time.sleep(0.5)
+					continue
+				data = toSend.encode('utf-8')
+				self._sock.send(struct.pack("I", len(data)))
+				self._sock.send(struct.pack(str(len(data)) + 's', data))
+				print ("Sent analysis data")
+		except Exception as e:
+			Utils.err(self.__class__.__name__, "I/O Exception %s" % e, False)
+		finally:
+			self._sock.close()
 
 class Analysis:
 	def __init__(self, camera):
@@ -53,27 +96,28 @@ class Analysis:
 		self._camera = camera
 		self._markers = []
 		self.analyser = Analyser()
+		self._analysisNetwork = AnalysisNetwork()
 		self.thread.start()
 
 
 	def getAnalysisBuffer(self, frameNumber):
-		for (startFrame, partId, analysisData) in reversed(self._markers):
+		for (startFrame, frameTime, partId, analysisData) in reversed(self._markers):
 			if frameNumber >= startFrame:
-				print ("returning buffer starting frame ID %d for frame id %d (partId: %s)" % (startFrame, frameNumber, partId))
-				return (startFrame, partId, analysisData)
+				return (startFrame, frameTime, partId, analysisData)
 		return None
 
-	def setFrameMarker(self, frameNumber, partId):
+	def setFrameMarker(self, frameNumber, frameTime, partId):
 		if frameNumber == -1:
 			frameNumber = 0
-		self._markers.append((frameNumber, partId, []))
+		self._markers.append((frameNumber, frameTime, partId, []))
 
 	def serialiseChunk(self, buff):
-		(startFrame, partId, analysisData) = buff
+		(startFrame, frameTime, partId, analysisData) = buff
 		return json.dumps({ 
 			"startFrame": startFrame,
 			"partId": partId,
-			"data": analysisData })
+			"motionData": analysisData, 
+			"cameraId": Settings.get("NetworkConnection", "cameraId")}) #here we could add different types of analysis data...
 
 
 	def run(self):
@@ -84,23 +128,33 @@ class Analysis:
 				startTime = time.time()
 				stream=open('/run/shm/picamtemp.dat','w+b') # stored to a ramdisk for faster access
 				self._camera.capture(stream, format='yuv', resize=(128,64), use_video_port=True, splitter_port=2)
-				frameIndex = self._camera.frame.index # get the current frame index
+				timestamp = self._camera.frame.timestamp # get the current frame index - sometimes is None...?
+				if timestamp == None:
+					time.sleep(0.05)
+					timestamp = self._camera.frame.timestamp 
+					print ("Reloaded frame index 0.05s later...")
 				stream.seek(0) # seek back to start of captured yuv data
 				
 				(isMotion, motionVal) = self.analyser.analyse(np.fromfile(stream, dtype=np.uint8, count=128*64).reshape((64, 128)))
-				(chunkStartFrame, chunkId, analysisBuffer) = self.getAnalysisBuffer(frameIndex)
+				
+				buf = self.getAnalysisBuffer(timestamp)
+				if buf == None: #weird, we may have to drop this block of data (for now...)
+					print ("LOST A BUFFER - self.getAnalysisBuffer = None!")
+					continue
 
-				analysisBuffer.append((isMotion, motionVal))
+				(chunkStartFrame, chunkStartTime, chunkId, analysisData) = self.getAnalysisBuffer(timestamp)
+
+				analysisData.append((timestamp, isMotion, motionVal))
 
 				if not oldBuf == None:
-					(oldStartFrame, _, _) = oldBuf
+					(oldStartFrame, _, _, _) = oldBuf
 					if chunkStartFrame > oldStartFrame:
 						#we need to send the previous buffer off now..!
 						print ("Old buffer ready to go - printing:")
-						print ("%s" % self.serialiseChunk(oldBuf))
-						oldBuf = (chunkStartFrame, chunkId, analysisBuffer)
+						self._analysisNetwork.addToQueue((self.serialiseChunk(oldBuf)))
+						oldBuf = (chunkStartFrame, chunkStartTime, chunkId, analysisData)
 				else:
-					oldBuf = (chunkStartFrame, chunkId, analysisBuffer)
+					oldBuf = (chunkStartFrame, chunkStartTime, chunkId, analysisData)
 
 				endTime = time.time()
 				toWait = 0.1 - (endTime - startTime)
