@@ -82,6 +82,10 @@ class NetworkConnection:
 			self._sock.send(struct.pack("I", len(camera_id)))
 			self._sock.send(struct.pack(str(len(camera_id)) + 's', camera_id))
 
+			self._recordingId = str("%f" % time.time()).encode('utf-8')
+			self._sock.send(struct.pack("I", len(self._recordingId)))
+			self._sock.send(struct.pack(str(len(self._recordingId)) + 's', self._recordingId))
+
 			self._connected = True
 			Utils.msg(self.__class__.__name__, "Connected to server.")
 		except Exception as e:
