@@ -14,6 +14,7 @@ class CaptureStream(threading.Thread):
 		self._output = output
 		self._callback = callback
 		self._cameraId = None
+		self._chunkId = 0
 		self._read_bytes = 0
 
 	def run(self):
@@ -22,6 +23,12 @@ class CaptureStream(threading.Thread):
 			camera_id_length = struct.unpack("I", self._connection.read(4))[0] #read the camera ID
 			camera_id = struct.unpack(str(camera_id_length) + 's', self._connection.read(camera_id_length))[0]
 			self._cameraId = str(camera_id.decode(encoding='UTF-8'))
+
+			chunk_id_length = struct.unpack("I", self._connection.read(4))[0] #read the chunk ID
+			chunk_id = struct.unpack(str(chunk_id_length) + 's', self._connection.read(chunk_id_length))[0]
+			self._chunkId = str(chunk_id.decode(encoding='UTF-8'))
+
+			print ("Camera ID: %s, chunk ID: %s" % (self._cameraId, self._chunkId))
 			while self._recording:
 				data = self._connection.read(1024)
 				if not data:
@@ -65,7 +72,7 @@ class Capture(threading.Thread):
 		self._recordingsLock.acquire()
 
 		ls = self._recordings.get(cameraId, [])
-		ls.append(outputStream._output)
+		ls.append(outputStream)
 		self._recordings[cameraId] = ls
 
 		Utils.dbg(__class__.__name__, "There are now %d recordings for %s" % (len(self._recordings.get(cameraId)), cameraId))
@@ -79,9 +86,12 @@ class Capture(threading.Thread):
 			self._recordingsLock.release()
 			dboutput = library.lib.newClip()
 			dboutput.setCameraId(cameraId)
+			chunkIds = []
 			for clip in listOfClips:
-				dboutput.write(clip.getbuffer())
-				clip.close()
+				chunkIds.append(clip._chunkId)
+				dboutput.write(clip._output.getbuffer())
+				clip._output.close()
+			dboutput.setChunkIds(chunkIds)
 			dboutput.close()
 		else:
 			self._recordingsLock.release()

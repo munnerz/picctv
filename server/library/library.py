@@ -17,30 +17,40 @@ class Library:
 				Utils.dbg(self.__class__.__name__, "Discarding empty Clip")
 			else:
 				super().seek(0)
-				lib.saveVideo(self._cameraId, self)
+				lib.saveVideo(self)
 			super().close()
 
 		def setCameraId(self, cameraId):
 			self._cameraId = cameraId
 
+		def setChunkIds(self, chunkIds):
+			self._chunkIds = chunkIds
+
 		def __init__(self):
 			super().__init__()
 
 
-	def saveVideo(self, cameraId, clipBytes):
+	def saveVideo(self, clipBytes):
 		now = datetime.utcnow()
 		clipBytes.seek(0)
 		d = Utils.h264ToMP4(clipBytes)
 		if d != None:
 			f = self._fs.put(d,
-							filename="camera%s-%s.h264" % (cameraId, now),
+							filename="camera%s-%s.h264" % (clipBytes._cameraId, now),
 							contentType="video/mp4",
-							cameraId=cameraId, 
+							cameraId=clipBytes._cameraId, 
+							chunkIds=clipBytes._chunkIds,
 							saveTime=now)
-			Utils.dbg(self.__class__.__name__, "Saved to file '%s' (filename: '%s')" % (f, "camera%s-%s.h264" % (cameraId, now)))
+
+
+			Utils.dbg(self.__class__.__name__, "Saved to file '%s' (filename: '%s')" % (f, "camera%s-%s.h264" % (clipBytes._cameraId, now)))
 			d.close()
 		else:
 			Utils.msg(self.__class__.__name__, "Invalid ffmpeg output - skipping recording...")
+
+	def saveAnalysisData(self, cameraId, partId, data):
+		self._db.analysis.insert({'cameraId':cameraId, 'chunkId':partId, 'motionData':data})
+		print ("Inserted...")
 
 	def newClip(self):
 		return self.Clip()
@@ -50,6 +60,27 @@ class Library:
 		if cameraId == None:
 			return []
 		return list(self._fs.find({"cameraId":cameraId}))
+
+	def numberOfMotionEvents(self, clipId):
+		''' caclulates the number of motion events in a given clip (spanning multiple chunks) '''
+		clip = list(self._fs.find({"_id": ObjectId(clipId)}))[0]
+		chunks = clip.chunkIds
+		toRet = 0
+		for chunk in chunks:
+			toRet += self.motionsInChunk(chunk)
+		return toRet
+
+	def motionsInChunk(self, chunkId):
+		print ("searcing for %s" % chunkId)
+		chunkData = self._db.analysis.find_one({'chunkId': chunkId})
+		if chunkData == None:
+			return 0
+		toRet = 0
+		print ("%s DD" % chunkData)
+		for (timeOffset, motion, motionMag) in chunkData.get('motionData').get('motionData'):
+			if motion:
+				toRet += 1
+		return toRet
 
 	def getVideo(self, clipId, limit=2):
 		cameraId = list(self._fs.find({"_id": ObjectId(clipId)}))[0].cameraId
