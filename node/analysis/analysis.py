@@ -6,6 +6,7 @@ from picamera.array import PiRGBAnalysis
 import cv2
 import numpy as np
 from utils import Utils, Settings
+import json
 
 class Analyser:
 
@@ -22,12 +23,14 @@ class Analyser:
 
 	def analyse(self, frame):
 		self.addFrameToStack(frame)
+		m = 0
 		if len(self.frames) >= 3:
 			motion = self._getMotion()
+			m = motion[0]
 			if motion and motion[0] > self._MOTION_LEVEL:
 				print ("Detected motion level: %d" % motion[0])
-				return True
-		return False
+				return (True, m)
+		return (False, m)
 
 	def _getMotion(self):
 		d1 = cv2.absdiff(self.frames[1], self.frames[0])
@@ -48,25 +51,57 @@ class Analysis:
 
 		self._keepRecording = True
 		self._camera = camera
+		self._markers = []
 		self.analyser = Analyser()
 		self.thread.start()
 
 
-	def streams(self):
-		while self._keepRecording:
-			yield self.analyser
+	def getAnalysisBuffer(self, frameNumber):
+		for (startFrame, partId, analysisData) in reversed(self._markers):
+			if frameNumber >= startFrame:
+				print ("returning buffer starting frame ID %d for frame id %d (partId: %s)" % (startFrame, frameNumber, partId))
+				return (startFrame, partId, analysisData)
+		return None
+
+	def setFrameMarker(self, frameNumber, partId):
+		if frameNumber == -1:
+			frameNumber = 0
+		self._markers.append((frameNumber, partId, []))
+
+	def serialiseChunk(self, buff):
+		(startFrame, partId, analysisData) = buff
+		return json.dumps({ 
+			"startFrame": startFrame,
+			"partId": partId,
+			"data": analysisData })
 
 
 	def run(self):
 		try:
+			time.sleep(3)
+			oldBuf = None
 			while self._keepRecording:
 				startTime = time.time()
 				stream=open('/run/shm/picamtemp.dat','w+b') # stored to a ramdisk for faster access
 				self._camera.capture(stream, format='yuv', resize=(128,64), use_video_port=True, splitter_port=2)
 				frameIndex = self._camera.frame.index # get the current frame index
 				stream.seek(0) # seek back to start of captured yuv data
-				if self.analyser.analyse(np.fromfile(stream, dtype=np.uint8, count=128*64).reshape((64, 128))):
-					print ("Detected motion at frame %d" % frameIndex)
+				
+				(isMotion, motionVal) = self.analyser.analyse(np.fromfile(stream, dtype=np.uint8, count=128*64).reshape((64, 128)))
+				(chunkStartFrame, chunkId, analysisBuffer) = self.getAnalysisBuffer(frameIndex)
+
+				analysisBuffer.append((isMotion, motionVal))
+
+				if not oldBuf == None:
+					(oldStartFrame, _, _) = oldBuf
+					if chunkStartFrame > oldStartFrame:
+						#we need to send the previous buffer off now..!
+						print ("Old buffer ready to go - printing:")
+						print ("%s" % self.serialiseChunk(oldBuf))
+						oldBuf = (chunkStartFrame, chunkId, analysisBuffer)
+				else:
+					oldBuf = (chunkStartFrame, chunkId, analysisBuffer)
+
 				endTime = time.time()
 				toWait = 0.1 - (endTime - startTime)
 				if toWait > 0:
