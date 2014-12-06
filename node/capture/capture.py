@@ -2,6 +2,7 @@ from io import BytesIO
 import threading
 import picamera
 import stream
+import time
 from datetime import datetime
 from utils import Utils, Settings
 
@@ -64,7 +65,7 @@ class Multiplexer:
 			daytime = daytime[:-3]
 			if self.first:
 				if not self.analysis == None:
-					self.analysis.setFrameMarker(self.camera.frame.index, self.captureId)
+					self.analysis.setFrameMarker(self.camera.frame.index, self.camera.frame.timestamp, self.captureId)
 				print ("First frame of segment: %d" % self.camera.frame.index)
 				self.first = False
 			self.camera.annotate_text = "%d: %s" % (self.camera.frame.index, daytime) 
@@ -80,10 +81,6 @@ class Multiplexer:
 			self.removeOutput(rem)
 		return None
 
-	def __getattr__(self, attr):
-		print ("Not implemented: %s" % attr)
-		return None
-
 class Capture():
 
 	def __init__(self, networkManager, camera, analysis = None, _format='h264'):
@@ -95,10 +92,8 @@ class Capture():
 
 		self._chunk_length = Settings.get(self.__class__.__name__, "chunkLength")
 		self._keepRecording = True
-		self._chunkId = 0
-		self._chunkStr = "%s-%d" % (Settings.get("NetworkConnection", "cameraId"), self._chunkId)
-		self._multiplexer = Multiplexer(self._chunkStr, self._camera, self._analysis)
-		self._streamServer = stream.StreamServer(self._multiplexer)
+		self._chunkId = time.time()
+		self._streamServer = stream.StreamServer()
 
 		self._streamServer.start()
 		self.thread.start()
@@ -110,6 +105,8 @@ class Capture():
 			vidOutFO = vidOut.fileObject()
 			oldVidOut = None
 			oldVidOutFO = None
+			self._multiplexer = Multiplexer(vidOut._recordingId, self._camera, self._analysis)
+			self._streamServer.multiplexer = self._multiplexer
 			self._camera.start_recording(self._multiplexer, self._format, (1280, 720), quality=25, profile='baseline')
 			self._multiplexer.addOutput(vidOutFO)
 			while self.keepRecording():
@@ -126,9 +123,7 @@ class Capture():
 					nextVidOutFO = nextVidOut.fileObject()	
 
 					#prepare new multiplexer
-					self._chunkId += 1
-					self._chunkStr = "%s-%d" % (Settings.get("NetworkConnection", "cameraId"), self._chunkId)
-					nextMultiplexer = Multiplexer(self._chunkStr, self._camera, self._analysis)
+					nextMultiplexer = Multiplexer(nextVidOut._recordingId, self._camera, self._analysis)
 					self._streamServer.multiplexer = nextMultiplexer
 					nextMultiplexer.addOutput(self._multiplexer.outputs)
 					nextMultiplexer.addOutput(nextVidOutFO)
