@@ -24,6 +24,8 @@ class CameraClipList(RequestHandler):
 	def get(self, cameraId):
 		Utils.dbg(__class__.__name__, "Processing incoming request")
 		videos = library.lib.getVideos(cameraId)
+		for video in videos:
+			video.numMotions = library.lib.numberOfMotionEvents(video._id)
 		self.render("templates/cameraClipList.html", app_name=APP_NAME, cameraId=cameraId, clips=videos)
 
 class ClipHandler(RequestHandler):
