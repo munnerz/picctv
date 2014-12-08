@@ -49,8 +49,12 @@ class Library:
 			Utils.msg(self.__class__.__name__, "Invalid ffmpeg output - skipping recording...")
 
 	def saveAnalysisData(self, cameraId, partId, data):
+		movements = 0
+		for (_, motion, _) in data.get('motionData'):
+			if motion:
+				movements += 1
+		data['numberOfMotionEvents'] = movements
 		self._db.analysis.insert({'cameraId':cameraId, 'chunkId':partId, 'motionData':data})
-		print ("Inserted...")
 
 	def newClip(self):
 		return self.Clip()
@@ -65,22 +69,21 @@ class Library:
 		''' caclulates the number of motion events in a given clip (spanning multiple chunks) '''
 		clip = list(self._fs.find({"_id": ObjectId(clipId)}))[0]
 		chunks = clip.chunkIds
-		toRet = 0
+		return self.motionsInChunks(chunks)
+
+	def motionsInChunks(self, chunkIds):
+		chunks = self._db.analysis.find({ 'chunkId' : { '$in' : chunkIds } })
+		total = 0
 		for chunk in chunks:
-			toRet += self.motionsInChunk(chunk)
-		return toRet
+			total += chunk.get('motionData').get('numberOfMotionEvents')
+		return total
 
 	def motionsInChunk(self, chunkId):
 		print ("searcing for %s" % chunkId)
 		chunkData = self._db.analysis.find_one({'chunkId': chunkId})
 		if chunkData == None:
 			return 0
-		toRet = 0
-		print ("%s DD" % chunkData)
-		for (timeOffset, motion, motionMag) in chunkData.get('motionData').get('motionData'):
-			if motion:
-				toRet += 1
-		return toRet
+		return chunkData.get('motionData').get('numberOfMotionEvents')
 
 	def getVideo(self, clipId, limit=2):
 		cameraId = list(self._fs.find({"_id": ObjectId(clipId)}))[0].cameraId
