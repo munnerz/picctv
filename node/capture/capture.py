@@ -163,7 +163,7 @@ class Capture():
 				self._camera.stop_recording()
 			except Exception as e:
 				Utils.err(self.__class__.__name__, "Unhandled exception closing camera, continuing anyway... Exception: %s" % e)
-				raise
+				pass
 		self.thread = threading.Thread(target=self.run)
 		self.thread.start()
 
