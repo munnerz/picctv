@@ -27,12 +27,14 @@
 				<th>Name</th>
 				<th>Date Saved</th>
 				<th>Size</th>
+				<th>Motion Events</th>
 			</thead>
 			<tfoot>
 				<th>ObjectID</th>
 				<th>Name</th>
 				<th>Date Saved</th>
 				<th>Size</th>
+				<th>Motion Events</th>
 			</tfoot>
 
 			<tbody>
@@ -42,6 +44,7 @@
 					<td>{{ clip.filename }}</td>
 					<td><b>{{ clip.saveTime }}</b></td>
 					<td>{{ Utils.sizeof_fmt(clip.length) }}</td>
+					<td>{{ clip.numMotions }}</td>
 				</tr>
 				{% end %}
 			</tbody>
