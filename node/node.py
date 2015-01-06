@@ -4,13 +4,25 @@ import math, time
 import picamera
 from collections import OrderedDict
 
+_keyFrames = []
+_keyFramesLock = threading.Lock()
+_camera = picamera.PiCamera()
+_camera.resolution = (1280, 720)
+_camera.framerate = 24
+
+_modules = [ modules.Recording(), modules.Live(), modules.Motion() ]
+
 class Multiplexer():
 
 	def __init__(self):
 		self._settings = None
+		self._keyFrameDiscovered = None
 
 	def _setSettings(self, settings):
 		self._settings = settings
+
+	def _setKeyFrameDiscovered(self, keyFrameDiscovered):
+		self._keyFrameDiscovered = keyFrameDiscovered
 
 	def _frameInfo(self):
 		global _camera
@@ -25,6 +37,9 @@ class Multiplexer():
 		return None
 
 	def _usefulFrame(self, index):
+		if self._settings['format'] == 'h264':
+			return True #all h264 frames are needed for a valid h264 stream
+
 		global _camera
 		if self._settings['fps'] >= _camera.framerate:
 			return True
@@ -41,34 +56,19 @@ class Multiplexer():
 		if frameInfo is None:
 			return None
 
+#		if 	self._settings['h264'] and 
+#			frameInfo['frame_type'] == picamera.PiVideoFrameType.key_frame and
+#			self._keyFrameDiscovered is not None:
+#			self._keyFrameDiscovered(frameInfo)
+
 		if self._usefulFrame(frameInfo.index):
 			for module in self._settings['registered_modules'][:]:
-				module._addFrameToStack(frame, frameInfo)
+				module.processFrame((frame, frameInfo))
 			return None
 
 	def flush(self):
 		return # modules can't really be flushed...
 
-def shutdownModule(module):
-	try:
-		module.shutdown()
-	except NotImplementedError as e:
-		print ("Error shutting down module: %s" % e)
-		pass
-
-def unregisterModule(module):
-	try:
-		_modules.remove(module)
-	except IndexError:
-		print ("Error attempting to unregister module - module not registered.")
-		pass
-
-
-_camera = picamera.PiCamera()
-_camera.resolution = (1280, 720)
-_camera.framerate = 24
-
-_modules = [ modules.Recording(), modules.Live(), modules.Motion() ]
 _recordingQualities = 	{ 
 							"low": { 
 								"format": "yuv", 
@@ -86,9 +86,24 @@ _recordingQualities = 	{
 								"multiplexer": Multiplexer(),
 								"splitter_port": 2,
 								"registered_modules": [],
+								#"keyFrameCallback": lambda x: keyFrameDiscovered(x),
 							},
 						}
 
+def shutdownModule(module):
+	try:
+		module.shutdown()
+	except NotImplementedError as e:
+		print ("Error shutting down module: %s" % e)
+		pass
+
+def unregisterModule(module):
+	global _modules
+	try:
+		_modules.remove(module)
+	except IndexError:
+		print ("Error attempting to unregister module - module not registered.")
+		pass
 
 
 for module in _modules:
