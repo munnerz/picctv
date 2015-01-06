@@ -1,9 +1,7 @@
-import threading, sys
 import modules
 from networking import Networking
 import math, time
 import picamera
-from collections import OrderedDict
 
 CAMERA_NAME = "ChangeMe"
 
@@ -115,10 +113,11 @@ for quality in _recordingQualities:
 
 try:
     while True: #main process loop
-        time.sleep(5)
+        time.sleep(1)
 except KeyboardInterrupt:
         #shut down all modules here
-        print("Shutting down modules...")
-        for module in _MODULES[:]:
-            shutdown_module(module)
-            unregister_module(module)
+        map(lambda q: _CAMERA.stop_recording(splitter_port=q['splitter_port']), _recordingQualities.values())
+        map(lambda m: shutdown_module(m), _MODULES)
+        _NETWORK.shutdown()
+
+        print("Shut down.")
