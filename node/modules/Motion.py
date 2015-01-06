@@ -51,7 +51,7 @@ class Motion(ModuleBase):
         stream.write(frame)
         stream.seek(0)
 
-        return len(frame)
+        return None
 
     def shutdown(self):
         ModuleBase.shutdown(self)

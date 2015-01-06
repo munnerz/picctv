@@ -8,7 +8,7 @@ class Recording(ModuleBase):
 	def process_frame(self, data):
 		(frame, frameInfo) = data
 
-		return len(frame)
+		return (frame, frameInfo)
 
 	def shutdown(self):
 		ModuleBase.shutdown(self)
