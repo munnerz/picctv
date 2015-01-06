@@ -5,12 +5,14 @@ import math, time
 import picamera
 from collections import OrderedDict
 
+CAMERA_NAME = "ChangeMe"
+
 _CAMERA = picamera.PiCamera()
 _CAMERA.resolution = (1280, 720)
 _CAMERA.framerate = 24
 
 _MODULES = [modules.Recording(), modules.Live(), modules.Motion()]
-_NETWORK = Networking.Networking()
+_NETWORK = Networking.Networking(CAMERA_NAME)
 
 class Multiplexer(object):
     ''' Multiplexes one video stream out to many modules '''
