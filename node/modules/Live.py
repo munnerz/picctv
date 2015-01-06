@@ -18,6 +18,7 @@ class Live(ModuleBase):
 
 	def _listen(self):
 		self._server_socket = socket.socket()
+		self._server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self._server_socket.bind(self._sock_addr)
 		self._server_socket.listen(0)
 
@@ -35,7 +36,6 @@ class Live(ModuleBase):
 		with self._outputLock:
 			for output in self._outputs[:]:
 				try:
-					print ("Writing...")
 					output.write(frame)
 				except Exception as e:
 					print ("Exception in Live module during processFrame: %s" % e)
@@ -46,6 +46,10 @@ class Live(ModuleBase):
 	def shutdown(self):
 		ModuleBase.shutdown(self)
 		self._keepListening = False
+		with self._outputLock:
+			map(lambda o: o.close(), self._outputs)
+			del self._outputs[:]
 		self._server_socket.close()
 		print ("Shutting down %s" % self.get_name())
+		self._listeningThread.join()
 		return
