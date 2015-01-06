@@ -1,6 +1,7 @@
 from multiprocessing import Process, Queue
 import cPickle as pickle
 import socket, struct
+from Queue import Empty
 
 class Networking(object):
 
@@ -44,14 +45,21 @@ class Networking(object):
 
     def run(self, queue):
         while True:
-            (module_name, data) = queue.get(True)
-            if(module_name == "RootNode"):
-                if data == None:
-                    break
-            elif data is not None:
-                print "Processing data for %s" % module_name
-                connection = self._get_connection(module_name)
-                if not self._pickle_and_send(data, connection):
-                    print ("Error writing data to network for module %s" % module_name)
-        print ("Killing Networking process as 'None' value detected in queue")
+            try:
+                (module_name, data) = queue.get(True, 0.1)
+                if(module_name == "RootNode"):
+                    if data == None:
+                        break
+                elif data is not None:
+                    connection = self._get_connection(module_name)
+                    if not self._pickle_and_send(data, connection):
+                        print ("Error writing data to network for module %s" % module_name)
+            except Empty:
+                pass
+            except KeyboardInterrupt:
+                break
+        print ("Run method complete")
 
+    def shutdown(self):
+        self.send_data(("RootNode", None))
+        self._process.join()
