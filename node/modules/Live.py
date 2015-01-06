@@ -1,4 +1,4 @@
-from ModuleBase import ModuleBase
+from modules.ModuleBase import ModuleBase
 import threading, socket
 
 class Live(ModuleBase):
@@ -27,10 +27,10 @@ class Live(ModuleBase):
 				self._outputs.append(fos)
 		return
 
-	def requiredQuality(self):
+	def required_quality(self):
 		return "high"
 
-	def processFrame(self, data):
+	def process_frame(self, data):
 		(frame, frameInfo) = data
 		with self._outputLock:
 			for output in self._outputs[:]:
@@ -41,11 +41,11 @@ class Live(ModuleBase):
 					print ("Exception in Live module during processFrame: %s" % e)
 					self._outputs.remove(output)
 					pass
-		return len(frame)
+		return None
 
 	def shutdown(self):
 		ModuleBase.shutdown(self)
 		self._keepListening = False
 		self._server_socket.close()
-		print ("Shutting down %s" % self.getName())
+		print ("Shutting down %s" % self.get_name())
 		return

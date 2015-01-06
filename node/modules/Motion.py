@@ -1,68 +1,59 @@
-from ModuleBase import ModuleBase
+from modules.ModuleBase import ModuleBase
+import cv2
 
 class Motion(ModuleBase):
 
-	def __init__(self):
-		ModuleBase.__init__(self)
-		self._frames = []
-		self._frameLimit = 5
-		self._MOTION_LEVEL = 10000
-		self._THRESHOLD = 35
-		self._markers = []
+    def __init__(self):
+        ModuleBase.__init__(self)
+        self._frames = []
+        self._frameLimit = 5
+        self._MOTION_LEVEL = 10000
+        self._THRESHOLD = 35
+        self._markers = []
 
-	def _getAnalysisBuffer(self, frameNumber):
-		for (startFrame, frameTime, partId, analysisData) in reversed(self._markers):
-			if frameNumber >= startFrame:
-				return (startFrame, frameTime, partId, analysisData)
-		return None
+    def _storeFrame(self, frame):
+        self._frames.insert(0, frame)
+        if len(self._frames) > self._frameLimit:
+            self.frames.pop(len(self.frames) - 1)
 
-	def _storeFrame(self, frame):
-		self._frames.insert(0, frame)
-		if len(self._frames) > self._frameLimit:
-			self.frames.pop(len(self.frames) - 1)
+    def _getMotion(self):
+        d1 = cv2.absdiff(self._frames[1], self._frames[0])
+        d2 = cv2.absdiff(self._frames[2], self._frames[0])
+        result = cv2.bitwise_and(d1, d2)
 
-	def _getMotion(self):
-		d1 = cv2.absdiff(self._frames[1], self._frames[0])
-		d2 = cv2.absdiff(self._frames[2], self._frames[0])
-		result = cv2.bitwise_and(d1, d2)
+        (value, r) = cv2.threshold(result, self._THRESHOLD, 255, cv2.THRESH_BINARY)
 
-		(value, r) = cv2.threshold(result, self._THRESHOLD, 255, cv2.THRESH_BINARY)
+        scalar = cv2.sumElems(r)
 
-		scalar = cv2.sumElems(r)
+        return scalar
 
-		return scalar
+    def _analyse(self, frame):
+        self._storeFrame(frame)
+        m = 0
+        if len(self._frames) >= 3:
+            motion = self._getMotion()
+            m = motion[0]
+            if motion and motion[0] > self._MOTION_LEVEL:
+                print ("Detected motion level: %d" % motion[0])
+                return (True, m)
 
-	def _analyse(self, frame):
-		self._storeFrame(frame)
-		m = 0
-		if len(self._frames) >= 3:
-			motion = self._getMotion()
-			m = motion[0]
-			if motion and motion[0] > self._MOTION_LEVEL:
-				print ("Detected motion level: %d" % motion[0])
-				return (True, m)
+            (isMotion, motionVal) = self._analyse(np.fromfile(stream, dtype=np.uint8, count=128*64).reshape((64, 128)))
+        return (False, m)
 
-			(isMotion, motionVal) = self._analyse(np.fromfile(stream, dtype=np.uint8, count=128*64).reshape((64, 128)))
-		return (False, m)
 
-	def _setFrameMarker(self, frameInfo):
-		if frameNumber == -1:
-			frameNumber = 0
-		self._markers.append((frameInfo.index, frameInfo.timestamp, partId, []))
+    def required_quality(self):
+        return "low"
 
-	def requiredQuality(self):
-		return "low"
+    def process_frame(self, data):
+        (frame, frameInfo) = data
+        
+        stream=open('/run/shm/picamtemp.dat','w+b')
+        stream.write(frame)
+        stream.seek(0)
 
-	def processFrame(self, data):
-		(frame, frameInfo) = data
-		
-		stream=open('/run/shm/picamtemp.dat','w+b')
-		stream.write(frame)
-		stream.seek(0)
+        return len(frame)
 
-		return len(frame)
-
-	def shutdown(self):
-		ModuleBase.shutdown(self)
-		print ("Shutting down %s" % self.getName())
-		return
+    def shutdown(self):
+        ModuleBase.shutdown(self)
+        print ("Shutting down %s" % self.get_name())
+        return

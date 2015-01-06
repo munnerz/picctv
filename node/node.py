@@ -1,130 +1,122 @@
 import threading, sys
 import modules
+from networking import Networking
 import math, time
 import picamera
 from collections import OrderedDict
 
-_keyFrames = []
-_keyFramesLock = threading.Lock()
-_camera = picamera.PiCamera()
-_camera.resolution = (1280, 720)
-_camera.framerate = 24
+_CAMERA = picamera.PiCamera()
+_CAMERA.resolution = (1280, 720)
+_CAMERA.framerate = 24
 
-_modules = [ modules.Recording(), modules.Live(), modules.Motion() ]
+_MODULES = [modules.Recording(), modules.Live(), modules.Motion()]
+_NETWORK = Networking.Networking()
 
-class Multiplexer():
+class Multiplexer(object):
+    ''' Multiplexes one video stream out to many modules '''
 
-	def __init__(self):
-		self._settings = None
-		self._keyFrameDiscovered = None
+    def __init__(self):
+        self._settings = None
 
-	def _setSettings(self, settings):
-		self._settings = settings
+    def set_settings(self, settings):
+        self._settings = settings
 
-	def _setKeyFrameDiscovered(self, keyFrameDiscovered):
-		self._keyFrameDiscovered = keyFrameDiscovered
+    def _frame_info(self):
+        if self._settings is None: # not ready yet...
+            return None
+        try:
+            return _CAMERA._encoders[self._settings['splitter_port']].frame
+        except AttributeError:
+            pass
+        except IndexError:
+            pass
+        return None
 
-	def _frameInfo(self):
-		global _camera
-		if self._settings is None: # not ready yet...
-			return None
-		try:
-			return _camera._encoders[self._settings['splitter_port']].frame
-		except AttributeError:
-			pass
-		except IndexError:
-			pass
-		return None
+    def _usefulFrame(self, index):
+        if self._settings['format'] == 'h264':
+            return True #all h264 frames are needed for a valid h264 stream
 
-	def _usefulFrame(self, index):
-		if self._settings['format'] == 'h264':
-			return True #all h264 frames are needed for a valid h264 stream
+        if self._settings['fps'] >= _CAMERA.framerate:
+            return True
+        if index % math.trunc(1 / (self._settings['fps'] / _CAMERA.framerate)) == 0:
+            return True
+        return False
 
-		global _camera
-		if self._settings['fps'] >= _camera.framerate:
-			return True
-		if index % math.trunc(1 / (self._settings['fps'] / _camera.framerate)) == 0:
-			return True
-		return False
+    def write(self, frame):
+        if self._settings is None: #not ready yet...
+            return None
 
-	def write(self, frame):
-		if self._settings is None: #not ready yet...
-			return None
+        frame_info = self._frame_info()
 
-		frameInfo = self._frameInfo()
+        if frame_info is None:
+            return None
 
-		if frameInfo is None:
-			return None
+        if self._usefulFrame(frame_info.index):
+            for module in self._settings['registered_modules'][:]:
+                output = module.process_frame((frame, frame_info))
+                if output is not None:
+                    #send this off to server
+                    _NETWORK.send_data((module.get_name(), output))
+            return None
 
-#		if 	self._settings['h264'] and 
-#			frameInfo['frame_type'] == picamera.PiVideoFrameType.key_frame and
-#			self._keyFrameDiscovered is not None:
-#			self._keyFrameDiscovered(frameInfo)
+    def flush(self):
+        return # modules can't really be flushed...
 
-		if self._usefulFrame(frameInfo.index):
-			for module in self._settings['registered_modules'][:]:
-				module.processFrame((frame, frameInfo))
-			return None
+_recordingQualities =   { 
+                            "low": { 
+                                "format": "yuv", 
+                                "resolution": (128, 64),
+                                "fps": 8,
+                                "multiplexer": Multiplexer(),
+                                "splitter_port": 1,
+                                "registered_modules": [],
+                            },
 
-	def flush(self):
-		return # modules can't really be flushed...
+                            "high": {
+                                "format": "h264",
+                                "resolution": (1280, 720),
+                                "fps": 24,
+                                "multiplexer": Multiplexer(),
+                                "splitter_port": 2,
+                                "registered_modules": [],
+                                #"keyFrameCallback": lambda x: keyFrameDiscovered(x),
+                            },
+                        }
 
-_recordingQualities = 	{ 
-							"low": { 
-								"format": "yuv", 
-								"resolution": (128, 64),
-								"fps": 8,
-								"multiplexer": Multiplexer(),
-								"splitter_port": 1,
-								"registered_modules": [],
-							},
+def shutdown_module(module):
+    try:
+        module.shutdown()
+    except NotImplementedError as e:
+        print("Error shutting down module: %s" % e)
+        pass
 
-							"high": {
-								"format": "h264",
-								"resolution": (1280, 720),
-								"fps": 24,
-								"multiplexer": Multiplexer(),
-								"splitter_port": 2,
-								"registered_modules": [],
-								#"keyFrameCallback": lambda x: keyFrameDiscovered(x),
-							},
-						}
-
-def shutdownModule(module):
-	try:
-		module.shutdown()
-	except NotImplementedError as e:
-		print ("Error shutting down module: %s" % e)
-		pass
-
-def unregisterModule(module):
-	global _modules
-	try:
-		_modules.remove(module)
-	except IndexError:
-		print ("Error attempting to unregister module - module not registered.")
-		pass
+def unregister_module(module):
+    try:
+        _MODULES.remove(module)
+    except IndexError:
+        print ("Error attempting to unregister module - module not registered.")
+        pass
 
 
-for module in _modules:
-	_recordingQualities[module.requiredQuality()]['registered_modules'].append(module)
-	print ("Added %s module to %s quality multiplexer..." % (module.getName(), module.requiredQuality()))
+for module in _MODULES:
+    _recordingQualities[module.required_quality()]['registered_modules'].append(module)
+    print("Added %s module to %s quality multiplexer..." % (module.get_name(), module.required_quality()))
 
 for quality in _recordingQualities:
-	profile = _recordingQualities[quality]
-	profile['multiplexer']._setSettings(profile)
+    profile = _recordingQualities[quality]
+    profile['multiplexer'].set_settings(profile)
 
-	print ("Starting %s quality recording at %s, FPS: %d, format: %s" % (quality, profile['resolution'], profile['fps'], profile['format']))
-	_camera.start_recording(profile['multiplexer'], profile['format'], 
-							profile['resolution'], profile['splitter_port'])
+    print("Starting %s quality recording at %s, FPS: %d, format: %s" % (quality, profile['resolution'], profile['fps'], profile['format']))
+    _CAMERA.start_recording(profile['multiplexer'], profile['format'], 
+                            profile['resolution'], profile['splitter_port'])
 
 
 try:
-	while True: #main process loop
-		time.sleep(5)
+    while True: #main process loop
+        time.sleep(5)
 except KeyboardInterrupt:
-		#shut down all modules here
-		print ("Shutting down modules...")
-		for module in _modules[:]:
-			shutdownModule(module)
-			unregisterModule(module)
+        #shut down all modules here
+        print("Shutting down modules...")
+        for module in _MODULES[:]:
+            shutdown_module(module)
+            unregister_module(module)

@@ -1,15 +1,16 @@
-from ModuleBase import ModuleBase
+from modules.ModuleBase import ModuleBase
 
 class Recording(ModuleBase):
 
-	def requiredQuality(self):
+	def required_quality(self):
 		return "high"
 
-	def processFrame(self, data):
+	def process_frame(self, data):
 		(frame, frameInfo) = data
+
 		return len(frame)
 
 	def shutdown(self):
 		ModuleBase.shutdown(self)
-		print ("Shutting down %s" % self.getName())
+		print ("Shutting down %s" % self.get_name())
 		return

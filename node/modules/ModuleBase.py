@@ -6,16 +6,13 @@ class ModuleBase:
 		self._running = True
 
 	@classmethod
-	def getName(cls):
+	def get_name(cls):
 		return cls.__name__
 
-	def newKeyFrameDetected(self, keyFrame, keyFrameInfo):
-		return False
-
-	def requiredQuality(self):
+	def required_quality(self):
 		raise NotImplementedError("Module doesn't specify it's required quality")
 
-	def processFrame(self, data):
+	def process_frame(self, data):
 		raise NotImplementedError("Module doesn't implement a processFrame method")
 
 	def shutdown(self):
