@@ -4,8 +4,9 @@ import socket, struct
 
 class Networking(object):
 
-    def __init__(self, ip="cctv", port=8000):
+    def __init__(self, camera_id, ip="cctv", port=8000):
         print("Starting networking")
+        self._camera_id = camera_id
         self._ip = ip
         self._port = port
         self._connections = {}
@@ -20,12 +21,13 @@ class Networking(object):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((self._ip, self._port))
 
-        if self._pickle_and_send(module_name, sock):
+        if self._pickle_and_send(self._camera_id, sock) and self._pickle_and_send(module_name, sock):
             self._connections[module_name] = sock
             print "Connection set up"
             return sock
 
         return None
+
 
     def _pickle_and_send(self, d, conn):
         ''' serialises d and sends it over connection conn with a length header '''
