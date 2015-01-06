@@ -7,7 +7,7 @@ from utils import Utils, Settings
 
 
 def main():
-    global library, webServer, capture
+    global library, webServer, capture, analysis
 
     library = library.lib
 
