@@ -1,12 +1,14 @@
 from multiprocessing import Process, Queue
+import cPickle as pickle
+import socket, struct
 
 class Networking(object):
 
-    def __init__(self, ip="cctv", port=8080):
+    def __init__(self, ip="cctv", port=8000):
         print("Starting networking")
         self._ip = ip
         self._port = port
-
+        self._connections = {}
         self._send_queue = Queue()
         self._process = Process(target=self.run, args=(self._send_queue,))
         self._process.start()
@@ -14,13 +16,40 @@ class Networking(object):
     def send_data(self, data):
         self._send_queue.put(data)
 
+    def _create_connection(self, module_name):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((self._ip, self._port))
+
+        if self._pickle_and_send(module_name, sock):
+            self._connections[module_name] = sock
+            print "Connection set up"
+            return sock
+
+        return None
+
+    def _pickle_and_send(self, d, conn):
+        ''' serialises d and sends it over connection conn with a length header '''
+        serialised = pickle.dumps(d, -1)
+        conn.send(struct.pack("I", len(serialised)))
+        conn.send(struct.pack(str(len(serialised)) + 's', serialised))
+        return True
+
+    def _get_connection(self, module_name):
+        try:
+            return self._connections[module_name]
+        except KeyError, e:
+            return self._create_connection(module_name)
+
     def run(self, queue):
         while True:
             (module_name, data) = queue.get(True)
-            if data is not None:
-                print ("Processing CMD from module %s" % module_name)
-                #send data off
-            else:
-                break
+            if(module_name == "RootNode"):
+                if data == None:
+                    break
+            elif data is not None:
+                print "Processing data for %s" % module_name
+                connection = self._get_connection(module_name)
+                if not self._pickle_and_send(data, connection):
+                    print ("Error writing data to network for module %s" % module_name)
         print ("Killing Networking process as 'None' value detected in queue")
 
