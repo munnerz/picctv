@@ -2,3 +2,4 @@ cctv.db
 **/.*
 **/__pycache__
 !.gitignore
+**/*.pyc
