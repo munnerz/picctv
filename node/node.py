@@ -55,9 +55,9 @@ class Multiplexer(object):
             for module in self._settings['registered_modules'][:]:
                 output = module.process_frame((frame, frame_info))
                 if output is not None:
-                    #send this off to server
                     _NETWORK.send_data((module.get_name(), output))
-            return None
+
+        return len(frame)
 
     def flush(self):
         return # modules can't really be flushed...
