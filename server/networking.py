@@ -1,7 +1,5 @@
 import multiprocessing
 import socket
-import pickle
-import struct
 import threading
 from multiprocessing.reduction import _reduce_socket, _rebuild_socket
 
@@ -20,11 +18,11 @@ class Network(object):
         multiprocessing.allow_connection_pickling()
         self._ip = ip
         self._port = port
-        self._accepting_connections = True
+        self._accepting_connections = self._processing_connections = True
         self._connections = []
         self._connectionsLock = threading.Lock()
         self._listeningThread = threading.Thread(target=self.listen)
-        self._processingThread = threading.Timer(0.1, self.process)
+        self._processingThread = threading.Thread(target=self.process)
 
         self._server_socket = socket.socket()
         self._server_socket.bind((self._ip, self._port))
@@ -41,8 +39,9 @@ class Network(object):
             self._connections.append(connectionDict)
 
     def process(self):
-        with self._connectionsLock:
-            PROCESSING_POOL.map_async(networking_processor.process_incoming, self._connections, modules.process_data).get() #maybe keep the callback here?
+        while self._processing_connections:
+            with self._connectionsLock:
+               PROCESSING_POOL.map_async(networking_processor.process_incoming, self._connections, callback=modules.process_data).get() #maybe keep the callback here?
 
     def listen(self):
         while self._accepting_connections:
