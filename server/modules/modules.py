@@ -1,15 +1,17 @@
 from multiprocessing import Pool
 
-from .. import library
+import library
 
 class RecordProcessor(object):
 
     def __init__(self, output):
         self._output = output
 
-    def write(self, (data, metadata)):
+    def write(self, i):
         #do h264 wrapping
         #add metadata
+        (info, d) = i
+        (data, metadata) = d
         self._output.save_file(data, metadata)
 
 
@@ -20,9 +22,15 @@ MODULE_PROCESSORS = {   "Record": RECORD_PROCESSOR,
 
 PROCESSING_POOL = Pool(processes=4)
 
-def process_data(data, module_name):
-    handler = _get_data_handler(module_name)
-    PROCESSING_POOL.apply_async(lambda x, y: x.write(y), (handler, data))
+def process_data(i):
+    (info, data) = i
+    if data is not None:
+        handler = _get_data_handler(info['module_name'])
+        PROCESSING_POOL.apply_async(handler.write, (handler, dict(camera_name=info['camera_name'],
+                                                                            module_name=info['module_name'],
+                                                                            **data)) ).get()
+    else:
+        pass #todo: tell networking that some dud data has been received!
 
 def _get_data_handler(module_name):
     ''' returns the appropriate handler for this modules data,
