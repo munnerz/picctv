@@ -32,11 +32,10 @@ class Live(ModuleBase):
 		return "high"
 
 	def process_frame(self, data):
-		(frame, frameInfo) = data
 		with self._outputLock:
 			for output in self._outputs[:]:
 				try:
-					output.write(frame)
+					output.write(data[0])
 				except Exception as e:
 					print ("Exception in Live module during processFrame: %s" % e)
 					self._outputs.remove(output)
