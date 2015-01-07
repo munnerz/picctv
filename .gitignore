@@ -3,3 +3,4 @@ cctv.db
 **/__pycache__
 !.gitignore
 **/*.pyc
+server.log
