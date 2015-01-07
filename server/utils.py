@@ -7,7 +7,8 @@ from tempfile import SpooledTemporaryFile, NamedTemporaryFile
 class Settings:
 
     className = "Settings"
-
+    
+    @staticmethod
     def lookup(a, x, default=lambda x2, y2: Settings.notFound(x2, y2)):
         return a.get(x, default)
 
@@ -34,23 +35,27 @@ class Settings:
 
     }
 
+    @staticmethod
     def get(name, owner):
         toExec = Settings.lookup(Settings.settingMappings, owner)
         if(toExec != None):
             return toExec(owner, name)
 
+    @staticmethod
     def getUtils(owner, name):
         m = Settings.lookup(Settings.utilsSettings, name, None)
         if m == None:
             return Settings.notFound(owner, name)
         return m
 
+    @staticmethod
     def getCapture(owner, name):
         m = Settings.lookup(Settings.captureSettings, name, None)
         if m == None:
             return Settings.notFound(owner, name)
         return m
 
+    @staticmethod
     def notFound(owner, name):
         #Utils.err(Settings.className, "Setting '%s' for class '%s' not found" % (owner, name))
         return None
