@@ -1,5 +1,5 @@
 import struct
-import pickle
+import cPickle as pickle
 from multiprocessing.reduction import _rebuild_socket
 
 from utils import Utils
@@ -26,9 +26,13 @@ def process_incoming(connectionDict):
         connection = connectionDict['connection']
         try:
             data_length = struct.unpack("I", connection.recv(4))[0]
+            Utils.dbg("Reading %d bytes from %s/%s" % (data_length, connectionDict["camera_name"], connectionDict["module_name"]),
+                "networking_processor.process_incoming")
             data_pickled = struct.unpack(str(data_length) + 's', connection.recv(data_length))[0]
             data = pickle.loads(data_pickled)
 
+            Utils.dbg("Read %d bytes from %s/%s" % (data_length, connectionDict["camera_name"], connectionDict["module_name"]),
+                "networking_processor.process_incoming")
             return (connectionDict, data)
         except Exception:
             raise #todo:handle properly
