@@ -3,7 +3,7 @@ import socket
 import threading
 
 from utils import Utils
-from modules import modules
+import modules
 import networking_processor
 
 global PROCESSING_POOL
