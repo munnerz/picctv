@@ -1,5 +1,7 @@
 import multiprocessing
+from multiprocessing.reduction import reduce_handle
 import socket
+import time
 import threading
 
 from utils import Utils
@@ -39,11 +41,15 @@ class Network(object):
 
     def process(self):
         while self._processing_connections:
-            with self._connectionsLock:
-               PROCESSING_POOL.map_async(networking_processor.process_incoming, self._connections, callback=modules.process_data).get() #maybe keep the callback here?
+            for connection in self._connections[:]:
+                modules.process_data(networking_processor.process_incoming(connection))
+            time.sleep(0.1)
+            #PROCESSING_POOL.map_async(networking_processor.process_incoming, self._connections, callback=modules.process_data).get() #maybe keep the callback here?
 
     def listen(self):
         while self._accepting_connections:
             (connection, address) = self._server_socket.accept()
             Utils.dbg("Dispatching connection for initialisation")
-            PROCESSING_POOL.apply_async(networking_processor.initialise_connection, args=[connection], callback=self.accepted_connection).get()
+            self.accepted_connection(networking_processor.initialise_connection(connection))
+            #reduced = reduce_handle(connection.fileno())
+            #PROCESSING_POOL.apply_async(networking_processor.initialise_connection, args=[reduced], callback=self.accepted_connection).get()
