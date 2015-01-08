@@ -2,34 +2,26 @@ from multiprocessing import Pool
 
 import library
 
-class RecordProcessor(object):
-
-    def __init__(self, output):
-        self._output = output
-
-    def write(self, i):
-        #do h264 wrapping
-        #add metadata
-        (info, d) = i
-        (data, metadata) = d
-        self._output.save_file(data, metadata)
+def _recording_write(info):
+    library.save_file(info['data'], dict(camera_name=info['camera_name'],
+                                         module_name=info['module_name']))
+    return None
 
 
-RECORD_PROCESSOR = RecordProcessor(output=library.Writer()) # change output to reroute video processing
-
-MODULE_PROCESSORS = {   "Record": RECORD_PROCESSOR,
-                    }
+MODULE_PROCESSORS = { "Recording": _recording_write }
 
 PROCESSING_POOL = Pool(processes=4)
 
 def process_data(i):
-    (info, data) = i
+    info, data = i
     if data is not None:
         handler = _get_data_handler(info['module_name'])
-        PROCESSING_POOL.apply_async(handler.write, (handler, dict(camera_name=info['camera_name'],
-                                                                            module_name=info['module_name'],
-                                                                            **data)) ).get()
+        argu = {"camera_name": info['camera_name'],
+                "module_name": info['module_name'],
+                "data": data}
+        PROCESSING_POOL.apply_async(handler, [argu]).get()
     else:
+        print ("Data was none...")
         pass #todo: tell networking that some dud data has been received!
 
 def _get_data_handler(module_name):
