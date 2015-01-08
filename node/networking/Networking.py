@@ -37,11 +37,8 @@ class Networking(object):
 
     def _pickle_and_send(self, d, conn):
         ''' serialises d and sends it over connection conn with a length header '''
-        print ("Serialising...")
         serialised = pickle.dumps(d, -1)
-        print ("Serialised!")
         conn.send(struct.pack("I", len(serialised)))
-        print ("Sent length (%d)" % len(serialised))
         toSend = struct.pack(str(len(serialised)) + 's', serialised)
         sent = 0
         for chunk in _chunks(toSend, 4096):
@@ -58,7 +55,6 @@ class Networking(object):
     def run(self, queue):
         while True:
             try:
-                print("Queue size: %d" % self._send_queue.qsize())
                 (module_name, data) = queue.get(True, 0.1)
                 print("Got data for module %s" % module_name)
                 if(module_name == "RootNode"):
@@ -66,14 +62,11 @@ class Networking(object):
                         print ("Ending...")
                         break
                 elif data is not None:
-                    print ("Getting connection")
                     connection = self._get_connection(module_name)
-                    print ("Got connection")
                     if not self._pickle_and_send(data, connection):
                         print ("Error writing data to network for module %s" % module_name)
-                    print ("Pickled and sent")
+                    print ("Pickled and sent data for module %s" % module_name)
             except Empty:
-                print ("EMPTY!")
                 pass
             except KeyboardInterrupt:
                 break
