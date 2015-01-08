@@ -56,7 +56,7 @@ class Network(object):
         while self._processing_connections:
             with self._connections_lock:
                 self._processing_workers.map_async(networking_processor.process_incoming, self._connections, callback=modules.process_data)
-            time.sleep(0.1)
+            time.sleep(1)
 
     def listen(self):
         while self._accepting_connections:
