@@ -36,12 +36,17 @@ class Networking(object):
 
     def _create_connection(self, module_name):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((self._ip, self._port))
 
-        if self._pickle_and_send(self._camera_id, sock) and self._pickle_and_send(module_name, sock):
-            self._connections[module_name] = sock
-            print "Connection set up"
-            return sock
+        try:
+            sock.connect((self._ip, self._port))
+
+            if self._pickle_and_send(self._camera_id, sock) and self._pickle_and_send(module_name, sock):
+                self._connections[module_name] = sock
+                LOGGER.info("Connection for module '%s' set up..." % module_name)
+                return sock
+
+        except IOError as e:
+            LOGGER.info("Error connecting to server for module %s (Exception: %s)" % (module_name, e))
 
         return None
 
@@ -88,6 +93,9 @@ class Networking(object):
                         break
                 elif data is not None:
                     connection = self._get_connection(module_name)
+                    if connection is None:
+                        queue.put((module_name, data)) #this will keep failed sends in the queue to send later...
+                        continue
                     if not self._pickle_and_send(data, connection):
                         print ("Error writing data to network for module %s" % module_name)
                         self._remove_connection(module_name)
