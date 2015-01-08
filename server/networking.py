@@ -45,10 +45,8 @@ class Network(object):
         Utils.msg("Closed connection for module '%s' on camera '%s'" % (connectionInfo['module_name'], connectionInfo['camera_name']))
 
     def accepted_connection(self, connectionDict):
-        Utils.dbg("Acquiring _connections_lock to finalising adding connection...")
         connectionDict['thread'] = threading.Thread(target=networking_processor.process_incoming, name="Thread-%s.%s" %
-                (connectionDict['camera_name'], connectionDict['module_name']), args=(connectionDict))
-
+                (connectionDict['camera_name'], connectionDict['module_name']), args=(connectionDict,))
         connectionDict['thread'].start()
 
 
