@@ -1,7 +1,11 @@
+import logging
+import math
+import time
+
+import picamera
+
 import modules
 from networking import Networking
-import math, time
-import picamera
 
 CAMERA_NAME = "ChangeMe"
 
