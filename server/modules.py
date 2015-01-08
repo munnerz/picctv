@@ -21,7 +21,7 @@ def process_data(i):
         argu = {"camera_name": info['camera_name'],
                 "module_name": info['module_name'],
                 "data": data}
-        PROCESSING_POOL.apply_async(handler, [argu]).get()
+        PROCESSING_POOL.apply_async(handler, [argu])
     else:
         Utils.dbg("Notifying networking that this connection has failed...", "modules")
         global_vars.NETWORK.connection_failed(info)
