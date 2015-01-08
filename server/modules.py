@@ -3,7 +3,7 @@ from multiprocessing import Pool
 import library
 
 def _recording_write(info):
-    library.save_file(info['data'], dict(camera_name=info['camera_name'],
+    library.save_file(info['data']['frameData'], dict(camera_name=info['camera_name'],
                                          module_name=info['module_name']))
     return None
 
