@@ -1,5 +1,6 @@
 import sys
 import inspect
+import logging
 from subprocess import Popen
 
 from tempfile import SpooledTemporaryFile, NamedTemporaryFile
@@ -64,6 +65,17 @@ class Utils:
     className = "Utils"
     file_out = open(Settings.get("logPath", className), "w")
 
+    LOGGER = logging.getLogger(name="server")
+    LOGGER.setLevel(logging.DEBUG)
+
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+
+    LOGGER.addHandler(ch)
+
     def signal_handler(s, signal):
         Utils.dbg("Signal received", Utils.className)
         Utils.closeFile()
@@ -73,36 +85,22 @@ class Utils:
     def msg(text, sender=None):
         if sender is None:
             callingframe = inspect.currentframe().f_back
-            sender = "%s.%s" % (callingframe.f_locals['self'].__class__.__name__, callingframe.f_code.co_name)
-        t = ("[%s] INFO: %s" % (sender, text))
-        Utils.file_out.write("%s\n" % t)
-        Utils.file_out.flush()
-        if Settings.get("showInfo", Utils.className):
-            print (t)
+            sender = "%s.%s" % (callingframe.f_locals['self'].__class__.__name__)
+        logging.getLogger("server.%s" % sender).info(text)
 
     @staticmethod
-    def err(text, sender=None, quit=False):
+    def err(text, sender=None):
         if sender is None:
             callingframe = inspect.currentframe().f_back
-            sender = "%s.%s" % (callingframe.f_locals['self'].__class__.__name__, callingframe.f_code.co_name)
-        t = ("[%s] ERROR: %s" % (sender, text))
-        Utils.file_out.write("%s\n" % t)
-        Utils.file_out.flush()
-        if Settings.get("showError", Utils.className):
-            print (t)
-        if quit:
-            Utils.err("Err quit functionality not added yet", Utils.className, False)
+            sender = "%s.%s" % (callingframe.f_locals['self'].__class__.__name__)
+        logging.getLogger("server.%s" % sender).error(text)
 
     @staticmethod
     def dbg(text, sender=None):
         if sender is None:
             callingframe = inspect.currentframe().f_back
-            sender = "%s.%s" % (callingframe.f_locals['self'].__class__.__name__, callingframe.f_code.co_name)
-        t = ("[%s] DEBUG: %s" % (sender, text))
-        Utils.file_out.write("%s\n" % t)
-        Utils.file_out.flush()
-        if Settings.get("showDebug", Utils.className):
-            print (t)
+            sender = "%s.%s" % (callingframe.f_locals['self'].__class__.__name__)
+        logging.getLogger("server.%s" % sender).debug(text)
 
     @staticmethod
     def closeFile():
