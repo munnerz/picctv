@@ -7,6 +7,11 @@ import logging
 from Queue import Empty
 
 LOGGER = logging.getLogger(name="Networking")
+ch = logging.StreamHandler()
+ch.setLevel(logging.ERROR)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+LOGGER.addHandler(ch)
 
 def _chunks(lst, n):
     "Yield successive n-sized chunks from lst"
