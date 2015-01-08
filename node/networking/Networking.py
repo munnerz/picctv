@@ -91,10 +91,9 @@ class Networking(object):
         while True:
             try:
                 if not queue_buffer.empty():
-                    #allow this to timeout just to be safe...
-                    (module_name, data) = queue_buffer.get(True, 0.1)
+                    (module_name, data) = queue_buffer.get()
                 else:
-                    (module_name, data) = queue.get(True, 0.1)
+                    (module_name, data) = queue.get(True)
                 if(module_name == "RootNode"):
                     if data == None:
                         print ("Ending...")
