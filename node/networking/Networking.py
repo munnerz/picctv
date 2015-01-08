@@ -1,7 +1,12 @@
 from multiprocessing import Process, Queue
 import cPickle as pickle
-import socket, struct
+import socket
+import struct
+import logging
+
 from Queue import Empty
+
+LOGGER = logging.getLogger(name="Networking")
 
 def _chunks(lst, n):
     "Yield successive n-sized chunks from lst"
@@ -38,12 +43,20 @@ class Networking(object):
     def _pickle_and_send(self, d, conn):
         ''' serialises d and sends it over connection conn with a length header '''
         serialised = pickle.dumps(d, -1)
-        conn.send(struct.pack("I", len(serialised)))
         toSend = struct.pack(str(len(serialised)) + 's', serialised)
-        sent = 0
-        for chunk in _chunks(toSend, 4096):
-            sent += conn.send(chunk)
-        print ("Data sent (%d bytes)" % sent)
+
+        sent_bytes = 0
+
+        try:
+            conn.send(struct.pack("I", len(serialised)))
+            for chunk in _chunks(toSend, 4096):
+                sent_bytes += conn.send(chunk)
+        except IOError as e:
+            LOGGER.debug("Exception sending data...")
+            return False
+
+        print ("Data sent (%d bytes)" % sent_bytes)
+
         return True
 
     def _get_connection(self, module_name):
@@ -51,6 +64,13 @@ class Networking(object):
             return self._connections[module_name]
         except KeyError, e:
             return self._create_connection(module_name)
+
+    def _remove_connection(self, module_name):
+        try:
+            del self._connections[module_name]
+            return True
+        except KeyError:
+            return False
 
     def run(self, queue):
         while True:
@@ -65,7 +85,10 @@ class Networking(object):
                     connection = self._get_connection(module_name)
                     if not self._pickle_and_send(data, connection):
                         print ("Error writing data to network for module %s" % module_name)
-                    print ("Pickled and sent data for module %s" % module_name)
+                        self._remove_connection(module_name)
+                        continue
+                    else:
+                        print ("Pickled and sent data for module %s" % module_name)
             except Empty:
                 pass
             except KeyboardInterrupt:
