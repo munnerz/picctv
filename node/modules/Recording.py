@@ -16,9 +16,7 @@ class Recording(ModuleBase):
 			print ("Ready - sending!")
 			return {"frameData": toReturn}
 		else:
-			print ("Appending frame... (type: %s, len: %d)" % (type(frame), len(frame)))
 			self.buffer = ''.join((self.buffer, frame))
-			print ("Buffer length: %d" % len(self.buffer))
 			return None
 
 
