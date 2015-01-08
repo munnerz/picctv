@@ -33,7 +33,6 @@ class Network(object):
         Utils.msg("Network started on %s:%d" % (self._ip, self._port))
 
         self._listening_thread.start()
-        self._processing_thread.start()
 
     def connection_failed(self, connectionInfo):
         try:
