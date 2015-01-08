@@ -17,6 +17,17 @@ _CAMERA.rotation = 270
 _MODULES = [modules.Recording(), modules.Live(), modules.Motion()]
 _NETWORK = Networking.Networking(CAMERA_NAME)
 
+LOGGER = logging.getLogger(name="node")
+LOGGER.setLevel(logging.DEBUG)
+
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+
+LOGGER.addHandler(ch)
+
 class Multiplexer(object):
     ''' Multiplexes one video stream out to many modules '''
 
@@ -99,19 +110,19 @@ def unregister_module(module):
     try:
         _MODULES.remove(module)
     except IndexError:
-        print ("Error attempting to unregister module - module not registered.")
+        LOGGER.warning("Error attempting to unregister module - module not registered.")
         pass
 
 
 for module in _MODULES:
     _recordingQualities[module.required_quality()]['registered_modules'].append(module)
-    print("Added %s module to %s quality multiplexer..." % (module.get_name(), module.required_quality()))
+    LOGGER.info("Added %s module to %s quality multiplexer..." % (module.get_name(), module.required_quality()))
 
 for quality in _recordingQualities:
     profile = _recordingQualities[quality]
     profile['multiplexer'].set_settings(profile)
 
-    print("Starting %s quality recording at %s, FPS: %d, format: %s" % (quality, profile['resolution'], profile['fps'], profile['format']))
+    LOGGER.info("Starting %s quality recording at %s, FPS: %d, format: %s" % (quality, profile['resolution'], profile['fps'], profile['format']))
     _CAMERA.start_recording(profile['multiplexer'], profile['format'], 
                             profile['resolution'], profile['splitter_port'])
 
@@ -125,4 +136,4 @@ except KeyboardInterrupt:
         map(lambda m: shutdown_module(m), _MODULES)
         _NETWORK.shutdown()
 
-        print("Shut down.")
+        LOGGER.info("Shut down.")

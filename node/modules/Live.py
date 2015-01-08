@@ -1,5 +1,10 @@
+import threading
+import socket
+import logging
+
 from modules.ModuleBase import ModuleBase
-import threading, socket
+
+LOGGER = logging.getLogger("node.Motion")
 
 class Live(ModuleBase):
 
@@ -37,7 +42,7 @@ class Live(ModuleBase):
 				try:
 					output.write(data[0])
 				except Exception as e:
-					print ("Exception in Live module during processFrame: %s" % e)
+					LOGGER.exception("Exception in Live module during processFrame: %s" % e)
 					self._outputs.remove(output)
 					pass
 		return None
@@ -49,6 +54,6 @@ class Live(ModuleBase):
 			map(lambda o: o.close(), self._outputs)
 			del self._outputs[:]
 		self._server_socket.close()
-		print ("Shutting down %s" % self.get_name())
+		LOGGER.info("Shutting down %s" % self.get_name())
 		self._listeningThread.join()
 		return

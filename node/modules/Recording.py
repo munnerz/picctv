@@ -1,4 +1,8 @@
+import logging
+
 from modules.ModuleBase import ModuleBase
+
+LOGGER = logging.getLogger("node.Recording")
 
 class Recording(ModuleBase):
 

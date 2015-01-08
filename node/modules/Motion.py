@@ -1,6 +1,10 @@
-from modules.ModuleBase import ModuleBase
 import numpy as np
 import cv2
+import logging
+
+from modules.ModuleBase import ModuleBase
+
+LOGGER = logging.getLogger("node.Motion")
 
 class Motion(ModuleBase):
 
@@ -35,7 +39,7 @@ class Motion(ModuleBase):
             motion = self._getMotion()
             m = motion[0]
             if motion and motion[0] > self._MOTION_LEVEL:
-                print ("Detected motion level: %d" % motion[0])
+                LOGGER.debug("Detected motion! Level: %d" % motion[0])
                 return (True, m)
 
         return (False, m)
@@ -63,5 +67,5 @@ class Motion(ModuleBase):
 
     def shutdown(self):
         ModuleBase.shutdown(self)
-        print ("Shutting down %s" % self.get_name())
+        logging.info("Shutting down %s" % self.get_name())
         return

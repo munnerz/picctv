@@ -1,21 +1,11 @@
 from multiprocessing import Process, Queue
+from Queue import Empty
 import cPickle as pickle
 import socket
 import struct
 import logging
 
-from Queue import Empty
-
-LOGGER = logging.getLogger(name="Networking")
-LOGGER.setLevel(logging.DEBUG)
-
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-ch.setFormatter(formatter)
-
-LOGGER.addHandler(ch)
+LOGGER = logging.getLogger(name="node.Networking")
 
 def _chunks(lst, n):
     "Yield successive n-sized chunks from lst"
@@ -25,7 +15,7 @@ def _chunks(lst, n):
 class Networking(object):
 
     def __init__(self, camera_id, ip="cctv", port=8000):
-        print("Starting networking")
+        LOGGER.info("Starting networking")
         self._camera_id = camera_id
         self._ip = ip
         self._port = port
@@ -35,7 +25,7 @@ class Networking(object):
         self._process.start()
 
     def send_data(self, data):
-        print("Queue size (SD): %d" % self._send_queue.qsize())
+        LOGGER.debug("Queue size (SD): %d" % self._send_queue.qsize())
         self._send_queue.put(data)
 
     def _create_connection(self, module_name):
@@ -46,11 +36,11 @@ class Networking(object):
 
             if self._pickle_and_send(self._camera_id, sock) and self._pickle_and_send(module_name, sock):
                 self._connections[module_name] = sock
-                LOGGER.info("Connection for module '%s' set up..." % module_name)
+                LOGGER.debug("Connection for module '%s' set up..." % module_name)
                 return sock
 
         except IOError as e:
-            LOGGER.info("Error connecting to server for module %s (Exception: %s)" % (module_name, e))
+            LOGGER.exception("Error connecting to server for module %s (Exception: %s)" % (module_name, e))
 
         return None
 
@@ -66,10 +56,10 @@ class Networking(object):
             for chunk in _chunks(toSend, 4096):
                 sent_bytes += conn.send(chunk)
         except IOError as e:
-            LOGGER.debug("Exception sending data...")
+            LOGGER.exception("Exception whilst sending data: %s" % e)
             return False
 
-        print ("Data sent (%d bytes)" % sent_bytes)
+        LOGGER.debug("Data sent (%d bytes)" % sent_bytes)
 
         return True
 
@@ -96,7 +86,7 @@ class Networking(object):
                     (module_name, data) = queue.get(True)
                 if(module_name == "RootNode"):
                     if data == None:
-                        print ("Ending...")
+                        LOGGER.info("Shutdown signal received")
                         break
                 elif data is not None:
                     connection = self._get_connection(module_name)
@@ -104,16 +94,16 @@ class Networking(object):
                         queue_buffer.put((module_name, data)) #this will keep failed sends in the queue to send later...
                         continue
                     if not self._pickle_and_send(data, connection):
-                        print ("Error writing data to network for module %s" % module_name)
+                        LOGGER.exception("Error writing data to network for module %s" % module_name)
                         self._remove_connection(module_name)
                         continue
                     else:
-                        print ("Pickled and sent data for module %s" % module_name)
+                        LOGGER.debug("Pickled and sent data for module %s" % module_name)
             except Empty:
                 pass
             except KeyboardInterrupt:
                 break
-        print ("Run method complete")
+        LOGGER.debug("Networking queue processor shutting down...")
 
     def shutdown(self):
         self.send_data(("RootNode", None))
