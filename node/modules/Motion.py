@@ -1,4 +1,5 @@
 from modules.ModuleBase import ModuleBase
+import numpy as np
 import cv2
 
 class Motion(ModuleBase):
@@ -37,7 +38,6 @@ class Motion(ModuleBase):
                 print ("Detected motion level: %d" % motion[0])
                 return (True, m)
 
-            (isMotion, motionVal) = self._analyse(np.fromfile(stream, dtype=np.uint8, count=128*64).reshape((64, 128)))
         return (False, m)
 
 
@@ -51,7 +51,9 @@ class Motion(ModuleBase):
         stream.write(frame)
         stream.seek(0)
 
-        return None
+        (is_motion, motion_val) = self._analyse(np.fromfile(stream, dtype=np.uint8, count=128*64).reshape((64, 128)))
+
+        return (is_motion, motion_val)
 
     def shutdown(self):
         ModuleBase.shutdown(self)
