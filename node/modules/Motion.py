@@ -15,7 +15,7 @@ class Motion(ModuleBase):
     def _storeFrame(self, frame):
         self._frames.insert(0, frame)
         if len(self._frames) > self._frameLimit:
-            self.frames.pop(len(self.frames) - 1)
+            self._frames.pop(len(self._frames) - 1)
 
     def _getMotion(self):
         d1 = cv2.absdiff(self._frames[1], self._frames[0])
