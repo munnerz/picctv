@@ -47,7 +47,7 @@ class Network(object):
     def accepted_connection(self, connectionDict):
         Utils.dbg("Acquiring _connections_lock to finalising adding connection...")
         connectionDict['thread'] = threading.Thread(target=networking_processor.process_incoming, name="Thread-%s.%s" %
-                (connectionDict['camera_name'], connectionDict['module_name']), args=connectionDict)
+                (connectionDict['camera_name'], connectionDict['module_name']), args=(connectionDict))
 
         connectionDict['thread'].start()
 
