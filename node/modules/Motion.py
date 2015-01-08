@@ -10,7 +10,7 @@ class Motion(ModuleBase):
         self._frameLimit = 5
         self._MOTION_LEVEL = 10000
         self._THRESHOLD = 35
-        self._markers = []
+        self._event_buffer = []
 
     def _storeFrame(self, frame):
         self._frames.insert(0, frame)
@@ -53,7 +53,13 @@ class Motion(ModuleBase):
 
         (is_motion, motion_val) = self._analyse(np.fromfile(stream, dtype=np.uint8, count=128*64).reshape((64, 128)))
 
-        return (is_motion, motion_val)
+        if len(self._event_buffer) > 100:
+            to_send = self._event_buffer[:]
+            self._event_buffer = []
+            return to_send
+        else:
+            self._event_buffer.append((is_motion, motion_val))
+            return None
 
     def shutdown(self):
         ModuleBase.shutdown(self)
