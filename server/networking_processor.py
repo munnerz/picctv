@@ -16,7 +16,7 @@ def initialise_connection(connection):
         module_name_length = struct.unpack("I", connection.recv(4))[0] #read the chunk ID
         module_name_pickled = struct.unpack(str(module_name_length) + 's', connection.recv(module_name_length))[0]
         module_name = pickle.loads(module_name_pickled)
-        Utils.info("Got camera name '%s', module name '%s'" % (camera_name, module_name), "networking_processor")
+        Utils.dbg("Got camera name '%s', module name '%s'" % (camera_name, module_name), "networking_processor")
 
         return {"connection": connection, "module_name": module_name, "camera_name": camera_name}
     except Exception as e:
