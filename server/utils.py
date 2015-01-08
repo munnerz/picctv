@@ -85,21 +85,21 @@ class Utils:
     def msg(text, sender=None):
         if sender is None:
             callingframe = inspect.currentframe().f_back
-            sender = "%s.%s" % (callingframe.f_locals['self'].__class__.__name__)
+            sender = "server.%s" % (callingframe.f_locals['self'].__class__.__name__)
         logging.getLogger("server.%s" % sender).info(text)
 
     @staticmethod
     def err(text, sender=None):
         if sender is None:
             callingframe = inspect.currentframe().f_back
-            sender = "%s.%s" % (callingframe.f_locals['self'].__class__.__name__)
+            sender = "server.%s" % (callingframe.f_locals['self'].__class__.__name__)
         logging.getLogger("server.%s" % sender).error(text)
 
     @staticmethod
     def dbg(text, sender=None):
         if sender is None:
             callingframe = inspect.currentframe().f_back
-            sender = "%s.%s" % (callingframe.f_locals['self'].__class__.__name__)
+            sender = "server.%s" % (callingframe.f_locals['self'].__class__.__name__)
         logging.getLogger("server.%s" % sender).debug(text)
 
     @staticmethod
