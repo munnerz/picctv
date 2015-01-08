@@ -25,7 +25,7 @@ class Network(object):
         self._connections_lock = threading.Lock()
         self._listening_thread = threading.Thread(target=self.listen)
         self._processing_thread = threading.Thread(target=self.process)
-        self._processing_workers = ThreadPool(processes=2)
+        self._processing_workers = ThreadPool(processes=128)
 
         self._server_socket = socket.socket()
         self._server_socket.bind((self._ip, self._port))
