@@ -3,6 +3,11 @@ import cPickle as pickle
 import socket, struct
 from Queue import Empty
 
+def _chunks(lst, n):
+    "Yield successive n-sized chunks from lst"
+    for i in xrange(0, len(lst), n):
+        yield lst[i:i+n]
+
 class Networking(object):
 
     def __init__(self, camera_id, ip="cctv", port=8000):
@@ -37,8 +42,11 @@ class Networking(object):
         print ("Serialised!")
         conn.send(struct.pack("I", len(serialised)))
         print ("Sent length (%d)" % len(serialised))
-        conn.send(struct.pack(str(len(serialised)) + 's', serialised))
-        print ("Data sent")
+        toSend = struct.pack(str(len(serialised)) + 's', serialised)
+        sent = 0
+        for chunk in _chunks(toSend, 4096):
+            sent += conn.send(chunk)
+        print ("Data sent (%d bytes)" % sent)
         return True
 
     def _get_connection(self, module_name):
