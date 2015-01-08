@@ -8,7 +8,7 @@ from utils import Utils
 def initialise_connection(connection):
     try:
         #connection = socket.fromfd(rebuild_handle(fd), socket.AF_INET, socket.SOCK_STREAM)
-        Utils.dbg("Getting camera name & module name", "networking_processor.initialise_connection")
+        Utils.dbg("Getting camera name & module name", "networking_processor")
         camera_name_length = struct.unpack("I", connection.recv(4))[0] #read the camera ID
         camera_name_pickled = struct.unpack(str(camera_name_length) + 's', connection.recv(camera_name_length))[0]
         camera_name = pickle.loads(camera_name_pickled)
@@ -16,11 +16,11 @@ def initialise_connection(connection):
         module_name_length = struct.unpack("I", connection.recv(4))[0] #read the chunk ID
         module_name_pickled = struct.unpack(str(module_name_length) + 's', connection.recv(module_name_length))[0]
         module_name = pickle.loads(module_name_pickled)
-        Utils.dbg("Got camera name '%s', module name '%s'" % (camera_name, module_name), "networking_processor.initialise_connection")
+        Utils.dbg("Got camera name '%s', module name '%s'" % (camera_name, module_name), "networking_processor")
 
         return {"connection": connection, "module_name": module_name, "camera_name": camera_name}
     except Exception as e:
-        Utils.err("Error initialising connection %s" % e, "networking_processor.initialise_connection")
+        Utils.err("Error initialising connection %s" % e, "networking_processor")
         raise #TODO: handle this gracefully
 
 def process_incoming(connectionDict):
@@ -32,7 +32,7 @@ def process_incoming(connectionDict):
         connection = connectionDict['connection']
         data_length = struct.unpack("I", connection.recv(4))[0]
         Utils.dbg("Reading %d bytes from %s/%s" % (data_length, connectionDict["camera_name"], connectionDict["module_name"]),
-            "networking_processor.process_incoming")
+            "networking_processor")
         grabbed = 0
         data_pickled = ''
         while len(data_pickled) < data_length:
@@ -41,11 +41,14 @@ def process_incoming(connectionDict):
         data = pickle.loads(data_pickled)
 
         Utils.dbg("Read %d bytes from %s/%s" % (data_length, connectionDict["camera_name"], connectionDict["module_name"]),
-            "networking_processor.process_incoming")
+            "networking_processor")
 
-        return ({ "module_name": connectionDict['module_name'], "camera_name": connectionDict['camera_name']}, data)
+        return (connectionDict, data)
+
     except Exception as e:
-        print "EXCEPTION: %s" % e
-        raise #todo:handle properly
-    print "RETURNING NONE"
-    return None
+        Utils.err("%s whilst reading module data for module '%s' from camera '%s'" % 
+            (type(e).__name__, connectionDict['module_name'], connectionDict['camera_name']),
+            "networking_processor")
+        pass
+
+    return (connectionDict, None)
