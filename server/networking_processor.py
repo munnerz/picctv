@@ -49,3 +49,5 @@ def process_incoming(connectionDict):
             modules.process_data((connectionDict, None))
             pass
             break
+    Utils.dbg("Thread for module '%s' from camera '%s' ending..." % 
+        (connectionDict['module_name'], connectionDict['camera_name']), "networking_processor")
