@@ -43,9 +43,8 @@ def process_incoming(connectionDict):
 
     except Exception as e:
         Utils.err("%s whilst reading module data for module '%s' from camera '%s': %s" % 
-            (type(e).__name__, connectionDict['module_name'], connectionDict['camera_name']),
-            "networking_processor",
-            e)
+            (type(e).__name__, connectionDict['module_name'], connectionDict['camera_name'], e),
+            "networking_processor")
         pass
 
     return (connectionDict, None)
