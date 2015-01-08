@@ -6,9 +6,8 @@ import picamera
 CAMERA_NAME = "ChangeMe"
 
 _CAMERA = picamera.PiCamera()
-_CAMERA.resolution = (1280, 720)
+_CAMERA.resolution = (720, 1280)
 _CAMERA.framerate = 24
-_CAMERA.rotation = 270
 
 _MODULES = [modules.Recording(), modules.Live(), modules.Motion()]
 _NETWORK = Networking.Networking(CAMERA_NAME)
