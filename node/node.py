@@ -10,9 +10,11 @@ from networking import Networking
 CAMERA_NAME = "ChangeMe"
 
 _CAMERA = picamera.PiCamera()
-_CAMERA.resolution = (1280, 720)
+_CAMERA.resolution = (720, 1280)
 _CAMERA.framerate = 24
 _CAMERA.rotation = 270
+_CAMERA.exposure_mode = 'night'
+_CAMERA.brightness = 60
 
 _MODULES = [modules.Recording(), modules.Live(), modules.Motion()]
 _NETWORK = Networking.Networking(CAMERA_NAME)
@@ -81,7 +83,7 @@ class Multiplexer(object):
 _recordingQualities =   { 
                             "low": { 
                                 "format": "yuv", 
-                                "resolution": (128, 64),
+                                "resolution": (64, 128),
                                 "fps": 8,
                                 "multiplexer": Multiplexer(),
                                 "splitter_port": 1,
@@ -90,7 +92,7 @@ _recordingQualities =   {
 
                             "high": {
                                 "format": "h264",
-                                "resolution": (1280, 720),
+                                "resolution": (720, 1280),
                                 "fps": 24,
                                 "multiplexer": Multiplexer(),
                                 "splitter_port": 2,
