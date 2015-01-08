@@ -17,7 +17,6 @@ class Recording(ModuleBase):
 		if(len(self.buffer) > 1024 * 1024):
 			toReturn = self.buffer[:]
 			self.buffer = ''
-			print ("Ready - sending!")
 			return {"frameData": toReturn}
 		else:
 			self.buffer = ''.join((self.buffer, frame))
@@ -26,5 +25,5 @@ class Recording(ModuleBase):
 
 	def shutdown(self):
 		ModuleBase.shutdown(self)
-		print ("Shutting down %s" % self.get_name())
+		LOGGER.info("Shutting down %s" % self.get_name())
 		return
