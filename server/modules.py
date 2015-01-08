@@ -15,7 +15,7 @@ MODULE_PROCESSORS = { "Recording": _recording_write }
 PROCESSING_POOL = Pool(processes=4)
 
 def process_data(i):
-    info, data = i[0]
+    info, data = i
     if data is not None:
         handler = _get_data_handler(info['module_name'])
         argu = {"camera_name": info['camera_name'],
