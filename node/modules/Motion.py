@@ -53,7 +53,7 @@ class Motion(ModuleBase):
 
         (is_motion, motion_val) = self._analyse(np.fromfile(stream, dtype=np.uint8, count=128*64).reshape((64, 128)))
 
-        if len(self._event_buffer) > 100:
+        if len(self._event_buffer) > 5:
             to_send = self._event_buffer[:]
             self._event_buffer = []
             return to_send
