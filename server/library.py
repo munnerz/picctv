@@ -10,6 +10,7 @@ print("Client & fs created")
 
 def save_file(data, info):
     try:
+        Utils.dbg("Saving file to database... info: %s" % info, "library.write")
         _FS.put(data, **info)
     except Exception as e:
         Utils.dbg("Error saving file to mongodb: %s" % e, "library.save_file")
