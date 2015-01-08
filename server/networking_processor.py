@@ -35,7 +35,7 @@ def process_incoming(connectionDict):
             "networking_processor.process_incoming")
         grabbed = 0
         data_pickled = ''
-        while grabbed < data_length:
+        while len(data_pickled) < data_length:
             data_pickled = ''.join((data_pickled, connection.recv(data_length)))
         data_pickled = struct.unpack(str(data_length) + 's', data_pickled)[0]
         data = pickle.loads(data_pickled)
