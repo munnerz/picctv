@@ -20,15 +20,11 @@ def initialise_connection(connection):
 
         return {"connection": connection, "module_name": module_name, "camera_name": camera_name}
     except Exception as e:
-        Utils.err("Error initialising connection %s" % e, "networking_processor")
+        Utils.err("Error initialising connection: %s" % e, "networking_processor")
         raise #TODO: handle this gracefully
 
 def process_incoming(connectionDict):
     try:
-        #print ("Processing...")
-        #hndl = rebuild_handle(connectionDict['connection'])
-        #print ("Rebuilt handle")
-        #connection = socket.fromfd(hndl, socket.AF_INET, socket.SOCK_STREAM)
         connection = connectionDict['connection']
         data_length = struct.unpack("I", connection.recv(4))[0]
         Utils.dbg("Reading %d bytes from %s/%s" % (data_length, connectionDict["camera_name"], connectionDict["module_name"]),
@@ -46,9 +42,10 @@ def process_incoming(connectionDict):
         return (connectionDict, data)
 
     except Exception as e:
-        Utils.err("%s whilst reading module data for module '%s' from camera '%s'" % 
+        Utils.err("%s whilst reading module data for module '%s' from camera '%s': %s" % 
             (type(e).__name__, connectionDict['module_name'], connectionDict['camera_name']),
-            "networking_processor")
+            "networking_processor",
+            e)
         pass
 
     return (connectionDict, None)
