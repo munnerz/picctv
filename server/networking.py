@@ -50,8 +50,9 @@ class Network(object):
 
     def process(self):
         while self._processing_connections:
-            for connection in self._connections[:]:
-                modules.process_data(networking_processor.process_incoming(connection))
+            with self._connectionsLock:
+                for connection in self._connections:
+                    modules.process_data(networking_processor.process_incoming(connection)) #this should be done async!
             time.sleep(0.1)
             #PROCESSING_POOL.map_async(networking_processor.process_incoming, self._connections, callback=modules.process_data).get() #maybe keep the callback here?
 
