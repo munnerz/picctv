@@ -23,7 +23,7 @@ def process_data(i):
                 "data": data}
         PROCESSING_POOL.apply_async(handler, [argu]).get()
     else:
-        Utils.dbg("Notifying networking that this connection has failed...")
+        Utils.dbg("Notifying networking that this connection has failed...", "modules")
         global_vars.NETWORK.connection_failed(info)
         pass #todo: tell networking that some dud data has been received!
 
