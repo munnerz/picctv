@@ -16,6 +16,7 @@ def save_file(data, info):
 
 def write(data):
     try:
+        Utils.dbg("Saving data: %s to database..." % data, "library.write")
         _CLIENT.analysis.insert(data)
     except Exception as e:
         Utils.dbg("Error saving data to mongodb: %s" % e, "library.write")
