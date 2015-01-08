@@ -27,9 +27,4 @@ def process_data(i):
 def _get_data_handler(module_name):
     ''' returns the appropriate handler for this modules data,
         or a library writer object if none found        '''
-    processor = MODULE_PROCESSORS[module_name]
-    if processor is not None:
-        return processor
-    else:
-        MODULE_PROCESSORS[module_name] = library.Writer()
-        return MODULE_PROCESSORS[module_name]
+    processor = MODULE_PROCESSORS.get(module_name, library.write)
