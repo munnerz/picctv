@@ -24,7 +24,6 @@ class Network(object):
         self._connections = []
         self._connections_lock = threading.Lock()
         self._listening_thread = threading.Thread(target=self.listen)
-        self._processing_thread = threading.Thread(target=self.process)
         self._processing_workers = ThreadPool(processes=128)
 
         self._server_socket = socket.socket()
@@ -48,15 +47,11 @@ class Network(object):
 
     def accepted_connection(self, connectionDict):
         Utils.dbg("Acquiring _connections_lock to finalising adding connection...")
-        with self._connections_lock:
-            Utils.msg("Connection accepted!")
-            self._connections.append(connectionDict)
+        connectionDict['thread'] = threading.Thread(target=networking_processor.process_incoming, name="Thread-%s.%s" %
+                (connectionDict['camera_name'], connectionDict['module_name']), args=connectionDict)
 
-    def process(self):
-        while self._processing_connections:
-            with self._connections_lock:
-                self._processing_workers.map_async(networking_processor.process_incoming, self._connections, callback=modules.process_data)
-            time.sleep(1)
+        connectionDict['thread'].start()
+
 
     def listen(self):
         while self._accepting_connections:

@@ -4,6 +4,7 @@ import socket
 from multiprocessing.reduction import rebuild_handle, reduce_handle
 
 from utils import Utils
+import modules
 
 def initialise_connection(connection):
     try:
@@ -24,27 +25,27 @@ def initialise_connection(connection):
         raise #TODO: handle this gracefully
 
 def process_incoming(connectionDict):
-    try:
-        connection = connectionDict['connection']
-        data_length = struct.unpack("I", connection.recv(4))[0]
-        Utils.dbg("Reading %d bytes from %s/%s" % (data_length, connectionDict["camera_name"], connectionDict["module_name"]),
-            "networking_processor")
-        grabbed = 0
-        data_pickled = ''
-        while len(data_pickled) < data_length:
-            data_pickled = ''.join((data_pickled, connection.recv(data_length)))
-        data_pickled = struct.unpack(str(data_length) + 's', data_pickled)[0]
-        data = pickle.loads(data_pickled)
+    while True:
+        try:
+            connection = connectionDict['connection']
+            data_length = struct.unpack("I", connection.recv(4))[0]
+            Utils.dbg("Reading %d bytes from %s/%s" % (data_length, connectionDict["camera_name"], connectionDict["module_name"]),
+                "networking_processor")
+            grabbed = 0
+            data_pickled = ''
+            while len(data_pickled) < data_length:
+                data_pickled = ''.join((data_pickled, connection.recv(data_length)))
+            data_pickled = struct.unpack(str(data_length) + 's', data_pickled)[0]
+            data = pickle.loads(data_pickled)
 
-        Utils.dbg("Read %d bytes from %s/%s" % (data_length, connectionDict["camera_name"], connectionDict["module_name"]),
-            "networking_processor")
+            Utils.dbg("Read %d bytes from %s/%s" % (data_length, connectionDict["camera_name"], connectionDict["module_name"]),
+                "networking_processor")
 
-        return (connectionDict, data)
-
-    except Exception as e:
-        Utils.err("%s whilst reading module data for module '%s' from camera '%s': %s" % 
-            (type(e).__name__, connectionDict['module_name'], connectionDict['camera_name'], e),
-            "networking_processor")
-        pass
-
-    return (connectionDict, None)
+            modules.process_data((connectionDict, data))
+        except Exception as e:
+            Utils.err("%s whilst reading module data for module '%s' from camera '%s': %s" % 
+                (type(e).__name__, connectionDict['module_name'], connectionDict['camera_name'], e),
+                "networking_processor")
+            modules.process_data((connectionDict, None))
+            pass
+            break
