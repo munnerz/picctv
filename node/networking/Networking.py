@@ -7,10 +7,14 @@ import logging
 from Queue import Empty
 
 LOGGER = logging.getLogger(name="Networking")
+LOGGER.setLevel(logging.DEBUG)
+
 ch = logging.StreamHandler()
-ch.setLevel(logging.ERROR)
+ch.setLevel(logging.DEBUG)
+
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
+
 LOGGER.addHandler(ch)
 
 def _chunks(lst, n):
@@ -86,7 +90,6 @@ class Networking(object):
         while True:
             try:
                 (module_name, data) = queue.get(True, 0.1)
-                print("Got data for module %s" % module_name)
                 if(module_name == "RootNode"):
                     if data == None:
                         print ("Ending...")
