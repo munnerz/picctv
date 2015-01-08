@@ -87,9 +87,14 @@ class Networking(object):
             return False
 
     def run(self, queue):
+        queue_buffer = Queue()
         while True:
             try:
-                (module_name, data) = queue.get(True, 0.1)
+                if not queue_buffer.empty():
+                    #allow this to timeout just to be safe...
+                    (module_name, data) = queue_buffer.get(True, 0.1)
+                else:
+                    (module_name, data) = queue.get(True, 0.1)
                 if(module_name == "RootNode"):
                     if data == None:
                         print ("Ending...")
@@ -97,7 +102,7 @@ class Networking(object):
                 elif data is not None:
                     connection = self._get_connection(module_name)
                     if connection is None:
-                        queue.put((module_name, data)) #this will keep failed sends in the queue to send later...
+                        queue_buffer.put((module_name, data)) #this will keep failed sends in the queue to send later...
                         continue
                     if not self._pickle_and_send(data, connection):
                         print ("Error writing data to network for module %s" % module_name)
