@@ -1,6 +1,8 @@
 from multiprocessing import Pool
 
+import global_vars
 import library
+from utils import Utils
 
 def _recording_write(info):
     library.save_file(info['data']['frameData'], dict(camera_name=info['camera_name'],
@@ -21,7 +23,8 @@ def process_data(i):
                 "data": data}
         PROCESSING_POOL.apply_async(handler, [argu]).get()
     else:
-        print ("Data was none...")
+        Utils.dbg("Notifying networking that this connection has failed...")
+        global_vars.NETWORK.connection_failed(info)
         pass #todo: tell networking that some dud data has been received!
 
 def _get_data_handler(module_name):

@@ -34,6 +34,15 @@ class Network(object):
         self._listeningThread.start()
         self._processingThread.start()
 
+    def connection_failed(self, connectionInfo):
+        try:
+            connectionInfo['connection'].close()
+        except IOError as e:
+            Utils.err("%s whilst reading module data for module '%s' from camera '%s'" % 
+                (type(e).__name__, connectionInfo['module_name'], connectionInfo['camera_name']))
+        with self._connectionsLock:
+            self._connections.remove(connectionInfo)
+
     def accepted_connection(self, connectionDict):
         with self._connectionsLock:
             Utils.msg("Connection accepted")
