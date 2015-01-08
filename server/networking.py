@@ -22,7 +22,6 @@ class Network(object):
         self._port = port
         self._accepting_connections = self._processing_connections = True
         self._connections = []
-        self._connections_lock = threading.Lock()
         self._listening_thread = threading.Thread(target=self.listen)
         self._processing_workers = ThreadPool(processes=128)
 
@@ -40,14 +39,14 @@ class Network(object):
         except IOError as e:
             Utils.err("%s whilst reading module data for module '%s' from camera '%s'" % 
                 (type(e).__name__, connectionInfo['module_name'], connectionInfo['camera_name']))
-        with self._connections_lock:
-            self._connections.remove(connectionInfo)
+        self._connections.remove(connectionInfo)
         Utils.msg("Closed connection for module '%s' on camera '%s'" % (connectionInfo['module_name'], connectionInfo['camera_name']))
 
     def accepted_connection(self, connectionDict):
         connectionDict['thread'] = threading.Thread(target=networking_processor.process_incoming, name="Thread-%s.%s" %
                 (connectionDict['camera_name'], connectionDict['module_name']), args=[connectionDict])
         connectionDict['thread'].start()
+        self._connections.append(connectionDict)
 
 
     def listen(self):
