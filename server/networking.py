@@ -47,8 +47,9 @@ class Network(object):
         Utils.msg("Closed connection for module '%s' on camera '%s'" % (connectionInfo['module_name'], connectionInfo['camera_name']))
 
     def accepted_connection(self, connectionDict):
+        Utils.dbg("Acquiring _connections_lock to finalising adding connection...")
         with self._connections_lock:
-            Utils.msg("Connection accepted")
+            Utils.msg("Connection accepted!")
             self._connections.append(connectionDict)
 
     def process(self):
