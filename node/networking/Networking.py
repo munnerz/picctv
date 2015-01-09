@@ -98,7 +98,8 @@ class Networking(object):
                 elif data is not None:
                     connection = self._get_connection(module_name)
                     if connection is None:
-                        queue_buffer.put((module_name, data)) #this will keep failed sends in the queue to send later...
+                        queue_buffer.put((module_name, data))
+                        sleep(1)
                         continue
                     if not self._pickle_and_send(data, connection):
                         LOGGER.exception("Error writing data to network for module %s" % module_name)
