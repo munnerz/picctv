@@ -1,5 +1,7 @@
 import logging
 
+from picamera import PiVideoFrameType
+
 from modules.ModuleBase import ModuleBase
 
 LOGGER = logging.getLogger("node.Recording")
@@ -14,9 +16,9 @@ class Recording(ModuleBase):
 
 	def process_frame(self, data):
 		(frame, info) = data
-		if(len(self.buffer) > 1024 * 1024):
+		if len(self.buffer) > 1024 * 1024 and info.frame_type == PiVideoFrameType.key_frame:
 			toReturn = self.buffer[:]
-			self.buffer = ''
+			self.buffer = frame
 			return {"frameData": toReturn}
 		else:
 			self.buffer = ''.join((self.buffer, frame))
