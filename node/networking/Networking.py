@@ -1,12 +1,14 @@
+from socket import socket, AF_INET, SOCK_STREAM
 from multiprocessing import Process, Queue
+from logging import getLogger
+from cPickle import dumps
 from Queue import Empty
-import cPickle as pickle
-import socket
-import struct
-import logging
-import sys
+from struct import pack
+from time import sleep
+from sys import exit
 
-LOGGER = logging.getLogger(name="node.Networking")
+
+LOGGER = getLogger(name="node.Networking")
 
 def _chunks(lst, n):
     "Yield successive n-sized chunks from lst"
@@ -29,7 +31,7 @@ class Networking(object):
         self._send_queue.put(data)
 
     def _create_connection(self, module_name):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock = socket(AF_INET, SOCK_STREAM)
 
         try:
             sock.connect((self._ip, self._port))
@@ -46,13 +48,13 @@ class Networking(object):
 
     def _pickle_and_send(self, d, conn):
         ''' serialises d and sends it over connection conn with a length header '''
-        serialised = pickle.dumps(d, -1)
-        toSend = struct.pack(str(len(serialised)) + 's', serialised)
+        serialised = dumps(d, -1)
+        toSend = pack(str(len(serialised)) + 's', serialised)
 
         sent_bytes = 0
 
         try:
-            conn.send(struct.pack("I", len(serialised)))
+            conn.send(pack("I", len(serialised)))
             for chunk in _chunks(toSend, 4096):
                 sent_bytes += conn.send(chunk)
         except IOError as e:
@@ -81,19 +83,12 @@ class Networking(object):
         kill_received = False
         while True:
             try:
-                if kill_received and queue_buffer.empty() and queue.empty():
-                    LOGGER.debug("Flushed all data.")
-                    break
                 if not queue_buffer.empty():
                     (module_name, data) = queue_buffer.get()
                 else:
-                    (module_name, data) = queue.get(True)
-                if(module_name == "RootNode"):
-                    if data == None:
-                        kill_received = True
-                        LOGGER.debug("Shutdown signal received. Flushing data...")
-                        continue
-                elif data is not None:
+                    (module_name, data) = queue.get()
+
+                if data is not None:
                     connection = self._get_connection(module_name)
                     if connection is None:
                         queue_buffer.put((module_name, data)) #this will keep failed sends in the queue to send later...
@@ -105,13 +100,21 @@ class Networking(object):
                     else:
                         LOGGER.debug("Pickled and sent data for module %s" % module_name)
             except Empty:
+                if kill_received:
+                    LOGGER.debug("Flushed all data.")
+                    break
+                sleep(0.2)
                 pass
             except KeyboardInterrupt:
-                break
+                kill_received = True
+                LOGGER.debug("Shutdown signal received. Flushing data...")
+                pass
+
         LOGGER.debug("Networking queue processor shutting down...")
-        sys.exit()
+        exit()
 
     def shutdown(self):
-        self.send_data(("RootNode", None))
-
-        LOGGER.debug("Sent kill request to Networking processor...")
+        if self._process.is_alive():
+            LOGGER.debug("Waiting for Networking processor to flush data...")
+            self._process.join()
+        LOGGER.debug("Shut down.")
