@@ -1,8 +1,8 @@
 from socket import socket, AF_INET, SOCK_STREAM
-from multiprocessing.dummy import Process, Queue
+from Queue import Empty, Queue
 from logging import getLogger
+from threading import Thread
 from cPickle import dumps
-from Queue import Empty
 from struct import pack
 from time import sleep
 from sys import exit
@@ -24,7 +24,7 @@ class Networking(object):
         self._port = port
         self._connections = {}
         self._send_queue = Queue()
-        self._process = Process(target=self.run, args=(self._send_queue,))
+        self._process = Thread(target=self.run, args=(self._send_queue,))
         self._process.start()
 
     def send_data(self, data):
@@ -89,7 +89,7 @@ class Networking(object):
                 if not queue_buffer.empty():
                     (module_name, data) = queue_buffer.get()
                 else:
-                    (module_name, data) = queue.get(True)
+                    (module_name, data) = queue.get()
                 if(module_name == "RootNode"):
                     if data == None:
                         kill_received = True
@@ -107,11 +107,11 @@ class Networking(object):
                     else:
                         LOGGER.debug("Pickled and sent data for module %s" % module_name)
             except Empty:
+                sleep(0.1)
                 pass
             except KeyboardInterrupt:
                 pass
         LOGGER.debug("Networking queue processor shutting down...")
-        exit()
 
     def shutdown(self):
         LOGGER.debug("Sending kill request to Networking processor...")
