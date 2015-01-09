@@ -4,6 +4,7 @@ import cPickle as pickle
 import socket
 import struct
 import logging
+import sys
 
 LOGGER = logging.getLogger(name="node.Networking")
 
@@ -104,6 +105,7 @@ class Networking(object):
             except KeyboardInterrupt:
                 break
         LOGGER.debug("Networking queue processor shutting down...")
+        sys.exit()
 
     def shutdown(self):
         self.send_data(("RootNode", None))
