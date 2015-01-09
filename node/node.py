@@ -138,7 +138,7 @@ try:
 except KeyboardInterrupt:
         #shut down all modules here
         map(lambda q: _CAMERA.stop_recording(splitter_port=q['splitter_port']), _recordingQualities.values())
-        map(lambda m: shutdown_module(m), _MODULES)
         _NETWORK.shutdown()
+        map(lambda m: shutdown_module(m), _MODULES)
 
         LOGGER.info("Shut down.")
