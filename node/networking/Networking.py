@@ -83,12 +83,19 @@ class Networking(object):
         kill_received = False
         while True:
             try:
+                if kill_received and queue_buffer.empty() and queue.empty():
+                    LOGGER.debug("Flushed all data.")
+                    break
                 if not queue_buffer.empty():
                     (module_name, data) = queue_buffer.get()
                 else:
-                    (module_name, data) = queue.get()
-
-                if data is not None:
+                    (module_name, data) = queue.get(True)
+                if(module_name == "RootNode"):
+                    if data == None:
+                        kill_received = True
+                        LOGGER.debug("Shutdown signal received. Flushing data...")
+                        continue
+                elif data is not None:
                     connection = self._get_connection(module_name)
                     if connection is None:
                         queue_buffer.put((module_name, data)) #this will keep failed sends in the queue to send later...
@@ -100,21 +107,13 @@ class Networking(object):
                     else:
                         LOGGER.debug("Pickled and sent data for module %s" % module_name)
             except Empty:
-                if kill_received:
-                    LOGGER.debug("Flushed all data.")
-                    break
-                sleep(0.2)
                 pass
             except KeyboardInterrupt:
-                kill_received = True
-                LOGGER.debug("Shutdown signal received. Flushing data...")
-                pass
-
+                break
         LOGGER.debug("Networking queue processor shutting down...")
-        exit()
+        sys.exit()
 
     def shutdown(self):
-        if self._process.is_alive():
-            LOGGER.debug("Waiting for Networking processor to flush data...")
-            self._process.join()
-        LOGGER.debug("Shut down.")
+        self.send_data(("RootNode", None))
+
+        LOGGER.debug("Sent kill request to Networking processor...")
