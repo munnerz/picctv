@@ -19,7 +19,7 @@ class Recording(ModuleBase):
 		if len(self.buffer) > 1024 * 1024 and info.frame_type == PiVideoFrameType.key_frame:
 			toReturn = self.buffer[:]
 			self.buffer = frame
-			return {"frameData": toReturn}
+			return {"frameData": toReturn, "frame_number": info.index}
 		else:
 			self.buffer = ''.join((self.buffer, frame))
 			return None
