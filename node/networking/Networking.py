@@ -109,9 +109,9 @@ class Networking(object):
             except Empty:
                 pass
             except KeyboardInterrupt:
-                break
+                pass
         LOGGER.debug("Networking queue processor shutting down...")
-        sys.exit()
+        exit()
 
     def shutdown(self):
         self.send_data(("RootNode", None))
