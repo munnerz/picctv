@@ -62,7 +62,9 @@ class Motion(ModuleBase):
             self._event_buffer = []
             return to_send
         else:
-            self._event_buffer.append((is_motion, motion_val))
+            self._event_buffer.append({ "is_motion": is_motion, 
+                                        "motion_magnitude": motion_val,
+                                        "frame_number": frameInfo.index}
             return None
 
     def shutdown(self):
