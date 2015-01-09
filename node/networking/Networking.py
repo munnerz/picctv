@@ -114,6 +114,5 @@ class Networking(object):
         exit()
 
     def shutdown(self):
+        LOGGER.debug("Sending kill request to Networking processor...")
         self.send_data(("RootNode", None))
-
-        LOGGER.debug("Sent kill request to Networking processor...")
