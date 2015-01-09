@@ -60,4 +60,5 @@ class Live(ModuleBase):
         self._server_socket.close()
         LOGGER.info("Shutting down %s" % self.get_name())
         self._listeningThread.join(timeout=1)
+        LOGGER.info("Shut down")
         return
