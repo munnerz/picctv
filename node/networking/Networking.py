@@ -26,7 +26,6 @@ class Networking(object):
         self._process.start()
 
     def send_data(self, data):
-        LOGGER.debug("Queue size (SD): %d" % self._send_queue.qsize())
         self._send_queue.put(data)
 
     def _create_connection(self, module_name):
