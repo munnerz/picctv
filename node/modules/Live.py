@@ -4,7 +4,7 @@ import logging
 
 from modules.ModuleBase import ModuleBase
 
-LOGGER = logging.getLogger("node.Motion")
+LOGGER = logging.getLogger("node.Live")
 
 class Live(ModuleBase):
 
