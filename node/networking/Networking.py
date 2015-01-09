@@ -1,5 +1,5 @@
 from socket import socket, AF_INET, SOCK_STREAM
-from multiprocessing import Process, Queue
+from multiprocessing.dummy import Process, Queue
 from logging import getLogger
 from cPickle import dumps
 from Queue import Empty
