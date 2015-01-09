@@ -110,5 +110,6 @@ class Networking(object):
     def shutdown(self):
         self.send_data(("RootNode", None))
         LOGGER.info("Waiting for main process to end")
-        self._process.join()
+        self._process.join(timeout=1)
+        self._process.terminate()
         LOGGER.info("Main process ended")
