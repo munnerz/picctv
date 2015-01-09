@@ -26,6 +26,4 @@ class Recording(ModuleBase):
 
 
 	def shutdown(self):
-		ModuleBase.shutdown(self)
-		LOGGER.info("Shutting down %s" % self.get_name())
-		return
+		LOGGER.debug("Shut down.")

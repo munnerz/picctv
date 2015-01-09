@@ -68,6 +68,4 @@ class Motion(ModuleBase):
             return None
 
     def shutdown(self):
-        ModuleBase.shutdown(self)
-        logging.info("Shutting down %s" % self.get_name())
-        return
+        LOGGER.debug("Shut down.")

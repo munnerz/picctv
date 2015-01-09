@@ -79,16 +79,21 @@ class Networking(object):
 
     def run(self, queue):
         queue_buffer = Queue()
+        kill_received = False
         while True:
             try:
+                if kill_received and queue_buffer.empty() and queue.empty():
+                    LOGGER.debug("Flushed all data.")
+                    break
                 if not queue_buffer.empty():
                     (module_name, data) = queue_buffer.get()
                 else:
                     (module_name, data) = queue.get(True)
                 if(module_name == "RootNode"):
                     if data == None:
-                        LOGGER.info("Shutdown signal received")
-                        break
+                        kill_received = True
+                        LOGGER.debug("Shutdown signal received. Flushing data...")
+                        continue
                 elif data is not None:
                     connection = self._get_connection(module_name)
                     if connection is None:
@@ -109,7 +114,5 @@ class Networking(object):
 
     def shutdown(self):
         self.send_data(("RootNode", None))
-        LOGGER.info("Waiting for main process to end")
-        self._process.join(timeout=1)
-        self._process.terminate()
-        LOGGER.info("Main process ended")
+
+        LOGGER.debug("Sent kill request to Networking processor...")

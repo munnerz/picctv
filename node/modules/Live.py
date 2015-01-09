@@ -52,13 +52,13 @@ class Live(ModuleBase):
         return None
 
     def shutdown(self):
-        ModuleBase.shutdown(self)
+        LOGGER.debug("Shutting down...")
+
         self._keepListening = False
         with self._outputLock:
             map(lambda o: o.close(), self._outputs)
             del self._outputs[:]
         self._server_socket.close()
-        LOGGER.info("Shutting down %s" % self.get_name())
         self._listeningThread.join(timeout=1)
-        LOGGER.info("Shut down")
-        return
+
+        LOGGER.debug("Shut down.")

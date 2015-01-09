@@ -16,4 +16,4 @@ class ModuleBase:
 		raise NotImplementedError("Module doesn't implement a processFrame method")
 
 	def shutdown(self):
-		self._running = False
+		return
