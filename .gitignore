@@ -4,3 +4,4 @@ cctv.db
 !.gitignore
 *.pyc
 server.log
+web/db.sqlite3

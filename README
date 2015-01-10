@@ -32,7 +32,8 @@ Info about OpenCV (specifically getting number of msec into video): http://docs.
 
 SERVER DEPS:
 pymongo
-tornado
+django
+django-bootstrap3
 
 mongodb server running
 ffmpeg with support for h264 and mp4
