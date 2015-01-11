@@ -41,6 +41,9 @@ class Network(object):
             Utils.err("%s whilst reading module data for module '%s' from camera '%s'" % 
                 (type(e).__name__, connectionInfo['module_name'], connectionInfo['camera_name']))
         self._connections.remove(connectionInfo)
+        Utils.weblog("'%s' module on '%s' stopped." % 
+                    (connectionInfo['module_name'], connectionInfo['camera_name']), 
+                    "warning", "Networking")
         Utils.msg("Closed connection for module '%s' on camera '%s'" % (connectionInfo['module_name'], connectionInfo['camera_name']))
 
     def accepted_connection(self, connectionDict):
