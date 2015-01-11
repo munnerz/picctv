@@ -24,6 +24,7 @@ def save_file(data, info):
         Utils.dbg("Saving file to database... info: %s" % info, "library.write")
         c = clip()
         c.data.put(data, content_type="video/h264")
+        c.save_time = datetime.now()
         for x, y in info.iteritems():
             c.__setattr__(x, y)
         c.save()
