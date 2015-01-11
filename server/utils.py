@@ -4,8 +4,6 @@ import logging
 from subprocess import Popen
 from tempfile import SpooledTemporaryFile, NamedTemporaryFile
 
-import library 
-
 class Settings:
 
     className = "Settings"
@@ -109,7 +107,8 @@ class Utils:
             callingframe = inspect.currentframe().f_back
             sender = "server.%s" % (callingframe.f_locals['self'].__class__.__name__)
             library
-        library.log(text, level, sender)
+        from library import log
+        log(text, level, sender)
 
     @staticmethod
     def closeFile():
