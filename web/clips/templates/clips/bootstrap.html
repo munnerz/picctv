@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 {% load bootstrap3 %}
 {% load staticfiles %}
+{% load base_extra %}
 <html{% if request.LANGUAGE_CODE %} lang="{{ request.LANGUAGE_CODE }}"{% endif %}>
 
 <head>
@@ -21,7 +22,36 @@
 </head>
 
 <body>
-{% block bootstrap3_content %}django-bootstrap3 template content{% endblock %}
+    <nav class="navbar navbar-fixed-top navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#clips-navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{% url 'home' %}">PiCCTV</a>
+            </div>
+            <div class="collapse navbar-collapse" id="clips-navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li class="{% active_page request "home" %}"><a href="{% url 'home' %}">home</a></li>
+                    <li class="{% active_page request "list" %}"><a href="{% url 'list' %}">list clips</a></li>
+                    <li class="{% active_page request "analysis" %}"><a href="{% url 'analysis' %}">analysis</a></li>
+                </ul>
+                <a href="https://git.e720.co.uk/munnerz/picctv" type="button" class="pull-right btn btn-default navbar-btn">Git</a>
+            </div>
+
+        </div>
+    </nav>
+
+    <div class="row">
+        <div class="well col-xs-offset-1 col-xs-12 col-sm-2 col-md-2" id="sidebar-panel">
+            {% block sidebar %}sidebar{% endblock %}
+        </div>
+        <div class="col-xs-12 col-sm-8 col-md-8" id="main-panel">
+            {% block bootstrap3_content %}django-bootstrap3 template content{% endblock %}
+        </div>
+    </div>
 {% if not 'javascript_in_head'|bootstrap_setting %}{% bootstrap_javascript jquery=True %}{% endif %}
 {% block bootstrap3_extra_script %}{% endblock %}
 </body>

@@ -4,34 +4,9 @@
 
 {% load bootstrap3 %}
 
-{% load base_extra %}
-
 {% block bootstrap3_title %}PiCCTV{% endblock %}
 
 {% block bootstrap3_content %}
-    <div class="container">
-
-        <nav class="navbar navbar-fixed-top navbar-inverse">
-            <div class="container-fluid">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#clips-navbar-collapse">
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand" href="{% url 'home' %}">PiCCTV</a>
-                </div>
-                <div class="collapse navbar-collapse" id="clips-navbar-collapse">
-                    <ul class="nav navbar-nav">
-                        <li class="{% active_page request "home" %}"><a href="{% url 'home' %}">home</a></li>
-                        <li class="{% active_page request "list" %}"><a href="{% url 'list' %}">list clips</a></li>
-                        <li class="{% active_page request "analysis" %}"><a href="{% url 'analysis' %}">analysis</a></li>
-                    </ul>
-                    <a href="https://git.e720.co.uk/munnerz/picctv" type="button" class="pull-right btn btn-default navbar-btn">Git</a>
-                </div>
-
-            </div>
-        </nav>
 
         {% bootstrap_messages %}
 
@@ -41,7 +16,6 @@
           </div>
         </div>
 
-        {% block content %}(no content){% endblock %}
-    </div>
+{% block content %}(no content){% endblock %}
 
 {% endblock %}
