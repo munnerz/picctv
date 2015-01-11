@@ -16,7 +16,7 @@ class Recording(ModuleBase):
 
 	def process_frame(self, data):
 		(frame, info) = data
-		if len(self.buffer) > 1024 * 1024 and info.frame_type == PiVideoFrameType.key_frame:
+		if len(self.buffer) > 1024 * 1024 and info.frame_type == PiVideoFrameType.sps_header:
 			toReturn = self.buffer[:]
 			self.buffer = frame
 			return {"frameData": toReturn, "frame_number": info.index}
