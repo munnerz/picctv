@@ -5,7 +5,7 @@ from django.http import HttpResponse
 import models
 
 def index(request):
-    return render(request, 'clips/index.html', None)
+    return render(request, 'clips/index.html', {"logs": models.logs.objects[:30].order_by('-time')})
 
 def list(request):
     return render(request, 'clips/list.html', None)

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pymongo import MongoClient
 from gridfs import GridFS
 
@@ -27,7 +29,7 @@ def write(data):
 
 def log(text, level, sender):
     try:
-        _DB.logs.insert({"message": text, "level": level, "sender": sender})
+        _DB.logs.insert({"message": text, "level": level, "sender": sender, "time": datetime.now() })
         Utils.dbg("Logging: %s" % text, "library.log")
     except Exception as e:
         Utils.err("Error logging to mongodb: %s" % e, "library.log")

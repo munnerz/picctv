@@ -3,5 +3,20 @@
 {% block title %}PiCCTV{% endblock %}
 
 {% block content %}
-    This is <em>bootstrap3</em> for <strong>Django</strong>.
+        <div class="page-header">
+          <h1>Recent log messages</h1>
+        </div>
+        <ul class="list-group">
+{% for log in logs %} 
+          <li class="list-group-item list-group-item-{{ log.level }}">
+            <div class="btn-group pull-left">
+              <button class="btn btn-xs btn-info">{{ log.time | date:'Y-m-d H:i:s' }}</button>
+            </div>
+            <strong style="margin-left: 10px;">{{ log.message }}</strong>
+            <div class="btn-group pull-right">
+              <button class="btn btn-xs btn-success">{{ log.sender }}</button>
+            </div>
+          </li>
+{% endfor %}
+        </ul>
 {% endblock %}

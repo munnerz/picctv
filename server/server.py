@@ -9,9 +9,9 @@ def main():
 
 try:
     if __name__ == "__main__":
+        Utils.weblog("Starting...", "success", "Server")
         main()
-        Utils.weblog("Starting...", "info", "Server")
 
 except KeyboardInterrupt:
     Utils.msg("Server", "Shutting down...")
-    Utils.weblog("Shutting down...", "info", "Server")
+    Utils.weblog("Shutting down...", "warning", "Server")
