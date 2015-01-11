@@ -16,7 +16,7 @@ class clip(DynamicDocument):
 class analysis(DynamicDocument):
     pass
 
-class log_msg(DynamicDocument):
+class logmsg(DynamicDocument):
     pass
 
 def save_file(data, info):
@@ -47,11 +47,12 @@ def write(data):
 
 def log(text, level, sender):
     try:
-        c = log_msg()
+        c = logmsg()
         c.message = text
         c.level = level
         c.sender = sender
-        c.time = datetime.now()
+        c.save_time = datetime.now()
+        c.save()
         Utils.dbg("Logging: %s" % text, "library.log")
     except Exception as e:
         Utils.err("Error logging to mongodb: %s" % e, "library.log")

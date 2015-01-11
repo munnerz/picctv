@@ -10,11 +10,14 @@
 {% for log in logs %} 
           <li class="list-group-item list-group-item-{{ log.level }}">
             <div class="btn-group pull-left">
-              <button class="btn btn-xs btn-info">{{ log.time | date:'Y-m-d H:i:s' }}</button>
+              <button class="btn btn-xs btn-info">{{ log.save_time | date:'Y-m-d H:i:s' }}</button>
             </div>
             <strong style="margin-left: 10px;">{{ log.message }}</strong>
-            <div class="btn-group pull-right">
+            <div style="margin-left: 3px" class="btn-group pull-right">
               <button class="btn btn-xs btn-success">{{ log.sender }}</button>
+            </div>
+            <div class="btn-group pull-right">
+              <button class="btn btn-xs btn-{{ log.level }}">{{ log.level }}</button>
             </div>
           </li>
 {% endfor %}

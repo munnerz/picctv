@@ -4,7 +4,7 @@ from cctvweb.settings import DBNAME
 
 connect(DBNAME)
 
-class logs(DynamicDocument):
+class logmsg(DynamicDocument):
     message = StringField()
     level = StringField()
 
