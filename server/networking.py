@@ -26,6 +26,7 @@ class Network(object):
         self._processing_workers = ThreadPool(processes=128)
 
         self._server_socket = socket.socket()
+        self._server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._server_socket.bind((self._ip, self._port))
         self._server_socket.listen(0)
         
