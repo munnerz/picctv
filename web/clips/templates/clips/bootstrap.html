@@ -44,14 +44,7 @@
         </div>
     </nav>
 
-    <div class="row">
-        <div class="well col-xs-offset-1 col-xs-12 col-sm-2 col-md-2" id="sidebar-panel">
-            {% block sidebar %}sidebar{% endblock %}
-        </div>
-        <div class="col-xs-12 col-sm-8 col-md-8" id="main-panel">
-            {% block bootstrap3_content %}django-bootstrap3 template content{% endblock %}
-        </div>
-    </div>
+    {% block bootstrap3_content %}django-bootstrap3 template content{% endblock %}
 {% if not 'javascript_in_head'|bootstrap_setting %}{% bootstrap_javascript jquery=True %}{% endif %}
 {% block bootstrap3_extra_script %}{% endblock %}
 </body>

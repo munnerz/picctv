@@ -1,17 +1,20 @@
 {% extends 'clips/base.html' %}
 
+{% load base_extra %}
+
 {% block title %}Clip list{% endblock %}
 
 
-{% block sidebar %}
-		<ul class="nav nav-pills nav-stacked">
-{% for c in cameras %}		
-			<li role="presentation"><a href="#">{{ c }}</a></li>
-{% endfor %}
-		</ul>
-{% endblock %}
-
 {% block content %}
+<div class="well col-xs-12 col-sm-offset-1 col-sm-2 col-md-2">
+    <ul class="nav nav-pills nav-stacked">
+		<li role="presentation" class="{% active_page_GET request "" "camera" %}"><a href="{% url 'list' %}">All</a></li>
+{% for c in cameras %}		
+		<li role="presentation" class="{% active_page_GET request c "camera" %}"><a href="{% url 'list' %}?camera={{ c }}">{{ c }}</a></li>
+{% endfor %}
+	</ul>
+</div>
+<div class="col-xs-12 col-sm-8 col-md-8">
     <table class="table table-striped table-hover">
         <thead>
             <tr>
@@ -26,4 +29,5 @@
 {% endfor %}
         </tbody>
     </table>
+</div>
 {% endblock %}
