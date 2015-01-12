@@ -9,7 +9,14 @@ class logmsg(DynamicDocument):
     level = StringField()
 
 class clip(DynamicDocument):
-    pass
+	data = FileField()
+	save_time = DateTimeField()
+	start_frame_index = LongField() 
+	start_time = DateTimeField() 
+	end_time = DateTimeField() 
+	module_name = StringField() 
+	end_frame_index = LongField() 
+	camera_name = StringField()
 
 class analysis(DynamicDocument):
     pass
