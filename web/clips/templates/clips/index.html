@@ -12,7 +12,7 @@
 {% for log in logs %} 
           <li class="list-group-item list-group-item-{{ log.level }}">
             
-            <div id="log-meta-items" class="row visible-xs-block visible-sm-inline pull-left-xs pull-right-sm">
+            <div id="log-meta-items" class="row visible-xs-block visible-sm-inline visible-md-inline visible-lg-inline pull-left-xs pull-right-sm">
               <button class="btn btn-xs btn-info">{{ log.save_time | date:'Y-m-d H:i:s' }}</button>
               <button class="btn btn-xs btn-{{ log.level }}">{{ log.level }}</button>
               <button class="btn btn-xs btn-success">{{ log.sender }}</button>
