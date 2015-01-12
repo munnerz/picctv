@@ -1,3 +1,4 @@
+from datetime import datetime
 import numpy as np
 import cv2
 import logging
@@ -15,6 +16,9 @@ class Motion(ModuleBase):
         self._MOTION_LEVEL = 10000
         self._THRESHOLD = 35
         self._event_buffer = []
+
+        self._last_timestamp = 0
+        self._last_start_time = datetime.now()
 
     def _storeFrame(self, frame):
         self._frames.insert(0, frame)
@@ -49,22 +53,36 @@ class Motion(ModuleBase):
         return "low"
 
     def process_frame(self, data):
-        (frame, frameInfo) = data
+        (frame, frame_info) = data
         
-        stream=open('/run/shm/picamtemp.dat','w+b')
+        stream = open('/run/shm/picamtemp.dat', 'w+b')
         stream.write(frame)
         stream.seek(0)
 
-        (is_motion, motion_val) = self._analyse(np.fromfile(stream, dtype=np.uint8, count=128*64).reshape((64, 128)))
+        (is_motion, motion_val) = self._analyse(
+            np.fromfile(stream, dtype=np.uint8, count=128*64).reshape((64, 128)))
 
-        if len(self._event_buffer) > 5:
-            to_send = self._event_buffer[:]
+        if len(self._event_buffer) > 10:
+            data_buffer = self._event_buffer[:]
             self._event_buffer = []
+
+            end_time = datetime.now()
+            end_timestamp = frame_info.timestamp
+
+            to_send = dict(start_time=self._last_start_time,
+                           end_time=end_time,
+                           start_timestamp=self._last_timestamp,
+                           end_timestamp=end_timestamp,
+                           data_buffer=data_buffer)
+
+            self._last_start_time = end_time
+            self._last_timestamp = end_timestamp
+
             return to_send
         else:
-            self._event_buffer.append({ "is_motion": is_motion, 
-                                        "motion_magnitude": motion_val,
-                                        "frame_number": frameInfo.index})
+            self._event_buffer.append({"is_motion": is_motion,
+                                       "motion_magnitude": motion_val,
+                                       "frame_number": frame_info.index})
             return None
 
     def shutdown(self):
