@@ -9,8 +9,8 @@
   <div class="well col-xs-12 col-sm-offset-1 col-sm-2 col-md-2">
     <ul class="nav nav-pills nav-stacked">
       <li role="presentation" {% if camera_name == '' %}class="active"{% endif %}><a href="{% url 'list' %}">All <span class="badge">{{ all_clips|length }}</span></a></li>
-{% for c in cameras %}      
-      <li role="presentation" {% if camera_name == c %}class="active"{% endif %}><a href="{% url 'list' camera_name=c %}">{{ c }}</a></li>
+{% for c, numitems in cameras.items %}      
+      <li role="presentation" {% if camera_name == c %}class="active"{% endif %}><a href="{% url 'list' camera_name=c %}">{{ c }} <span class="badge">{{ numitems }}</span></a></li>
 {% endfor %}
     </ul>
   </div>
@@ -53,25 +53,19 @@
     <row>
       <nav class="pull-right">
         <ul class="pagination">
-          <li>
-{% if camera_clips.has_previous %}
-            <a href="{% url 'list' camera_name=camera_name %}?p={{ camera_clips.previous_page_number }}" aria-label="Previous">
-{% endif %}
+          <li class="{% if camera_clips.has_previous %}{% else %}disabled{% endif %}">
+            <a href="{% if camera_clips.has_previous %}{% url 'list' camera_name=camera_name %}?p={{ camera_clips.previous_page_number }}{% else %}#{% endif %}" aria-label="Previous">
               <span class="inactive" aria-hidden="true">&laquo;</span>
-{% if camera_clips.has_previous %}
             </a>
-{% endif %}
           </li> 
-{% for page in paginator.page_range %}
-          <li><a href="{% url 'list' camera_name=camera_name %}?p={{ page }}">{{ page }}</a></li>
+{% for page in page_nav_range %}
+          <li class="{% if page == page_num %}active{% endif %}"><a href="{% url 'list' camera_name=camera_name %}?p={{ page }}">{{ page }}</a></li>
 {% endfor %}
-{% if camera_clips.has_next %}
-          <li>
-            <a href="{% url 'list' camera_name=camera_name %}?p={{ camera_clips.next_page_number }}" aria-label="Next">
-              <span aria-hidden="true">&raquo;</span>
+          <li class="{% if camera_clips.has_next %}{% else %}disabled{% endif %}">
+            <a href="{% if camera_clips.has_next %}{% url 'list' camera_name=camera_name %}?p={{ camera_clips.next_page_number }}{% else %}#{% endif %}" aria-label="Next">
+              <span class="inactive" aria-hidden="true">&raquo;</span>
             </a>
           </li>
-{% endif %}
         </ul>
       </nav>
     </row>
