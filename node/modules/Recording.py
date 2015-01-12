@@ -25,17 +25,18 @@ class Recording(ModuleBase):
             toReturn = self.buffer[:]
             self.buffer = frame
 
+            end_time = datetime.now()
             to_send = {"frame_data": toReturn, 
                         "start_frame_index": self._last_frame_index,
                         "end_frame_index": info.index,
                         "start_timestamp": self._last_timestamp,
                         "end_timestamp": info.timestamp,
                         "start_time": self._last_start_time,
-                        "end_time": datetime.now()}
+                        "end_time": end_time}
 
             self._last_timestamp = info.timestamp
             self._last_frame_index = info.index
-            self._last_start_time = datetime.now()
+            self._last_start_time = end_time
 
             return to_send
         else:
