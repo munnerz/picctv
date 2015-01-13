@@ -5,10 +5,10 @@ import library
 from utils import Utils
 
 def _recording_write(info):
-    library.save_file(info['data']['frameData'], dict(camera_name=info['camera_name'],
+    metadata = ({key: value for key, value in info['data'].items() if key != 'frame_data'})
+    library.save_file(info['data']['frame_data'], dict(camera_name=info['camera_name'],
                                                       module_name=info['module_name'],
-                                                      **({key: value for key, value in info['data'].items()
-                                                            if key != 'frameData'})))
+                                                      **metadata))
     return None
 
 

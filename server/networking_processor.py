@@ -19,6 +19,8 @@ def initialise_connection(connection):
         module_name = pickle.loads(module_name_pickled)
         Utils.dbg("Got camera name '%s', module name '%s'" % (camera_name, module_name), "networking_processor")
 
+        Utils.weblog("'%s' module on '%s' started." % (module_name, camera_name), "info", "Networking")
+
         return {"connection": connection, "module_name": module_name, "camera_name": camera_name}
     except Exception as e:
         Utils.err("Error initialising connection: %s" % e, "networking_processor")

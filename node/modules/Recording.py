@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from picamera import PiVideoFrameType
 
@@ -8,22 +9,42 @@ LOGGER = logging.getLogger("node.Recording")
 
 class Recording(ModuleBase):
 
-	def __init__(self):
-		self.buffer = ''
+    def __init__(self):
+        self.buffer = ''
+        self._last_timestamp = 0
+        self._last_frame_index = 0
+        self._last_start_time = datetime.now()
 
-	def required_quality(self):
-		return "high"
+    def required_quality(self):
+        return "high"
 
-	def process_frame(self, data):
-		(frame, info) = data
-		if len(self.buffer) > 1024 * 1024 and info.frame_type == PiVideoFrameType.key_frame:
-			toReturn = self.buffer[:]
-			self.buffer = frame
-			return {"frameData": toReturn, "frame_number": info.index}
-		else:
-			self.buffer = ''.join((self.buffer, frame))
-			return None
+    def process_frame(self, data):
+        (frame, info) = data
+
+        if len(self.buffer) > 1024 * 1024 and info.frame_type == PiVideoFrameType.sps_header:
+            toReturn = self.buffer[:]
+            self.buffer = frame
+
+            end_time = datetime.now()
+            to_send = {"frame_data": toReturn, 
+                        "start_frame_index": self._last_frame_index,
+                        "end_frame_index": info.index,
+                        "start_timestamp": self._last_timestamp,
+                        "end_timestamp": info.timestamp,
+                        "start_time": self._last_start_time,
+                        "end_time": end_time}
+
+            self._last_timestamp = info.timestamp
+            self._last_frame_index = info.index
+            self._last_start_time = end_time
+
+            return to_send
+        else:
+            self.buffer = ''.join((self.buffer, frame))
+            return None
 
 
-	def shutdown(self):
-		LOGGER.debug("Shut down.")
+    def shutdown(self):
+        ModuleBase.shutdown(self)
+        LOGGER.info("Shutting down %s" % self.get_name())
+        return

@@ -1,0 +1,25 @@
+{% extends 'clips/bootstrap.html' %}
+
+{% load url from future %}
+
+{% load bootstrap3 %}
+
+{% block bootstrap3_title %}PiCCTV{% endblock %}
+
+{% block header_message %}
+  <div class="col-xs-10 col-xs-offset-1">
+    <div class="panel panel-danger">
+      <div class="panel-heading">
+        <h4>Warning: Site still under development...</h4>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block bootstrap3_content %}
+
+{% bootstrap_messages %}
+
+{% block content %}(no content){% endblock %}
+
+{% endblock %}

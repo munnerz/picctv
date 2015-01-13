@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+{% load bootstrap3 %}
+{% load staticfiles %}
+{% load base_extra %}
+<html{% if request.LANGUAGE_CODE %} lang="{{ request.LANGUAGE_CODE }}"{% endif %}>
+
+<head>
+  <meta charset="utf-8">
+  <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge" /><![endif]-->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block bootstrap3_title %}django-bootstrap3 template title{% endblock %}</title>
+  {% bootstrap_css %}
+  <link href="{% static "clips/custom.css" %}" media="all" rel="stylesheet">
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+  <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+  {% if 'javascript_in_head'|bootstrap_setting %}{% bootstrap_javascript jquery=True %}{% endif %}
+  {% block bootstrap3_extra_head %}{% endblock %}
+</head>
+
+<body>
+  <nav class="navbar navbar-fixed-top navbar-inverse">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#clips-navbar-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="{% url 'home' %}"><span class="glyphicon glyphicon-camera" aria-hidden="true"></span> PiCCTV</a>
+      </div>
+      <div class="collapse navbar-collapse" id="clips-navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li class="{% active_page request "home" %}"><a href="{% url 'home' %}">home</a></li>
+          <li class="{% active_page request "list" %}"><a href="{% url 'list' %}">list clips</a></li>
+          <li class="{% active_page request "analysis" %}"><a href="{% url 'analysis' %}">analysis</a></li>
+        </ul>
+        <div class="btn-group pull-right">
+          <a href="https://git.e720.co.uk/munnerz/picctv" type="button" class="hidden-xs btn btn-default navbar-btn">Git</a>
+          <a href="https://git.e720.co.uk/munnerz/picctv/issues" type="button" class="hidden-xs btn btn-danger navbar-btn">Report issue</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  {% block header_message %}{% endblock %}
+  {% block bootstrap3_content %}django-bootstrap3 template content{% endblock %}
+  {% if not 'javascript_in_head'|bootstrap_setting %}{% bootstrap_javascript jquery=True %}{% endif %}
+  {% block bootstrap3_extra_script %}{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,73 @@
+{% extends 'clips/base.html' %}
+
+{% load base_extra %}
+
+{% block title %}Clip list{% endblock %}
+
+
+{% block content %}
+  <div class="well col-xs-12 col-sm-offset-1 col-sm-2 col-md-2">
+    <ul class="nav nav-pills nav-stacked">
+      <li role="presentation" {% if camera_name == '' %}class="active"{% endif %}><a href="{% url 'list' %}">All <span class="badge">{{ all_clips|length }}</span></a></li>
+{% for c, numitems in cameras.items %}      
+      <li role="presentation" {% if camera_name == c %}class="active"{% endif %}><a href="{% url 'list' camera_name=c %}">{{ c }} <span class="badge">{{ numitems }}</span></a></li>
+{% endfor %}
+    </ul>
+  </div>
+  <div class="col-xs-12 col-sm-8 col-md-8">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>Camera</th>
+          <th>Save Time</th>
+          <th>Start Time</th>
+          <th>End Time</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+{% for c in camera_clips %}            
+        <tr>
+          <td>{{ c.camera_name }}</td>
+          <td>{{ c.save_time | date:'Y-m-d H:i:s' }}</td>
+          <td>{{ c.start_time | date:'Y-m-d H:i:s' }}</td>
+          <td>{{ c.end_time | date:'Y-m-d H:i:s' }}</td>
+          <td>
+            <div class="btn-group">
+              <button type="button" class="btn btn-default">Watch</button>
+              <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#">Info</a></li>
+                <li class="divider"></li>
+                <li><a href="#">Download</a></li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+{% endfor %}
+      </tbody>
+    </table>
+    <row>
+      <nav class="pull-right">
+        <ul class="pagination">
+          <li class="{% if camera_clips.has_previous %}{% else %}disabled{% endif %}">
+            <a href="{% if camera_clips.has_previous %}{% url 'list' camera_name=camera_name %}?p={{ camera_clips.previous_page_number }}{% else %}#{% endif %}" aria-label="Previous">
+              <span class="inactive" aria-hidden="true">&laquo;</span>
+            </a>
+          </li> 
+{% for page in page_nav_range %}
+          <li class="{% if page == page_num %}active{% endif %}"><a href="{% url 'list' camera_name=camera_name %}?p={{ page }}">{{ page }}</a></li>
+{% endfor %}
+          <li class="{% if camera_clips.has_next %}{% else %}disabled{% endif %}">
+            <a href="{% if camera_clips.has_next %}{% url 'list' camera_name=camera_name %}?p={{ camera_clips.next_page_number }}{% else %}#{% endif %}" aria-label="Next">
+              <span class="inactive" aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </row>
+  </div>
+{% endblock %}

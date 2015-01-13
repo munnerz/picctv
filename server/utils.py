@@ -2,7 +2,6 @@ import sys
 import inspect
 import logging
 from subprocess import Popen
-
 from tempfile import SpooledTemporaryFile, NamedTemporaryFile
 
 class Settings:
@@ -101,6 +100,15 @@ class Utils:
             callingframe = inspect.currentframe().f_back
             sender = "server.%s" % (callingframe.f_locals['self'].__class__.__name__)
         logging.getLogger("server.%s" % sender).debug(text)
+
+    @staticmethod
+    def weblog(text, level, sender=None):
+        if sender is None:
+            callingframe = inspect.currentframe().f_back
+            sender = "server.%s" % (callingframe.f_locals['self'].__class__.__name__)
+            library
+        from library import log
+        log(text, level, sender)
 
     @staticmethod
     def closeFile():

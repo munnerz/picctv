@@ -1,0 +1,22 @@
+{% extends 'clips/base.html' %}
+
+{% block title %}PiCCTV{% endblock %}
+
+{% block content %}
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Module</th>
+                <th>Camera</th>
+            </tr>
+        </thead>
+        <tbody>
+{% for d in data %}            
+            <tr>
+                <td>{{ d.module_name }}</td>
+                <td>{{ d.camera_name }}</td>
+            </tr>
+{% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
