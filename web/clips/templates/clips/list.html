@@ -14,42 +14,62 @@
 {% endfor %}
     </ul>
   </div>
+
   <div class="col-xs-12 col-sm-8 col-md-8">
-    <table class="table table-striped table-hover">
-      <thead>
-        <tr>
-          <th>Camera</th>
-          <th>Save Time</th>
-          <th>Start Time</th>
-          <th>End Time</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
+
+    <row>
+      <div class="input-group">
+        <div class="input-group-btn">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Action <span class="caret"></span></button>
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="#">Start Time</a></li>
+            <li><a href="#">Save Time</a></li>
+            <li><a href="#">Something else here</a></li>
+            <li class="divider"></li>
+            <li><a href="#">Separated link</a></li>
+          </ul>
+        </div><!-- /btn-group -->
+        <input type="datetime" class="form-control" aria-label="...">
+      </div><!-- /input-group -->
+    </row>
+
+    <row>
+      <table class="table table-striped table-hover table-responsive">
+        <thead>
+          <tr>
+            <th>Camera</th>
+            <th>Save Time</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
 {% for c in camera_clips %}            
-        <tr>
-          <td>{{ c.camera_name }}</td>
-          <td>{{ c.save_time | date:'Y-m-d H:i:s' }}</td>
-          <td>{{ c.start_time | date:'Y-m-d H:i:s' }}</td>
-          <td>{{ c.end_time | date:'Y-m-d H:i:s' }}</td>
-          <td>
-            <div class="btn-group">
-              <button type="button" class="btn btn-default">Watch</button>
-              <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                <span class="caret"></span>
-                <span class="sr-only">Toggle Dropdown</span>
-              </button>
-              <ul class="dropdown-menu" role="menu">
-                <li><a href="#">Info</a></li>
-                <li class="divider"></li>
-                <li><a href="#">Download</a></li>
-              </ul>
-            </div>
-          </td>
-        </tr>
+          <tr>
+            <td>{{ c.camera_name }}</td>
+            <td>{{ c.save_time | date:'Y-m-d H:i:s' }}</td>
+            <td>{{ c.start_time | date:'Y-m-d H:i:s' }}</td>
+            <td>{{ c.end_time | date:'Y-m-d H:i:s' }}</td>
+            <td>
+              <div class="btn-group">
+                <button type="button" class="btn btn-default"><a href="{% url 'watch' camera=c.camera_name time_start=c.start_time|date:"U" %}">Watch</a></button>
+                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                  <span class="caret"></span>
+                  <span class="sr-only">Toggle Dropdown</span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                  <li><a href="#">Info</a></li>
+                  <li class="divider"></li>
+                  <li><a href="#">Download</a></li>
+                </ul>
+              </div>
+            </td>
+          </tr>
 {% endfor %}
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </row>
     <row>
       <nav class="pull-right">
         <ul class="pagination">
