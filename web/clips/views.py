@@ -16,14 +16,12 @@ import models
 def wrap_h264(_in):
     _out_file = open('/run/shm/tmp/%s' % _get_candidate_names().next(), 'w+b')
     _in_file = open('/run/shm/tmp/%s' % _get_candidate_names().next(), 'w+b')
-    written = 0
     while True:
         old_file_position = _in_file.tell()
         _in_file.seek(0, os.SEEK_END)
         size = _in_file.tell()
         _in_file.seek(old_file_position, os.SEEK_SET)
 
-        logging.getLogger("views").info("Written: %d" % size)
         data = _in.read(4096)
         if not data:
             break
@@ -35,16 +33,18 @@ def wrap_h264(_in):
     logging.getLogger("views").info("_in_file: %s, _out_file: %s" % (_in_file.name, _out_file.name))
     
     try:
-        with Popen(["/usr/local/bin/ffmpeg",
+        p = Popen(["/usr/local/bin/ffmpeg",
                     "-y", "-an", "-i", "-",
                     "-vcodec", "copy",
                     "-movflags", "faststart",
                     "-f", "mp4", _out_file.name],
-            stdin=_in_file) as p:
-            p.wait()
-            _in_file.close()
-            return _out_file
+                    stdin=_in_file)
+        p.wait()
+        _in_file.close()
+        return _out_file
     except Exception as e:
+        from traceback import print_exc
+        print_exc(e)
         logging.getLogger("views").info("ERRROR: %s" % e)
 
     return None

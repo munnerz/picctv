@@ -24,9 +24,8 @@ LOGGER.addHandler(ch)
 CAMERA_NAME = "ChangeMe"
 
 _CAMERA = picamera.PiCamera()
-_CAMERA.resolution = (720, 1280)
+_CAMERA.resolution = (1280, 720)
 _CAMERA.framerate = 24
-_CAMERA.rotation = 270
 _CAMERA.exposure_mode = 'night'
 _CAMERA.brightness = 60
 
@@ -104,7 +103,7 @@ _recordingQualities =   {
 
                             "high": {
                                 "format": "h264",
-                                "resolution": (720, 1280),
+                                "resolution": (1280, 720),
                                 "fps": 24,
                                 "multiplexer": Multiplexer(),
                                 "splitter_port": 2,
