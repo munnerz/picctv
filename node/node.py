@@ -26,7 +26,6 @@ CAMERA_NAME = "ChangeMe"
 _CAMERA = picamera.PiCamera()
 _CAMERA.resolution = (1280, 720)
 _CAMERA.framerate = 24
-_CAMERA.rotation = 270
 _CAMERA.exposure_mode = 'night'
 _CAMERA.brightness = 60
 
