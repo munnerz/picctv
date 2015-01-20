@@ -35,15 +35,15 @@ def wrap_h264(_in):
     logging.getLogger("views").info("_in_file: %s, _out_file: %s" % (_in_file.name, _out_file.name))
     
     try:
-        with Popen(["/usr/local/bin/ffmpeg",
+        p = Popen(["/usr/local/bin/ffmpeg",
                     "-y", "-an", "-i", "-",
                     "-vcodec", "copy",
                     "-movflags", "faststart",
                     "-f", "mp4", _out_file.name],
-            stdin=_in_file) as p:
-            p.wait()
-            _in_file.close()
-            return _out_file
+                    stdin=_in_file)
+        p.wait()
+        _in_file.close()
+        return _out_file
     except Exception as e:
         logging.getLogger("views").info("ERRROR: %s" % e)
 
