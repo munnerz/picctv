@@ -40,7 +40,7 @@ class Recording(ModuleBase):
 
             return to_send
         else:
-            b''.join([self.buffer, frame])
+            self.buffer = b''.join([self.buffer, frame])
             return None
 
 
