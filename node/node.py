@@ -38,6 +38,7 @@ class Multiplexer(object):
 
     def __init__(self):
         self._settings = None
+        self._frame_buffer = ''
 
     def set_settings(self, settings):
         self._settings = settings
@@ -72,11 +73,19 @@ class Multiplexer(object):
         if frame_info is None:
             return None
 
-        if self._usefulFrame(frame_info.index):
-            for module in self._settings['registered_modules'][:]:
-                output = module.process_frame((frame, frame_info))
-                if output is not None:
-                    _NETWORK.send_data((module.get_name(), output))
+        self._frame_buffer = b''.join([self._frame_buffer, frame])
+
+        if frame_info.complete:
+            if self._usefulFrame(frame_info.index):
+                for module in self._settings['registered_modules'][:]:
+                    try:
+                        output = module.process_frame((self._frame_buffer, frame_info))
+                        if output is not None:
+                            _NETWORK.send_data((module.get_name(), output))
+                    except Exception as e:
+                        LOGGER.exception("Exception in Multiplexer for module '%s': %s" % (module, e))
+                        pass
+            self._frame_buffer = b''
 
         return len(frame)
 

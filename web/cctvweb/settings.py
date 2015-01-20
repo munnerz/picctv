@@ -10,6 +10,8 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import logging
+
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
@@ -91,3 +93,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 DBNAME="cctv"
+
+logging.basicConfig(
+    level = logging.DEBUG,
+    format = '%(asctime)s %(levelname)s %(message)s',
+)

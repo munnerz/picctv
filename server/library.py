@@ -21,7 +21,7 @@ class logmsg(DynamicDocument):
 
 def save_file(data, info):
     try:
-        Utils.dbg("Saving file to database... info: %s" % info, "library.write")
+        Utils.dbg("Saving file to database... info: %s" % info, "library.save_file")
         c = clip()
         c.data.put(data, content_type="video/h264")
         c.save_time = datetime.now()
