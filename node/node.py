@@ -73,7 +73,7 @@ class Multiplexer(object):
         if frame_info is None:
             return None
 
-        self._frame_buffer = ''.join(self._frame_buffer, frame)
+        self._frame_buffer = b''.join([self._frame_buffer, frame])
 
         if frame_info.complete:
             if self._usefulFrame(frame_info.index):
