@@ -74,6 +74,7 @@ class Multiplexer(object):
 
         if self._usefulFrame(frame_info.index):
             for module in self._settings['registered_modules'][:]:
+                print ("Frame is of type %s" % type(frame))
                 output = module.process_frame((frame, frame_info))
                 if output is not None:
                     _NETWORK.send_data((module.get_name(), output))
