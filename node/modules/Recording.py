@@ -10,7 +10,7 @@ LOGGER = logging.getLogger("node.Recording")
 class Recording(ModuleBase):
 
     def __init__(self):
-        self.buffer = ''
+        self.buffer = bytearray()
         self._last_timestamp = 0
         self._last_frame_index = 0
         self._last_start_time = datetime.now()
@@ -22,11 +22,11 @@ class Recording(ModuleBase):
         (frame, info) = data
 
         if len(self.buffer) > 1024 * 1024 and info.frame_type == PiVideoFrameType.sps_header:
-            toReturn = self.buffer[:]
-            self.buffer = frame
+            data_to_send = self.buffer[:]
+            self.buffer = bytearray(frame)
 
             end_time = datetime.now()
-            to_send = {"frame_data": toReturn, 
+            to_send = {"frame_data": data_to_send, 
                        "start_frame_index": self._last_frame_index,
                        "end_frame_index": info.index,
                        "start_timestamp": self._last_timestamp,
@@ -40,7 +40,7 @@ class Recording(ModuleBase):
 
             return to_send
         else:
-            self.buffer = ''.join((self.buffer, frame))
+            self.buffer.append(frame)
             return None
 
 
