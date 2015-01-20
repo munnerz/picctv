@@ -4,6 +4,7 @@
 
 {% block title %}Clip list{% endblock %}
 
+{% block bootstrap3_extra_head %}{{ search_form.media }}{% endblock %}
 
 {% block content %}
   <div class="well col-xs-12 col-sm-offset-1 col-sm-2 col-md-2">
@@ -18,19 +19,30 @@
   <div class="col-xs-12 col-sm-8 col-md-8">
 
     <row>
-      <div class="input-group">
-        <div class="input-group-btn">
-          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Action <span class="caret"></span></button>
-          <ul class="dropdown-menu" role="menu">
-            <li><a href="#">Start Time</a></li>
-            <li><a href="#">Save Time</a></li>
-            <li><a href="#">Something else here</a></li>
-            <li class="divider"></li>
-            <li><a href="#">Separated link</a></li>
-          </ul>
-        </div><!-- /btn-group -->
-        <input type="datetime" class="form-control" aria-label="...">
-      </div><!-- /input-group -->
+      <form id="clip-form" action="" method="POST">
+        {% csrf_token %}
+
+        <div class="col-xs-5">
+          {{ search_form.start_datetime.errors }}
+          <label for="{{ search_form.start_datetime.id_for_label }}">From:</label>
+          {{ search_form.start_datetime }}
+        </div>
+
+        <div class="col-xs-5">
+          {{ search_form.end_datetime.errors }}
+          <label for="{{ search_form.end_datetime.id_for_label }}">To:</label>
+          {{ search_form.end_datetime }}
+        </div>
+
+        <div class="col-xs-offset-1 col-xs-1">
+          <div class="valign-wrapper">
+            <div class="vbottom">
+              <button type="submit" class="btn btn-default">Watch</button>
+            </div>
+          </div>
+        </div>
+
+      </form>
     </row>
 
     <row>

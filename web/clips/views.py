@@ -94,7 +94,8 @@ def list(request, camera_name=''):
                                                "page_num": page,
                                                "paginator": paginator,
                                                "camera_clips": paginator.page(page),
-                                               "page_nav_range": page_nav_range
+                                               "page_nav_range": page_nav_range,
+                                               "search_form": models.ClipForm()
                                                })
 
 def detail(request, clip_id):
