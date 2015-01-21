@@ -109,7 +109,7 @@ _recordingQualities =   {
                                 "multiplexer": Multiplexer(),
                                 "splitter_port": 2,
                                 "registered_modules": [],
-                                "extra_params": {"quality": 25},
+                                "extra_params": {"quality": 30},
                             },
                         }
 
