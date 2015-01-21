@@ -47,9 +47,9 @@ def watch(request):
         form = models.ClipForm(request.POST) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass
             logging.getLogger("views").info("Valid")
-            clips = models.clip.objects.filter(camera_name="Outside").filter(start_time__gte=form.cleaned_data['start_datetime'], end_time__lte=form.cleaned_data['end_datetime']).order_by('start_time')
+            clips = models.clip.objects.filter(camera_name=form.cleaned_data['camera_name']).filter(start_time__gte=form.cleaned_data['start_datetime'], end_time__lte=form.cleaned_data['end_datetime']).order_by('start_time')
             logging.getLogger("views").info("Got")
-            _in_file = NamedTemporaryFile()
+            _in_file = NamedTemporaryFile(dir='/run/shm/tmp/')
             for c in clips:
                 logging.getLogger("views").info("Read/writing next file...")
                 while True:
