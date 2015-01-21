@@ -14,13 +14,16 @@ body {
   }
 }
 
+@media (max-width: 768px) {
+  #clip-form div {
+    margin-top: 10px;
+  }
+}
+
 /**
  *  Utility classes
  *
  */
-#clip-form,
-#clip-form div label,
-#clip-form div input { float:left; display:inline; line-height: 34px; margin-left: 10px; }
 
 
 /**
