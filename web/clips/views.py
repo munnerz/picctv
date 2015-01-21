@@ -1,7 +1,7 @@
 from subprocess import Popen
 import os
 import sys
-from tempfile import _get_candidate_names
+from tempfile import _get_candidate_names, NamedTemporaryFile
 from datetime import datetime
 import logging
 
@@ -13,22 +13,10 @@ from django.http import HttpResponse
 import models
 
 # --- helper methods ---
-def wrap_h264(_in):
+def wrap_h264(_in_file):
     _out_file = open('/run/shm/tmp/%s' % _get_candidate_names().next(), 'w+b')
-    _in_file = open('/run/shm/tmp/%s' % _get_candidate_names().next(), 'w+b')
-    while True:
-        old_file_position = _in_file.tell()
-        _in_file.seek(0, os.SEEK_END)
-        size = _in_file.tell()
-        _in_file.seek(old_file_position, os.SEEK_SET)
-
-        data = _in.read(4096)
-        if not data:
-            break
-        _in_file.write(data)
 
     _in_file.seek(0)
-    _in_file.flush()
 
     logging.getLogger("views").info("_in_file: %s, _out_file: %s" % (_in_file.name, _out_file.name))
     
@@ -40,7 +28,6 @@ def wrap_h264(_in):
                     "-f", "mp4", _out_file.name],
                     stdin=_in_file)
         p.wait()
-        _in_file.close()
         return _out_file
     except Exception as e:
         from traceback import print_exc
@@ -53,13 +40,30 @@ def wrap_h264(_in):
 def index(request):
     return render(request, 'clips/index.html', {"logs": models.logmsg.objects.order_by('-save_time').limit(50)})
 
-def watch(request, camera, time_start=''):
-    time_start_datetime = datetime.fromtimestamp(int(time_start))
-    clip = models.clip.objects.filter(camera_name=camera).order_by('start_time').filter(start_time__gte=time_start_datetime).first()
-    mp4_file = wrap_h264(clip.data)
-    stream_url = "http://cctv.phlat493:81/%s" % os.path.basename(mp4_file.name)
-    return render(request, 'clips/watch.html', {"clip": clip,
-                                                "clip_url": stream_url})
+def watch(request):
+    logging.getLogger("views").info("Watch received...")
+    if request.method == 'POST': # If the form has been submitted...
+        logging.getLogger("views").info("POST")
+        form = models.ClipForm(request.POST) # A form bound to the POST data
+        if form.is_valid(): # All validation rules pass
+            logging.getLogger("views").info("Valid")
+            clips = models.clip.objects.filter(camera_name="Outside").filter(start_time__gte=form.cleaned_data['start_datetime'], end_time__lte=form.cleaned_data['end_datetime']).order_by('start_time')
+            logging.getLogger("views").info("Got")
+            _in_file = NamedTemporaryFile()
+            for c in clips:
+                logging.getLogger("views").info("Read/writing next file...")
+                while True:
+                    data = c.data.read(4096)
+                    if not data:
+                        break
+                    _in_file.write(data)
+
+            _in_file.flush()
+            mp4_file = wrap_h264(_in_file)
+            _in_file.close()
+
+            stream_url = "http://cctv.phlat493:81/%s" % os.path.basename(mp4_file.name)
+            return render(request, 'clips/watch.html', {"clip_url": stream_url})
     
 def list(request, camera_name=''):
     page = int(request.GET.get('p', 1))
