@@ -99,6 +99,7 @@ _recordingQualities =   {
                                 "multiplexer": Multiplexer(),
                                 "splitter_port": 1,
                                 "registered_modules": [],
+                                "extra_params": {},
                             },
 
                             "high": {
@@ -108,7 +109,7 @@ _recordingQualities =   {
                                 "multiplexer": Multiplexer(),
                                 "splitter_port": 2,
                                 "registered_modules": [],
-                                #"keyFrameCallback": lambda x: keyFrameDiscovered(x),
+                                "extra_params": {"quality": 25},
                             },
                         }
 
@@ -137,7 +138,7 @@ for quality in _recordingQualities:
 
     LOGGER.info("Starting %s quality recording at %s, FPS: %d, format: %s" % (quality, profile['resolution'], profile['fps'], profile['format']))
     _CAMERA.start_recording(profile['multiplexer'], profile['format'], 
-                            profile['resolution'], profile['splitter_port'])
+                            profile['resolution'], profile['splitter_port'], **profile['extra_params'])
 
 
 try:
