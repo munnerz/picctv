@@ -35,6 +35,11 @@
           <li>{{ start|date:"dS M Y H:i:s" }} - {{ end|date:"d/m/Y H:i:s" }}</li>
 {% endfor %}
           </ul>
+          <ul>
+{% for d in motion_data %}
+          <li>{{ d }}</li>
+{% endfor %}
+          </ul>
         </div>
       </div>
     </row>

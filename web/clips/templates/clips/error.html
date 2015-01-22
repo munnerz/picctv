@@ -1,0 +1,16 @@
+{% extends 'clips/base.html' %}
+
+{% load base_extra %}
+
+{% block title %}Error{% endblock %}
+
+
+{% block content %}
+  <div class="col-xs-10 col-xs-offset-1">
+    <div class="panel panel-danger">
+      <div class="panel-heading">
+        <h4>{{ error }}</h4>
+      </div>
+    </div>
+  </div>
+{% endblock %}

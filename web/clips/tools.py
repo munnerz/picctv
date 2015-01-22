@@ -2,6 +2,8 @@ import logging
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import _get_candidate_names
 
+from models import analysis
+
 def wrap_h264(clips):
     _out_file = open('/run/shm/tmp/%s' % _get_candidate_names().next(), 'w+b')
     
@@ -41,4 +43,6 @@ def find_datetime_segments(clips):
     segments.append((last_segment_start, last_clip_end))
     return segments
 
-#def get_analysis_chunks(datetime_segment, module=None):
+def get_analysis_chunks(datetime_segment, camera, module=None):
+    (start, end) = datetime_segment
+    return [x.data for x in analysis.objects.filter(module_name=module, camera_name=camera).filter(data__start_time__gte=start, data__end_time__lte=end)]
