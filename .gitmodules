@@ -1,5 +1,5 @@
 
 [submodule "web/submodules/django-datetime-widget"]
 	path = web/submodules/django-datetime-widget
-	url = https://github.com/agiliq/django-graphos.git
+	url = https://github.com/asaglimbeni/django-datetime-widget.git
 	branch = develop
