@@ -21,13 +21,13 @@ def initialise_connection(connection):
 
         Utils.weblog("'%s' module on '%s' started." % (module_name, camera_name), "info", "Networking")
 
-        return {"connection": connection, "module_name": module_name, "camera_name": camera_name}
+        return {"connection": connection, "module_name": module_name, "camera_name": camera_name, "active": True}
     except Exception as e:
         Utils.err("Error initialising connection: %s" % e, "networking_processor")
         raise #TODO: handle this gracefully
 
 def process_incoming(connectionDict):
-    while True:
+    while connectionDict['active']:
         try:
             connection = connectionDict['connection']
             data_length = struct.unpack("I", connection.recv(4))[0]

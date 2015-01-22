@@ -47,8 +47,24 @@ class Network(object):
 
 
     def listen(self):
-        while self._accepting_connections:
-            (connection, address) = self._server_socket.accept()
-            Utils.dbg("Dispatching connection for initialisation")
-            self.accepted_connection(networking_processor.initialise_connection(connection))
-            self._processing_workers.apply_async(networking_processor.initialise_connection, args=connection, callback=self.accepted_connection)
+        try:
+            while self._accepting_connections:
+                (connection, address) = self._server_socket.accept()
+                Utils.dbg("Dispatching connection for initialisation")
+                self.accepted_connection(networking_processor.initialise_connection(connection))
+                self._processing_workers.apply_async(networking_processor.initialise_connection, args=connection, callback=self.accepted_connection)
+        except KeyboardInterrupt:
+            pass
+            Utils.msg("Keyboard Interrupt recieved. Stopping listening...")
+
+    def shutdown_connection(self, conn_dict):
+        conn_dict['active'] = False
+        conn_dict['thread'].join()
+        Utils.dbg("Stopped connection.")
+
+    def shutdown(self):
+        self._accepting_connections = False
+        self._listening_thread.join()
+        Utils.msg("Stopped listening...")
+        map(self.shutdown_connection, self._connections)
+        Utils.msg("Stopped accepting data...")
