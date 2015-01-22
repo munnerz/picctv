@@ -1,0 +1,5 @@
+
+[submodule "web/submodules/django-datetime-widget"]
+	path = web/submodules/django-datetime-widget
+	url = git@github.com:asaglimbeni/django-datetime-widget.git
+	branch = develop
