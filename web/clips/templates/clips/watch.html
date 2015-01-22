@@ -30,7 +30,11 @@
           <h3 class="panel-title">Clip info</h3>
         </div>
         <div class="panel-body">
-          Panel content
+          <ul>
+{% for start,end in datetime_segments %}
+          <li>{{ start|date:"dS M Y H:i:s" }} - {{ end|date:"d/m/Y H:i:s" }}</li>
+{% endfor %}
+          </ul>
         </div>
       </div>
     </row>
