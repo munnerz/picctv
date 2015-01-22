@@ -1,7 +1,5 @@
 from multiprocessing.pool import ThreadPool
-import multiprocessing
 import socket
-import time
 import threading
 
 
@@ -9,15 +7,10 @@ from utils import Utils
 import modules
 import networking_processor
 
-global PROCESSING_POOL
-
-PROCESSING_POOL = multiprocessing.Pool(processes=4)
-
 
 class Network(object):
 
     def __init__(self, ip="0.0.0.0", port=8000):
-        multiprocessing.allow_connection_pickling()
         self._ip = ip
         self._port = port
         self._accepting_connections = self._processing_connections = True
