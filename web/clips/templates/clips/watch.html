@@ -1,9 +1,13 @@
 {% extends 'clips/base.html' %}
 
 {% load base_extra %}
+{% load static %}
 
 {% block title %}Clip list{% endblock %}
 
+{% block bootstrap3_extra_head %}
+<script src="{% static 'clips/jquery.flot.min.js' %}"></script>
+{% endblock %}
 
 {% block content %}
   <div class="well col-xs-12 col-sm-offset-1 col-sm-2">
@@ -35,11 +39,8 @@
           <li>{{ start|date:"dS M Y H:i:s" }} - {{ end|date:"d/m/Y H:i:s" }}</li>
 {% endfor %}
           </ul>
-          <ul>
-{% for d in motion_data %}
-          <li>{{ d }}</li>
-{% endfor %}
-          </ul>
+          
+          {{ motion_data.as_html }}
         </div>
       </div>
     </row>

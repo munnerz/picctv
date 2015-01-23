@@ -6,6 +6,9 @@ from django.core.paginator import Paginator
 from django.template import RequestContext, loader
 from django.http import HttpResponse
 
+from graphos.sources.simple import SimpleDataSource
+from graphos.renderers import flot
+
 import models
 import tools
 
@@ -27,14 +30,23 @@ def watch(request):
                 mp4_file = tools.wrap_h264(clips_fh)
 
                 if mp4_file:
+
+                    graph_data = [
+                        ['Frame No.', 'Motion']
+                    ]
+
                     for seg in datetime_segments:
-                        motion_chunks.append(tools.get_analysis_chunks(seg, form.cleaned_data['camera_name'], "Motion"))
+                        chunk = tools.get_analysis_chunks(seg, form.cleaned_data['camera_name'], "Motion")
+                        for x in chunk:
+                            [graph_data.append([c['frame_number'], c['motion_magnitude']]) for c in x['data_buffer']]
+                    
+                    chart = flot.LineChart(SimpleDataSource(data=graph_data), width='100%')
 
                     stream_url = "http://cctv.phlat493:81/%s" % os.path.basename(mp4_file.name)
 
                     return render(request, 'clips/watch.html', {"clip_url": stream_url,
                                                                 "datetime_segments": datetime_segments,
-                                                                "motion_data": motion_chunks})
+                                                                "motion_data": chart})
                 else:
                     error = "Error creating MP4 file from chunks..."
             else:
