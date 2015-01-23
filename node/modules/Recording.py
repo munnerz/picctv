@@ -21,7 +21,7 @@ class Recording(ModuleBase):
     def process_frame(self, data):
         (frame, info) = data
 
-        if info.frame_type == PiVideoFrame.sps_header and (datetime.now() - self._last_start_time).seconds > 4:
+        if info.frame_type == PiVideoFrameType.sps_header and (datetime.now() - self._last_start_time).seconds > 4:
             data_to_send = self.buffer[:]
             self.buffer = frame
 
