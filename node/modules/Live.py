@@ -45,8 +45,8 @@ class Live(ModuleBase):
             for output in self._outputs[:]:
                 try:
                     output.write(data[0])
-                except Exception as e:
-                    LOGGER.exception("Exception in Live module during processFrame: %s" % e)
+                except IOError as e:
+                    LOGGER.exception("IOException in Live module during processFrame: %s" % e)
                     self._outputs.remove(output)
                     pass
         return None
