@@ -89,6 +89,8 @@ if __name__ == "__main__":
     _CAMERA.framerate = settings.CAMERA_FPS
     _CAMERA.exposure_mode = settings.CAMERA_EXPOSURE_MODE
     _CAMERA.brightness = settings.CAMERA_BRIGHTNESS
+    _CAMERA.hflip = settings.CAMERA_HFLIP
+    _CAMERA.vflip = settings.CAMERA_VFLIP
 
     _MODULES = [x() for x in settings.ENABLED_MODULES] # initialize instance of each module
     _NETWORK = Networking.Networking(settings.NODE_NAME)
