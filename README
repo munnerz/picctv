@@ -1,7 +1,3 @@
-Current features:
-
-Records from the camera and sends it to a h264 network stream.
-
 Resources:
 
 http://picamera.readthedocs.org/en/latest/recipes1.html - PiCamera capturing example code
@@ -23,9 +19,6 @@ apt-get install mongo mongod python3
 ffmpeg built with "--enable-gpl --enable-libx264 --enable-demuxer=mov" options
 
 https://zulko.github.io/blog/2013/09/27/read-and-write-video-frames-in-python-using-ffmpeg/
-
-Useful information for generating subtitles:
-https://developer.mozilla.org/en-US/Apps/Build/Audio_and_video_delivery/Adding_captions_and_subtitles_to_HTML5_video
 
 Info about OpenCV (specifically getting number of msec into video): http://docs.opencv.org/modules/highgui/doc/reading_and_writing_images_and_video.html
 
