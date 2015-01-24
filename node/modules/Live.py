@@ -2,8 +2,8 @@ import threading
 import socket
 import logging
 
-from node.modules.ModuleBase import ModuleBase
-from node import settings
+from modules.ModuleBase import ModuleBase
+import settings
 
 LOGGER = logging.getLogger("node.Live")
 

@@ -3,8 +3,8 @@ from datetime import datetime
 
 from picamera import PiVideoFrameType
 
-from node.modules.ModuleBase import ModuleBase
-from node import settings
+from modules.ModuleBase import ModuleBase
+import settings
 
 LOGGER = logging.getLogger("node.Recording")
 

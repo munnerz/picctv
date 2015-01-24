@@ -4,7 +4,6 @@ import time
 
 import picamera
 
-import modules
 import settings
 from settings import _RECORDING_QUALITIES
 from networking import Networking
@@ -26,7 +25,6 @@ class Multiplexer(object):
 
     def __init__(self, _settings=None):
         self._settings = _settings
-        self._settings['multiplexer'] = self
         self._frame_buffer = ''
 
     def _frame_info(self):
@@ -94,16 +92,14 @@ if __name__ == "__main__":
 
     _MODULES = [x() for x in settings.ENABLED_MODULES] # initialize instance of each module
     _NETWORK = Networking.Networking(settings.NODE_NAME)
-
-    map(Multiplexer(x), _RECORDING_QUALITIES.values()) # initialises all multiplexer instances...
-
+    
     for module in _MODULES:
         _RECORDING_QUALITIES[module.required_quality()]['registered_modules'].append(module)
         LOGGER.info("Added %s module to %s quality multiplexer..." % (module.get_name(), module.required_quality()))
 
     for quality in _RECORDING_QUALITIES:
         profile = _RECORDING_QUALITIES[quality]
-        profile['multiplexer']._settings = profile
+	profile['multiplexer'] = Multiplexer(profile)
 
         LOGGER.info("Starting %s quality recording at %s, FPS: %d, format: %s" % (quality, profile['resolution'], profile['fps'], profile['format']))
         _CAMERA.start_recording(profile['multiplexer'], profile['format'], 
