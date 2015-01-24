@@ -1,4 +1,6 @@
-from modules import *
+from modules.Live import Live
+from modules.Recording import Recording
+from modules.Motion import Motion
 
 ## Node settings
 NODE_NAME = "ChangeMe" # the name of this camera to report to the server - should be unique!
