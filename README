@@ -31,7 +31,7 @@ Info about OpenCV (specifically getting number of msec into video): http://docs.
 
 
 SERVER DEPS:
-pymongo
+mongoengine
 django
 django-bootstrap3
 
