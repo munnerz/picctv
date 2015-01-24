@@ -3,6 +3,7 @@ import socket
 import logging
 
 from modules.ModuleBase import ModuleBase
+import settings
 
 LOGGER = logging.getLogger("node.Live")
 
@@ -10,7 +11,7 @@ class Live(ModuleBase):
 
     def __init__(self):
         ModuleBase.__init__(self) #to ensure the main frame loop begins
-        self._sock_addr = ('0.0.0.0', 8000)
+        self._sock_addr = settings.LIVE_LISTEN_ADDRESS
         self._keepListening = True
         self._listeningThread = threading.Thread(target=self._listen)
 

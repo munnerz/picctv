@@ -4,6 +4,7 @@ from datetime import datetime
 from picamera import PiVideoFrameType
 
 from modules.ModuleBase import ModuleBase
+import settings
 
 LOGGER = logging.getLogger("node.Recording")
 
@@ -21,7 +22,7 @@ class Recording(ModuleBase):
     def process_frame(self, data):
         (frame, info) = data
 
-        if info.frame_type == PiVideoFrameType.sps_header and (datetime.now() - self._last_start_time).seconds > 4:
+        if info.frame_type == PiVideoFrameType.sps_header and (datetime.now() - self._last_start_time).seconds > settings.RECORDING_CHUNK_LENGTH:
             data_to_send = self.buffer[:]
             self.buffer = frame
 

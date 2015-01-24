@@ -4,7 +4,8 @@ import time
 
 import picamera
 
-import modules
+import settings
+from settings import _RECORDING_QUALITIES
 from networking import Networking
 
 
@@ -19,28 +20,12 @@ ch.setFormatter(formatter)
 
 LOGGER.addHandler(ch)
 
-
-
-CAMERA_NAME = "ChangeMe"
-
-_CAMERA = picamera.PiCamera()
-_CAMERA.resolution = (1280, 720)
-_CAMERA.framerate = 24
-_CAMERA.exposure_mode = 'night'
-_CAMERA.brightness = 60
-
-_MODULES = [modules.Recording(), modules.Live(), modules.Motion()]
-_NETWORK = Networking.Networking(CAMERA_NAME)
-
 class Multiplexer(object):
     ''' Multiplexes one video stream out to many modules '''
 
-    def __init__(self):
-        self._settings = None
+    def __init__(self, _settings=None):
+        self._settings = _settings
         self._frame_buffer = ''
-
-    def set_settings(self, settings):
-        self._settings = settings
 
     def _frame_info(self):
         if self._settings is None: # not ready yet...
@@ -91,28 +76,6 @@ class Multiplexer(object):
     def flush(self):
         return # modules can't really be flushed...
 
-_recordingQualities =   { 
-                            "low": { 
-                                "format": "yuv", 
-                                "resolution": (64, 128),
-                                "fps": 8,
-                                "multiplexer": Multiplexer(),
-                                "splitter_port": 1,
-                                "registered_modules": [],
-                                "extra_params": {},
-                            },
-
-                            "high": {
-                                "format": "h264",
-                                "resolution": (1280, 720),
-                                "fps": 24,
-                                "multiplexer": Multiplexer(),
-                                "splitter_port": 2,
-                                "registered_modules": [],
-                                "extra_params": {"quality": 25},
-                            },
-                        }
-
 def shutdown_module(module):
     try:
         module.shutdown()
@@ -120,34 +83,36 @@ def shutdown_module(module):
         print("Error shutting down module: %s" % e)
         pass
 
-def unregister_module(module):
+if __name__ == "__main__":
+    _CAMERA = picamera.PiCamera()
+    _CAMERA.resolution = settings.CAMERA_RESOLUTION
+    _CAMERA.framerate = settings.CAMERA_FPS
+    _CAMERA.exposure_mode = settings.CAMERA_EXPOSURE_MODE
+    _CAMERA.brightness = settings.CAMERA_BRIGHTNESS
+
+    _MODULES = [x() for x in settings.ENABLED_MODULES] # initialize instance of each module
+    _NETWORK = Networking.Networking(settings.NODE_NAME)
+    
+    for module in _MODULES:
+        _RECORDING_QUALITIES[module.required_quality()]['registered_modules'].append(module)
+        LOGGER.info("Added %s module to %s quality multiplexer..." % (module.get_name(), module.required_quality()))
+
+    for quality in _RECORDING_QUALITIES:
+        profile = _RECORDING_QUALITIES[quality]
+	profile['multiplexer'] = Multiplexer(profile)
+
+        LOGGER.info("Starting %s quality recording at %s, FPS: %d, format: %s" % (quality, profile['resolution'], profile['fps'], profile['format']))
+        _CAMERA.start_recording(profile['multiplexer'], profile['format'], 
+                                profile['resolution'], profile['splitter_port'], **profile['extra_params'])
+
+
     try:
-        _MODULES.remove(module)
-    except IndexError:
-        LOGGER.warning("Error attempting to unregister module - module not registered.")
-        pass
+        while True: #main process loop
+            time.sleep(1)
+    except KeyboardInterrupt:
+            #shut down all modules here
+            map(lambda q: _CAMERA.stop_recording(splitter_port=q['splitter_port']), _RECORDING_QUALITIES.values())
+            _NETWORK.shutdown()
+            map(lambda m: shutdown_module(m), _MODULES)
 
-
-for module in _MODULES:
-    _recordingQualities[module.required_quality()]['registered_modules'].append(module)
-    LOGGER.info("Added %s module to %s quality multiplexer..." % (module.get_name(), module.required_quality()))
-
-for quality in _recordingQualities:
-    profile = _recordingQualities[quality]
-    profile['multiplexer'].set_settings(profile)
-
-    LOGGER.info("Starting %s quality recording at %s, FPS: %d, format: %s" % (quality, profile['resolution'], profile['fps'], profile['format']))
-    _CAMERA.start_recording(profile['multiplexer'], profile['format'], 
-                            profile['resolution'], profile['splitter_port'], **profile['extra_params'])
-
-
-try:
-    while True: #main process loop
-        time.sleep(1)
-except KeyboardInterrupt:
-        #shut down all modules here
-        map(lambda q: _CAMERA.stop_recording(splitter_port=q['splitter_port']), _recordingQualities.values())
-        _NETWORK.shutdown()
-        map(lambda m: shutdown_module(m), _MODULES)
-
-        LOGGER.info("Shut down.")
+            LOGGER.info("Shut down.")
