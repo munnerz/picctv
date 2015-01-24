@@ -3,7 +3,8 @@ import numpy as np
 import cv2
 import logging
 
-from modules.ModuleBase import ModuleBase
+from node.modules.ModuleBase import ModuleBase
+from node import settings
 
 LOGGER = logging.getLogger("node.Motion")
 
@@ -13,8 +14,8 @@ class Motion(ModuleBase):
         ModuleBase.__init__(self)
         self._frames = []
         self._frameLimit = 5
-        self._MOTION_LEVEL = 10000
-        self._THRESHOLD = 35
+        self._MOTION_LEVEL = settings.MOTION_LEVEL
+        self._THRESHOLD = settings.MOTION_THRESHOLD
         self._event_buffer = []
 
         self._last_timestamp = 0
@@ -55,14 +56,17 @@ class Motion(ModuleBase):
     def process_frame(self, data):
         (frame, frame_info) = data
         
-        stream = open('/run/shm/picamtemp.dat', 'w+b')
+        stream = open(settings.MOTION_TMP_FILE, 'w+b')
         stream.write(frame)
         stream.seek(0)
 
-        (is_motion, motion_val) = self._analyse(
-            np.fromfile(stream, dtype=np.uint8, count=128*64).reshape((64, 128)))
+        res = settings._RECORDING_QUALITIES[self.required_quality()]['resolution']
 
-        if len(self._event_buffer) > 10:
+        (is_motion, motion_val) = self._analyse(
+                                        np.fromfile(stream, dtype=np.uint8, count=res[0] * res[1])
+                                    .reshape(res))
+
+        if len(self._event_buffer) > settings.MOTION_CHUNK_LENGTH:
             data_buffer = self._event_buffer[:]
             self._event_buffer = []
 
