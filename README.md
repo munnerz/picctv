@@ -22,13 +22,14 @@ Default Plugins (node)
 Requirements
 ------------
 
+You must have a running mongodb server that is accessible to both the web interface and server. Otherwise, there are just a few extra packages you need to get going...
+
 * **node**
 	* [picamera](https://github.com/waveform80/picamera) 1.9+
 	* [opencv](https://github.com/Itseez/opencv)
 	* [numpy](https://github.com/numpy/numpy)
 * **server**
 	* [mongoengine](https://github.com/MongoEngine/mongoengine)
-	* *a correctly configured mongodb server*
 * **web**
 	* [django](https://github.com/django/django)
 	* [django-graphos](https://github.com/agiliq/django-graphos)
