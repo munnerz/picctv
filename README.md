@@ -22,18 +22,18 @@ Default Plugins (node)
 Requirements
 ------------
 
-* node
-	* `picamera <https://github.com/waveform80/picamera>`_ 1.9+
-	* `opencv <https://github.com/Itseez/opencv>`
-	* `numpy <https://github.com/numpy/numpy>`
-* server
-	* `mongoengine <https://github.com/MongoEngine/mongoengine>`
+* **node**
+	* [`picamera`](https://github.com/waveform80/picamera)_ 1.9+
+	* [`opencv`](https://github.com/Itseez/opencv)
+	* [`numpy`](https://github.com/numpy/numpy)
+* **server**
+	* [`mongoengine`](https://github.com/MongoEngine/mongoengine)
 	* a correctly configured mongodb server
-* web
-	* `django <https://github.com/django/django>`
-	* `django-graphos <https://github.com/agiliq/django-graphos>`
-	* `django-bootstrap3 <https://github.com/dyve/django-bootstrap3>`
-	* `mongoengine <https://github.com/MongoEngine/mongoengine>`
+* **web**
+	* [`django`](https://github.com/django/django)
+	* [`django-graphos`](https://github.com/agiliq/django-graphos)
+	* [`django-bootstrap3`](https://github.com/dyve/django-bootstrap3)
+	* [`mongoengine`](https://github.com/MongoEngine/mongoengine)
 
 Notes/Ramblings
 ---------------
