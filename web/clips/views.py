@@ -1,11 +1,12 @@
 import os
 import logging
 
+from bson import ObjectId
 from django.shortcuts import render
 from django.core.paginator import Paginator
 from django.template import RequestContext, loader
 from django.http import HttpResponse
-
+from django_downloadview import PathDownloadView
 from graphos.sources.simple import SimpleDataSource
 from graphos.renderers import flot
 
@@ -42,9 +43,11 @@ def watch(request):
                     
                     chart = flot.LineChart(SimpleDataSource(data=graph_data), width='100%')
 
-                    stream_url = "http://cctv.phlat493:81/%s" % os.path.basename(mp4_file.name)
+                    db_mp4 = models.EncodedMP4()
+                    db_mp4.path = "/run/shm/tmp/%s" % os.path.basename(mp4_file.name)
+                    db_mp4.save()
 
-                    return render(request, 'clips/watch.html', {"clip_url": stream_url,
+                    return render(request, 'clips/watch.html', {"clip_id": str(db_mp4.id),
                                                                 "datetime_segments": datetime_segments,
                                                                 "motion_data": chart})
                 else:
@@ -65,5 +68,14 @@ def list(request):
                                                "search_form": models.ClipForm()
                                                })
 
-def stream(request):
-    return ""
+class DynamicStorageDownloadView(PathDownloadView):
+    """Serve file of storage by path.upper()."""
+    def get_path(self):
+        """Return uppercase path."""
+        the_id = super(DynamicStorageDownloadView, self).get_path()
+        path = models.EncodedMP4.objects.filter(id=ObjectId(the_id)).first().path
+        logging.getLogger("views-storage").info("THE ID IS %s, path is: %s" % (the_id, path))
+        return path
+
+
+stream = DynamicStorageDownloadView.as_view()
