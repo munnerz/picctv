@@ -1,8 +1,8 @@
-import modules
+from modules import *
 
 ## Node settings
 NODE_NAME = "ChangeMe" # the name of this camera to report to the server - should be unique!
-ENABLED_MODULES = [modules.Recording, modules.Live, modules.Motion]
+ENABLED_MODULES = [Recording, Live, Motion]
 
 ## Camera settings
 CAMERA_RESOLUTION = (1280, 720) # the actual recording resolution used by PiCamera
