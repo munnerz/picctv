@@ -25,6 +25,9 @@ class clip(DynamicDocument):
 class analysis(DynamicDocument):
     pass
 
+class EncodedMP4(DynamicDocument):
+    path = StringField()
+
 class ClipForm(forms.Form):
     start_datetime = forms.DateTimeField(widget=DateTimeWidget(usel10n=True, bootstrap_version=3, attrs={'label': "Start", "readonly": ''}))
     end_datetime = forms.DateTimeField(widget=DateTimeWidget(usel10n=True, bootstrap_version=3, attrs={'label': "End", "readonly": ''}))
