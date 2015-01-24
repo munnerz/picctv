@@ -42,7 +42,7 @@ def watch(request):
                     
                     chart = flot.LineChart(SimpleDataSource(data=graph_data), width='100%')
 
-                    stream_url = "http://cctv.phlat493:81/%s" % os.path.basename(mp4_file.name)
+                    stream_url = "http://cctv.phlat493/stream/%s" % os.path.basename(mp4_file.name)
 
                     return render(request, 'clips/watch.html', {"clip_url": stream_url,
                                                                 "datetime_segments": datetime_segments,
