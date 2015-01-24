@@ -67,3 +67,6 @@ def list(request):
 
 def stream(request):
     return ""
+
+def delete(request, clip_name):
+    return
