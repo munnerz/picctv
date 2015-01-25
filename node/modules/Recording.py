@@ -11,7 +11,7 @@ LOGGER = logging.getLogger("node.Recording")
 class Recording(ModuleBase):
 
     def __init__(self):
-        self.buffer = b''
+        self.buffer = []
         self._last_timestamp = 0
         self._last_frame_index = 0
         self._last_start_time = datetime.now()
@@ -23,8 +23,8 @@ class Recording(ModuleBase):
         (frame, info) = data
 
         if info.frame_type == PiVideoFrameType.sps_header and (datetime.now() - self._last_start_time).seconds > settings.RECORDING_CHUNK_LENGTH:
-            data_to_send = self.buffer[:]
-            self.buffer = frame
+            data_to_send = b''.join(self.buffer)
+            self.buffer = [frame]
 
             end_time = datetime.now()
             to_send = {"frame_data": data_to_send, 
@@ -41,7 +41,7 @@ class Recording(ModuleBase):
 
             return to_send
         else:
-            self.buffer = b''.join([self.buffer, frame])
+            self.buffer.append(frame)
             return None
 
 
