@@ -11,6 +11,8 @@ CAMERA_RESOLUTION = (1280, 720) # the actual recording resolution used by PiCame
 CAMERA_FPS = 24 #the actual FPS to capture at (everything else is scaled off this...)
 CAMERA_EXPOSURE_MODE = 'night' 
 CAMERA_BRIGHTNESS = 60 # value between 0 and 100
+CAMERA_HFLIP = False
+CAMERA_VFLIP = False
 _RECORDING_QUALITIES =   { 
                             "low": { 
                                 "format": "yuv", 

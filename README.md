@@ -3,7 +3,7 @@ PiCCTV
 
 ``picctv`` is a complete package to set up a reliable, scalable CCTV network with a plugin based system for doing analysis of frames that is tied into a server backend to store gathered data.
 
-``picctv`` is designed to offload the analysis work onto Pi's, allowing for easy expansion as you add more cameras to it.
+It is designed to offload the analysis work onto Pi's, allowing for easy expansion as you add more cameras to it.
 
 Componenets
 -----------
@@ -22,18 +22,24 @@ Default Plugins (node)
 Requirements
 ------------
 
+You must have a running mongodb server that is accessible to both the web interface and server. Otherwise, there are just a few extra packages you need to get going...
+
 * **node**
 	* [picamera](https://github.com/waveform80/picamera) 1.9+
 	* [opencv](https://github.com/Itseez/opencv)
 	* [numpy](https://github.com/numpy/numpy)
 * **server**
 	* [mongoengine](https://github.com/MongoEngine/mongoengine)
-	* *a correctly configured mongodb server*
 * **web**
 	* [django](https://github.com/django/django)
 	* [django-graphos](https://github.com/agiliq/django-graphos)
 	* [django-bootstrap3](https://github.com/dyve/django-bootstrap3)
 	* [mongoengine](https://github.com/MongoEngine/mongoengine)
+
+Configuration
+-------------
+
+Each Node may be configured in its own [settings.py](node/settings.py) file, in the node modules document root. There are many configuration options and each is well documented.
 
 Notes/Ramblings
 ---------------
