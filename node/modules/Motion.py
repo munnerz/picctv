@@ -58,17 +58,16 @@ class Motion(ModuleBase):
         stream.write(frame)
         stream.seek(0)
 
-
-
-        numpy_frame = np.fromfile(stream, dtype=np.uint8, count=res[0] * res[1]).reshape(res)
-
+        numpy_frame = np.fromstring(frame, dtype=np.uint8)
+        cv_frame = cv2.imdecode(numpy_frame)
+        
         if(self._background_frame_count > settings.MOTION_BACKGROUND_FRAME_COUNT_THRESHOLD):
-            motion_diff_abs = cv2.absdiff(numpy_frame, self._background_mean())
+            motion_diff_abs = cv2.absdiff(cv_frame, self._background_mean())
             detected_motion_pixels = motion_diff_abs > self._background_standard_dev()
             print ("%d pixels have changed from our rolling average...")
 
         #do this after analysis of current frame
-        self._update_background(numpy_frame)
+        self._update_background(cv_frame)
 
         return None
 
