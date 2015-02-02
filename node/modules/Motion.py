@@ -26,8 +26,8 @@ class Motion(ModuleBase):
             self._background_sum = frame
             self._background_sum_squared = cv2.pow(frame, 2.0)
         else:
-            self._background_sum = cv2.accumulate(frame, self._background_sum)
-            self._background_sum_squared = cv2.accumulateSquare(frame, self._background_sum_squared)
+            cv2.accumulate(frame, self._background_sum)
+            cv2.accumulateSquare(frame, self._background_sum_squared)
         self._background_frame_count += 1
 
     def _background_mean(self):
@@ -47,12 +47,18 @@ class Motion(ModuleBase):
 
     def process_frame(self, data):
         (frame, frame_info) = data
-        
+
+        res = settings._RECORDING_QUALITIES[self.required_quality()]['resolution']
+
+        if(len(frame) < res[0] * res[1]):
+            print ("Fake frame...")
+            return None # we have a fake frame!
+
         stream = open(settings.MOTION_TMP_FILE, 'w+b')
         stream.write(frame)
         stream.seek(0)
 
-        res = settings._RECORDING_QUALITIES[self.required_quality()]['resolution']
+
 
         numpy_frame = np.fromfile(stream, dtype=np.uint8, count=res[0] * res[1]).reshape(res)
 
