@@ -12,42 +12,30 @@ class Motion(ModuleBase):
 
     def __init__(self):
         ModuleBase.__init__(self)
-        self._frames = []
-        self._frameLimit = 5
-        self._MOTION_LEVEL = settings.MOTION_LEVEL
-        self._THRESHOLD = settings.MOTION_THRESHOLD
-        self._event_buffer = []
+
+        #initialise both of these to matrices of zeros
+        self._background_sum = np.zeroes(settings._RECORDING_QUALITIES[self.required_quality()]['resolution'])
+        self._background_sum_squared = np.zeroes(settings._RECORDING_QUALITIES[self.required_quality()]['resolution'])
+        self._background_frame_count = 0 #the number of frames that comprise the background data
 
         self._last_timestamp = 0
         self._last_start_time = datetime.now()
 
-    def _storeFrame(self, frame):
-        self._frames.insert(0, frame)
-        if len(self._frames) > self._frameLimit:
-            self._frames.pop(len(self._frames) - 1)
+    def _update_background(self, frame):
+        self._background_sum = cv2.accumulate(frame, self._background_sum)
+        self._background_sum_squared = cv2.accumulateSquare(frame, self._background_sum_squared)
+        self._background_frame_count += 1
 
-    def _getMotion(self):
-        d1 = cv2.absdiff(self._frames[1], self._frames[0])
-        d2 = cv2.absdiff(self._frames[2], self._frames[0])
-        result = cv2.bitwise_and(d1, d2)
+    def _background_mean(self):
+        return self._background_sum / self._background_frame_count
 
-        (value, r) = cv2.threshold(result, self._THRESHOLD, 255, cv2.THRESH_BINARY)
+    def _background_variance(self):
+        squared_sum_mean = self._background_sum_squared / self._background_sum_squared
+        mean_squared = cv2.pow(self._background_mean, 2)
+        return cv2.subtract(squared_sum_mean, mean_squared)
 
-        scalar = cv2.sumElems(r)
-
-        return scalar
-
-    def _analyse(self, frame):
-        self._storeFrame(frame)
-        m = 0
-        if len(self._frames) >= 3:
-            motion = self._getMotion()
-            m = motion[0]
-            if motion and motion[0] > self._MOTION_LEVEL:
-                LOGGER.debug("Detected motion! Level: %d" % motion[0])
-                return (True, m)
-
-        return (False, m)
+    def _background_standard_dev(self):
+        return cv2.pow(self._background_variance(), 0.5)
 
 
     def required_quality(self):
@@ -62,32 +50,17 @@ class Motion(ModuleBase):
 
         res = settings._RECORDING_QUALITIES[self.required_quality()]['resolution']
 
-        (is_motion, motion_val) = self._analyse(
-                                        np.fromfile(stream, dtype=np.uint8, count=res[0] * res[1])
-                                    .reshape(res))
+        numpy_frame = np.fromfile(stream, dtype=np.uint8, count=res[0] * res[1]).reshape(res)
 
-        if len(self._event_buffer) > settings.MOTION_CHUNK_LENGTH:
-            data_buffer = self._event_buffer[:]
-            self._event_buffer = []
+        if(self._background_frame_count > settings.MOTION_BACKGROUND_FRAME_COUNT_THRESHOLD):
+            motion_diff_abs = cv2.absdiff(numpy_frame, self._background_mean())
+            detected_motion_pixels = motion_diff_abs > self._background_standard_dev()
+            print ("%d pixels have changed from our rolling average...")
 
-            end_time = datetime.now()
-            end_timestamp = frame_info.timestamp
+        #do this after analysis of current frame
+        self._update_background(numpy_frame)
 
-            to_send = dict(start_time=self._last_start_time,
-                           end_time=end_time,
-                           start_timestamp=self._last_timestamp,
-                           end_timestamp=end_timestamp,
-                           data_buffer=data_buffer)
-
-            self._last_start_time = end_time
-            self._last_timestamp = end_timestamp
-
-            return to_send
-        else:
-            self._event_buffer.append({"is_motion": is_motion,
-                                       "motion_magnitude": motion_val,
-                                       "frame_number": frame_info.index})
-            return None
+        return None
 
     def shutdown(self):
         LOGGER.debug("Shut down.")

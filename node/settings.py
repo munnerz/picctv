@@ -45,3 +45,5 @@ MOTION_THRESHOLD = 35
 MOTION_TMP_FILE = '/run/shm/picamtemp.dat' # this really should be a ramdisk as it'll be read & written
                                            # to very often (twice per frame)
 MOTION_CHUNK_LENGTH = 10 # the number of data points to collect before sending to server
+MOTION_BACKGROUND_FRAME_COUNT_THRESHOLD = 20 # how many frames we must have processed before starting
+                                             # actual analysis.
