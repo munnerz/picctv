@@ -59,7 +59,7 @@ class Motion(ModuleBase):
         stream.seek(0)
 
         numpy_frame = np.fromstring(frame, dtype=np.uint8)
-        cv_frame = cv2.imdecode(numpy_frame)
+        cv_frame = cv2.imdecode(numpy_frame, cv2.CV_LOAD_IMAGE_GRAYSCALE)
         
         if(self._background_frame_count > settings.MOTION_BACKGROUND_FRAME_COUNT_THRESHOLD):
             motion_diff_abs = cv2.absdiff(cv_frame, self._background_mean())
