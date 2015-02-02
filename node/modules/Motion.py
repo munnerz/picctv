@@ -60,7 +60,8 @@ class Motion(ModuleBase):
         
         if(self._background_frame_count > settings.MOTION_BACKGROUND_FRAME_COUNT_THRESHOLD):
             motion_diff_abs = cv2.absdiff(np_frame, self._background_mean())
-            detected_motion_pixels = motion_diff_abs[motion_diff_abs > self._background_standard_dev()]
+            dFactor = 3.5
+            detected_motion_pixels = np.extract(motion_diff_abs > dFactor * self._background_standard_dev(), motion_diff_abs)
             print ("%d pixels have changed from our rolling average..." % len(detected_motion_pixels))
 
         #do this after analysis of current frame
