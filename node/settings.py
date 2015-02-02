@@ -15,7 +15,7 @@ CAMERA_HFLIP = False
 CAMERA_VFLIP = False
 _RECORDING_QUALITIES =   { 
                             "low": { 
-                                "format": "yuv", 
+                                "format": "bgr", 
                                 "resolution": (64, 128),
                                 "fps": 8,
                                 "multiplexer": None,
