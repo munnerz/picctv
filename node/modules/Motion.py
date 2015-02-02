@@ -66,9 +66,12 @@ class Motion(ModuleBase):
             detected_motion_pixels = np.extract(detected_motion_condition, motion_diff_abs)
             if len(detected_motion_pixels) > res[0]*res[1]*settings.MOTION_TOTAL_PIXEL_CHANGE_THRESHOLD:
                 print ("Detected motion. %d pixels have changed from our rolling average..." % len(detected_motion_pixels))
-
-        #do this after analysis of current frame
-        self._update_background(np_frame)
+            else:
+                print ("Updating background image due to small motion (%d pixels changed)" % len(detected_motion_pixels))
+                self._update_background(np_frame)
+        else:
+            #do this after analysis of current frame
+            self._update_background(np_frame)
 
         return None
 
