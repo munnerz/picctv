@@ -23,9 +23,11 @@ class Motion(ModuleBase):
 
     def _update_background(self, frame):
         if self._background_sum is None and self._background_sum_squared is None:
+            print "initialised vals"
             self._background_sum = frame
             self._background_sum_squared = cv2.pow(frame, 2.0)
         else:
+            print "adding to vals"
             cv2.accumulate(frame, self._background_sum)
             cv2.accumulateSquare(frame, self._background_sum_squared)
         self._background_frame_count += 1
@@ -34,8 +36,8 @@ class Motion(ModuleBase):
         return self._background_sum / self._background_frame_count
 
     def _background_variance(self):
-        squared_sum_mean = self._background_sum_squared / self._background_sum_squared
-        mean_squared = cv2.pow(self._background_mean, 2)
+        squared_sum_mean = self._background_sum_squared / self._background_frame_count
+        mean_squared = cv2.pow(self._background_mean(), 2)
         return cv2.subtract(squared_sum_mean, mean_squared)
 
     def _background_standard_dev(self):
@@ -54,20 +56,15 @@ class Motion(ModuleBase):
             print ("Fake frame...")
             return None # we have a fake frame!
 
-        stream = open(settings.MOTION_TMP_FILE, 'w+b')
-        stream.write(frame)
-        stream.seek(0)
-
-        numpy_frame = np.fromstring(frame, dtype=np.uint8)
-        cv_frame = cv2.imdecode(numpy_frame, cv2.CV_LOAD_IMAGE_GRAYSCALE)
+        np_frame = np.frombuffer(frame, dtype='uint8').astype('float').reshape((res[1], res[0], 3))
         
         if(self._background_frame_count > settings.MOTION_BACKGROUND_FRAME_COUNT_THRESHOLD):
-            motion_diff_abs = cv2.absdiff(cv_frame, self._background_mean())
-            detected_motion_pixels = motion_diff_abs > self._background_standard_dev()
-            print ("%d pixels have changed from our rolling average...")
+            motion_diff_abs = cv2.absdiff(np_frame, self._background_mean())
+            detected_motion_pixels = motion_diff_abs[motion_diff_abs > self._background_standard_dev()]
+            print ("%d pixels have changed from our rolling average..." % len(detected_motion_pixels))
 
         #do this after analysis of current frame
-        self._update_background(cv_frame)
+        self._update_background(np_frame)
 
         return None
 
