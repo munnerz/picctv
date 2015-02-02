@@ -15,7 +15,7 @@ CAMERA_HFLIP = False
 CAMERA_VFLIP = False
 _RECORDING_QUALITIES =   { 
                             "low": { 
-                                "format": "bgr", 
+                                "format": "yuv", 
                                 "resolution": (64, 128),
                                 "fps": 8,
                                 "multiplexer": None,
@@ -47,3 +47,6 @@ MOTION_TMP_FILE = '/run/shm/picamtemp.dat' # this really should be a ramdisk as 
 MOTION_CHUNK_LENGTH = 10 # the number of data points to collect before sending to server
 MOTION_BACKGROUND_FRAME_COUNT_THRESHOLD = 20 # how many frames we must have processed before starting
                                              # actual analysis.
+MOTION_PIXEL_CHANGE_THRESHOLD_SCALE_FACTOR = 3.5
+MOTION_TOTAL_PIXEL_CHANGE_THRESHOLD = 0.1 # percentage of the image that must have changed pixels
+                                          # to qualify the frame as 'motion'                                     

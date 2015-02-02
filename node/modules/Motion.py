@@ -23,11 +23,9 @@ class Motion(ModuleBase):
 
     def _update_background(self, frame):
         if self._background_sum is None and self._background_sum_squared is None:
-            print "initialised vals"
             self._background_sum = frame
             self._background_sum_squared = cv2.pow(frame, 2.0)
         else:
-            print "adding to vals"
             cv2.accumulate(frame, self._background_sum)
             cv2.accumulateSquare(frame, self._background_sum_squared)
         self._background_frame_count += 1
@@ -56,13 +54,18 @@ class Motion(ModuleBase):
             print ("Fake frame...")
             return None # we have a fake frame!
 
-        np_frame = cv2.cvtColor(np.frombuffer(frame, dtype='uint8').astype('float32').reshape((res[1], res[0], 3)), cv2.COLOR_BGR2GRAY)
+        stream = open(settings.MOTION_TMP_FILE, 'w+b')
+        stream.write(frame)
+        stream.seek(0)
+
+        np_frame = np.fromfile(stream, dtype='uint8', count=res[1]*res[0]).astype('float32').reshape((res[1], res[0]))
         
         if(self._background_frame_count > settings.MOTION_BACKGROUND_FRAME_COUNT_THRESHOLD):
             motion_diff_abs = cv2.absdiff(np_frame, self._background_mean())
-            dFactor = 3.5
-            detected_motion_pixels = np.extract(motion_diff_abs > dFactor * self._background_standard_dev(), motion_diff_abs)
-            print ("%d pixels have changed from our rolling average..." % len(detected_motion_pixels))
+            detected_motion_condition = motion_diff_abs > settings.MOTION_PIXEL_CHANGE_THRESHOLD_SCALE_FACTOR * self._background_standard_dev()
+            detected_motion_pixels = np.extract(detected_motion_condition, motion_diff_abs)
+            if len(detected_motion_pixels) > res[0]*res[1]*settings.MOTION_TOTAL_PIXEL_CHANGE_THRESHOLD:
+                print ("Detected motion. %d pixels have changed from our rolling average..." % len(detected_motion_pixels))
 
         #do this after analysis of current frame
         self._update_background(np_frame)
