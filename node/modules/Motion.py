@@ -56,7 +56,7 @@ class Motion(ModuleBase):
             print ("Fake frame...")
             return None # we have a fake frame!
 
-        np_frame = np.frombuffer(frame, dtype='uint8').astype('float').reshape((res[1], res[0], 3))
+        np_frame = cv2.cvtColor(np.frombuffer(frame, dtype='uint8').astype('float32').reshape((res[1], res[0], 3)), cv2.COLOR_BGR2GRAY)
         
         if(self._background_frame_count > settings.MOTION_BACKGROUND_FRAME_COUNT_THRESHOLD):
             motion_diff_abs = cv2.absdiff(np_frame, self._background_mean())
