@@ -14,16 +14,20 @@ class Motion(ModuleBase):
         ModuleBase.__init__(self)
 
         #initialise both of these to matrices of zeros
-        self._background_sum = np.zeroes(settings._RECORDING_QUALITIES[self.required_quality()]['resolution'])
-        self._background_sum_squared = np.zeroes(settings._RECORDING_QUALITIES[self.required_quality()]['resolution'])
+        self._background_sum = None
+        self._background_sum_squared = None
         self._background_frame_count = 0 #the number of frames that comprise the background data
 
         self._last_timestamp = 0
         self._last_start_time = datetime.now()
 
     def _update_background(self, frame):
-        self._background_sum = cv2.accumulate(frame, self._background_sum)
-        self._background_sum_squared = cv2.accumulateSquare(frame, self._background_sum_squared)
+        if self._background_sum is None and self._background_sum_squared is None:
+            self._background_sum = frame
+            self._background_sum_squared = cv2.pow(frame, 2.0)
+        else:
+            self._background_sum = cv2.accumulate(frame, self._background_sum)
+            self._background_sum_squared = cv2.accumulateSquare(frame, self._background_sum_squared)
         self._background_frame_count += 1
 
     def _background_mean(self):
