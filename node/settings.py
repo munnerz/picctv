@@ -40,11 +40,11 @@ LIVE_LISTEN_ADDRESS = ('0.0.0.0', 8000) # address for the
 
 RECORDING_CHUNK_LENGTH = 4 # target length of each chunk, in seconds
 
-MOTION_LEVEL = 10000
+MOTION_LEVEL = 100
 MOTION_THRESHOLD = 35
 MOTION_TMP_FILE = '/run/shm/picamtemp.dat' # this really should be a ramdisk as it'll be read & written
                                            # to very often (twice per frame)
-MOTION_CHUNK_LENGTH = 10 # the number of data points to collect before sending to server
+MOTION_CHUNK_LENGTH = 20 # the number of data points to collect before sending to server
 MOTION_BACKGROUND_FRAME_COUNT_THRESHOLD = 20 # how many frames we must have processed before starting
                                              # actual analysis.
 MOTION_PIXEL_CHANGE_THRESHOLD_SCALE_FACTOR = 3.5
