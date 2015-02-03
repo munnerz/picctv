@@ -27,6 +27,7 @@ class Motion(ModuleBase):
         self._long_variance = None
         self._short_variance = None
 
+        self._event_buffer = []
         self._last_timestamp = 0
         self._last_start_time = datetime.now()
 
@@ -107,7 +108,6 @@ class Motion(ModuleBase):
 
         N = 2
 
-
         _short_variance_gt_mask = ~(np.greater(N * motion_diff_abs, self._short_variance))
         _short_variance_lt_mask = ~(np.less(N * motion_diff_abs, self._short_variance))
 
@@ -137,10 +137,34 @@ class Motion(ModuleBase):
 
         _binary_motion_detection_mask = motion_diff_abs > _best_variance
 
-        print("%d pixels changed" % len(np.extract(_binary_motion_detection_mask, _binary_motion_detection_mask)))
+        _motion_detected_pixels = len(np.extract(_binary_motion_detection_mask, _binary_motion_detection_mask))
+
+        self._event_buffer.append({"is_motion": _motion_detected_pixels > settings.MOTION_LEVEL,
+                                   "motion_magnitude": _motion_detected_pixels,
+                                   "frame_number": frame_info.index})
 
         self._previous_frame = np_frame # save this frame as the previous one for next call
-        return None
+
+        # actually send data off (or don't, depending on amount of data)
+        if len(self._event_buffer) > settings.MOTION_CHUNK_LENGTH:
+            data_buffer = self._event_buffer[:]
+            self._event_buffer = []
+
+            end_time = datetime.now()
+            end_timestamp = frame_info.timestamp
+
+            to_send = dict(start_time=self._last_start_time,
+                           end_time=end_time,
+                           start_timestamp=self._last_timestamp,
+                           end_timestamp=end_timestamp,
+                           data_buffer=data_buffer)
+
+            self._last_start_time = end_time
+            self._last_timestamp = end_timestamp
+
+            return to_send
+        else:
+            return None
 
     def shutdown(self):
         LOGGER.debug("Shut down.")
