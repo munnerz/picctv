@@ -93,7 +93,7 @@ class Motion(ModuleBase):
         
         self._update_background(np_frame)
 
-        motion_diff_abs = cv2.absdiff(np_frame, self._background_model)
+        motion_diff_abs = np.absolute(np.subtract(np_frame, self._background_model))
 
         if self._first_diff_abs is None:
             self._first_diff_abs = motion_diff_abs # this should possibly be the second abs diff,
@@ -121,8 +121,11 @@ class Motion(ModuleBase):
         if self._long_variance is None:
             self._long_variance = self._first_diff_abs
 
-        _long_variance_gt_mask = ~(np.greater(self._short_variance, self._long_variance))
-        _long_variance_lt_mask = ~(np.less(self._short_variance, self._long_variance))
+        # these are sort of swapped, as an efficiency improvement.
+        # masks are represented inverted (ie. True values ARE masked), we need
+        # to invert the result to make values we WANT, be False. This is it:
+        _long_variance_gt_mask = np.less(self._short_variance, self._long_variance)
+        _long_variance_lt_mask = np.greater(self._short_variance, self._long_variance)
 
         t = np.ma.array(self._long_variance, mask=_long_variance_gt_mask, copy=False)
         t += 1
