@@ -4,7 +4,7 @@ import logging
 import cv2
 import numpy as np
 
-from modules.Motion import Motion
+from modules import Motion
 
 log = None
 
@@ -31,11 +31,12 @@ def setup_logger():
 
 if __name__ == "__main__":
     setup_logger()
+    cv2.namedWindow("Image")
     if len(sys.argv) < 2:
         log.error("Usage profiler.py <video_clip_path>")
         sys.exit(1)
 
-    motion = Motion(True)
+    Motion.testing = True
 
     vid_clip_path = sys.argv[1]
     vid_cap = cv2.VideoCapture(vid_clip_path)
@@ -49,7 +50,13 @@ if __name__ == "__main__":
         frame_info = FrameInfo(frame_count, frame_count)
         frame_count += 1
 
-        moved_pixels = motion.process_frame((frame, frame_info))
+        frame_yuv = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY).flatten()
+
+        moved_pixels = Motion.process_frame((frame_yuv, frame_info)).astype('float32')
+
+        cv2.imshow("Image", moved_pixels)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
         log.info("There have been %d moved pixels" % (len(np.extract(moved_pixels, moved_pixels))) )
         # get next frame
