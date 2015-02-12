@@ -83,6 +83,11 @@ def shutdown_module(module):
         print("Error shutting down module: %s" % e)
         pass
 
+def start_module(module_name):
+    module = __import__("modules.%s" % module_name)
+    class_ = getattr(module, module_name)
+    return class_()
+
 if __name__ == "__main__":
     _CAMERA = picamera.PiCamera()
     _CAMERA.resolution = settings.CAMERA_RESOLUTION
@@ -92,7 +97,7 @@ if __name__ == "__main__":
     _CAMERA.hflip = settings.CAMERA_HFLIP
     _CAMERA.vflip = settings.CAMERA_VFLIP
 
-    _MODULES = [x() for x in settings.ENABLED_MODULES] # initialize instance of each module
+    _MODULES = map(start_module, settings.ENABLED_MODULES)
     _NETWORK = Networking.Networking(settings.NODE_NAME)
     
     for module in _MODULES:
