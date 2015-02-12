@@ -2,64 +2,62 @@ import threading
 import socket
 import logging
 
-from modules.ModuleBase import ModuleBase
 import settings
 
 LOGGER = logging.getLogger("node.Live")
 
-class Live(ModuleBase):
 
-    def __init__(self):
-        ModuleBase.__init__(self) #to ensure the main frame loop begins
-        self._sock_addr = settings.LIVE_LISTEN_ADDRESS
-        self._keepListening = True
-        self._listeningThread = threading.Thread(target=self._listen)
+def _listen():
+    global _server_socket
+    _server_socket = socket.socket()
+    _server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    _server_socket.settimeout(1)
+    _server_socket.bind(_sock_addr)
+    _server_socket.listen(0)
 
-        self._outputs = []
-        self._outputLock = threading.Lock()
+    while _keepListening:
+        try:
+            fos = _server_socket.accept()[0].makefile('wb')
+            with _outputLock:
+                outputs.append(fos)
+        except socket.timeout:
+            pass
+    return
 
-        #now start listening...
-        self._listeningThread.start()
+def required_quality():
+    return "high"
 
-
-    def _listen(self):
-        self._server_socket = socket.socket()
-        self._server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self._server_socket.settimeout(1)
-        self._server_socket.bind(self._sock_addr)
-        self._server_socket.listen(0)
-
-        while self._keepListening:
+def process_frame(data):
+    with _outputLock:
+        for output in _outputs[:]:
             try:
-                fos = self._server_socket.accept()[0].makefile('wb')
-                with self._outputLock:
-                    self._outputs.append(fos)
-            except socket.timeout:
+                output.write(data[0])
+            except IOError as e:
+                LOGGER.exception("IOException in Live module during processFrame: %s" % e)
+                _outputs.remove(output)
                 pass
-        return
+    return None
 
-    def required_quality(self):
-        return "high"
+def shutdown():
+    global _keepListening, _outputs
+    LOGGER.debug("Shutting down...")
 
-    def process_frame(self, data):
-        with self._outputLock:
-            for output in self._outputs[:]:
-                try:
-                    output.write(data[0])
-                except IOError as e:
-                    LOGGER.exception("IOException in Live module during processFrame: %s" % e)
-                    self._outputs.remove(output)
-                    pass
-        return None
+    _keepListening = False
+    with _outputLock:
+        map(lambda o: o.close(), _outputs)
+        del _outputs[:]
+    _server_socket.close()
+    _listeningThread.join(timeout=1)
 
-    def shutdown(self):
-        LOGGER.debug("Shutting down...")
+    LOGGER.debug("Shut down.")
 
-        self._keepListening = False
-        with self._outputLock:
-            map(lambda o: o.close(), self._outputs)
-            del self._outputs[:]
-        self._server_socket.close()
-        self._listeningThread.join(timeout=1)
 
-        LOGGER.debug("Shut down.")
+_sock_addr = settings.LIVE_LISTEN_ADDRESS
+_keepListening = True
+_listeningThread = threading.Thread(target=_listen)
+
+_outputs = []
+_outputLock = threading.Lock()
+
+#now start listening...
+_listeningThread.start()
