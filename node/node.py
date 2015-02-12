@@ -65,7 +65,7 @@ class Multiplexer(object):
                     try:
                         output = module.process_frame((self._frame_buffer, frame_info))
                         if output is not None:
-                            _NETWORK.send_data((module.get_name(), output))
+                            _NETWORK.send_data((module.__name__, output))
                     except Exception as e:
                         LOGGER.exception("Exception in Multiplexer for module '%s': %s" % (module, e))
                         pass
@@ -92,12 +92,15 @@ if __name__ == "__main__":
     _CAMERA.hflip = settings.CAMERA_HFLIP
     _CAMERA.vflip = settings.CAMERA_VFLIP
 
-    _MODULES = [x() for x in settings.ENABLED_MODULES] # initialize instance of each module
+    from importlib import import_module
+    _MODULES = map(import_module, settings.ENABLED_MODULES)
+
     _NETWORK = Networking.Networking(settings.NODE_NAME)
     
     for module in _MODULES:
+        LOGGER.info("Starting %s" % module.__name__)
         _RECORDING_QUALITIES[module.required_quality()]['registered_modules'].append(module)
-        LOGGER.info("Added %s module to %s quality multiplexer..." % (module.get_name(), module.required_quality()))
+        LOGGER.info("Added %s module to %s quality multiplexer..." % (module.__name__, module.required_quality()))
 
     for quality in _RECORDING_QUALITIES:
         profile = _RECORDING_QUALITIES[quality]

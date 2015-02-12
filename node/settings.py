@@ -1,10 +1,6 @@
-from modules.Recording import Recording
-from modules.Live import Live
-from modules.Motion import Motion
-
 ## Node settings
 NODE_NAME = "ChangeMe" # the name of this camera to report to the server - should be unique!
-ENABLED_MODULES = [Recording, Live, Motion]
+ENABLED_MODULES = ["modules.Recording", "modules.Live", "modules.Motion"]
 
 ## Camera settings
 CAMERA_RESOLUTION = (1280, 720) # the actual recording resolution used by PiCamera
@@ -16,7 +12,7 @@ CAMERA_VFLIP = False
 _RECORDING_QUALITIES =   { 
                             "low": { 
                                 "format": "yuv", 
-                                "resolution": (64, 128),
+                                "resolution": (128, 64),
                                 "fps": 8,
                                 "multiplexer": None,
                                 "splitter_port": 1,
