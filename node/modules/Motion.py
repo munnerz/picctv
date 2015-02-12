@@ -21,14 +21,14 @@ _accurate_matching_candidates = None
 _long_variance = None
 _short_variance = None
 
+_candidates = None
+
 _event_buffer = []
 _last_timestamp = 0
 _last_start_time = datetime.now()
 
-testing = False
-
 def _update_background(frame):
-    global _background_model, _background_frame_count, _rapid_matching_candidates, _previous_frame, _stable_signal_candidates, _accurate_matching_candidates
+    global _background_model, _background_frame_count, _previous_frame, _candidates
 
     if _background_model is None:
         _background_model = frame
@@ -37,38 +37,31 @@ def _update_background(frame):
         _background_model += (1 / _background_frame_count) * \
                                     np.subtract(frame, _background_model)
     else:
+
+        if _candidates is None:
+            _candidates = frame
+
         #rapid matching
-        _rapid_matching_candidates = np.equal(frame, _previous_frame)
-        
-        #stable signal trainer
-        if _stable_signal_candidates is None:
-            _stable_signal_candidates = _background_model # not sure if this is correct, perhaps frames[0]?
-        t_stable_signal_candidates = frame
+        _rapid_matching_candidates_mask = ~(np.absolute(frame - _previous_frame) < 10)
 
-        logical_and_gt_mask = ~(np.logical_and(_rapid_matching_candidates, np.greater(frame, _stable_signal_candidates)))
-        logical_and_lt_mask = ~(np.logical_and(_rapid_matching_candidates, np.less(frame, _stable_signal_candidates)))
+        _rapid_matching_candidates = np.ma.array(_candidates, mask=_rapid_matching_candidates_mask, copy=False)
 
-        t = np.ma.array(t_stable_signal_candidates, mask=logical_and_gt_mask, copy=False)
-        t += 1
-        t = np.ma.array(t_stable_signal_candidates, mask=logical_and_lt_mask, copy=False)
-        t -= 1
 
-        _stable_signal_candidates = t_stable_signal_candidates
+        _candidates_gt = np.ma.array(_rapid_matching_candidates, mask=~(frame > _candidates), copy=False)
+        _candidates_lt = np.ma.array(_rapid_matching_candidates, mask=~(frame < _candidates), copy=False)
 
-        #accurate matching
-        _accurate_matching_candidates_mask = ~(np.equal(_stable_signal_candidates, frame))
+        _candidates_gt += 1
+        _candidates_lt -= 1
 
-#            print("Dims: bgmodel: %s, Frame: %s, rapid matching candidates: %s, stable signal %s, accurate matching %s" % (self._background_model.shape,
-#                                                                                                                          frame.shape, 
-#                                                                                                                          self._rapid_matching_candidates.shape, 
-#                                                                                                                          self._stable_signal_candidates.shape, 
-#                                                                                                                          self._accurate_matching_candidates_mask.shape))
-        #background updating (8 is alpha in (20), and should be changed)
+        _accurate_matching_candidates_mask = ~(_candidates == frame)
 
-        subtracted = (1 / 8) * np.subtract(frame, _background_model) #change to only do this op on accurate matches
-        
-        t = np.ma.array(_background_model, mask=_accurate_matching_candidates_mask, copy=False)
-        t += subtracted
+        _accurate_matches = np.ma.array(_background_model, mask=_accurate_matching_candidates_mask, copy=False)
+        _accurate_matches += (frame - _accurate_matches)
+
+        if settings.MOTION_TESTING:
+            cv2.imshow("Rapid Matches", (~_rapid_matching_candidates_mask).astype('float32'))
+            cv2.imshow("Accurate Matches", (~_accurate_matching_candidates_mask).astype('float32'))
+            cv2.imshow("Background", _background_model)
 
     _background_frame_count += 1
 
@@ -76,7 +69,7 @@ def required_quality():
     return "low"
 
 def process_frame(data):
-    global process_frame, _first_diff_abs, _short_variance, _long_variance, _event_buffer, _last_start_time, _last_timestamp
+    global process_frame, _first_diff_abs, _short_variance, _long_variance, _event_buffer, _last_start_time, _last_timestamp, _previous_frame
 
     (frame, frame_info) = data
 
@@ -90,11 +83,16 @@ def process_frame(data):
     stream.write(frame)
     stream.seek(0)
 
-    np_frame = np.fromfile(stream, dtype='uint8', count=res[1]*res[0]).astype('float32').reshape((res[0], res[1]))
+    np_frame = np.fromfile(stream, dtype='uint8', count=res[1]*res[0]).reshape((res[1], res[0]))
     
+    cv2.imshow("Frame", np_frame)
     _update_background(np_frame)
 
     motion_diff_abs = np.absolute(np.subtract(np_frame, _background_model))
+
+    kernel = np.ones((5,5),np.uint8)
+    motion_diff_abs = cv2.erode(motion_diff_abs,kernel,iterations = 1)
+    motion_diff_abs = cv2.dilate(motion_diff_abs,kernel,iterations = 1)
 
     if _first_diff_abs is None:
         _first_diff_abs = motion_diff_abs # this should possibly be the second abs diff,
@@ -137,11 +135,8 @@ def process_frame(data):
 
     _binary_motion_detection_mask = motion_diff_abs > _best_variance
 
-    if testing:
-        cv2.imshow("Image", _binary_motion_detection_mask.astype('float32'))
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            return
-        return _binary_motion_detection_mask
+    if settings.MOTION_TESTING:
+        cv2.imshow("Difference", _binary_motion_detection_mask.astype('float32'))
 
     _motion_detected_pixels = len(np.extract(_binary_motion_detection_mask, _binary_motion_detection_mask))
 
@@ -150,6 +145,8 @@ def process_frame(data):
                                "frame_number": frame_info.index})
 
     _previous_frame = np_frame # save this frame as the previous one for next call
+
+    cv2.waitKey(1)
 
     # actually send data off (or don't, depending on amount of data)
     if len(_event_buffer) > settings.MOTION_CHUNK_LENGTH:

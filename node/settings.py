@@ -8,12 +8,12 @@ CAMERA_RESOLUTION = (1280, 720) # the actual recording resolution used by PiCame
 CAMERA_FPS = 24 #the actual FPS to capture at (everything else is scaled off this...)
 CAMERA_EXPOSURE_MODE = 'night' 
 CAMERA_BRIGHTNESS = 60 # value between 0 and 100
-CAMERA_HFLIP = False
-CAMERA_VFLIP = False
+CAMERA_HFLIP = True
+CAMERA_VFLIP = True
 _RECORDING_QUALITIES =   { 
                             "low": { 
                                 "format": "yuv", 
-                                "resolution": (128, 64),
+                                "resolution": (256, 128),
                                 "fps": 8,
                                 "multiplexer": None,
                                 "splitter_port": 1,
@@ -37,6 +37,7 @@ LIVE_LISTEN_ADDRESS = ('0.0.0.0', 8000) # address for the
 
 RECORDING_CHUNK_LENGTH = 4 # target length of each chunk, in seconds
 
+MOTION_TESTING = False
 MOTION_LEVEL = 100
 MOTION_THRESHOLD = 35
 MOTION_TMP_FILE = '/run/shm/picamtemp.dat' # this really should be a ramdisk as it'll be read & written
