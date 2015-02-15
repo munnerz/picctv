@@ -93,7 +93,7 @@ if __name__ == "__main__":
     _CAMERA.vflip = settings.CAMERA_VFLIP
 
     from importlib import import_module
-    _MODULES = map(import_module, settings.ENABLED_MODULES)
+    _MODULES = map(lambda x: import_module("modules.%s" % x), settings.ENABLED_MODULES)
 
     _NETWORK = Networking.Networking(settings.NODE_NAME)
     
