@@ -6,9 +6,15 @@ import settings
 
 LOGGER = logging.getLogger("node.Live")
 
+_sock_addr = settings.LIVE_LISTEN_ADDRESS
+_keepListening = True
+
+_outputs = []
+_outputLock = threading.Lock()
+
 
 def _listen():
-    global _server_socket
+    global _server_socket, _outputs
     _server_socket = socket.socket()
     _server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     _server_socket.settimeout(1)
@@ -19,7 +25,7 @@ def _listen():
         try:
             fos = _server_socket.accept()[0].makefile('wb')
             with _outputLock:
-                outputs.append(fos)
+                _outputs.append(fos)
         except socket.timeout:
             pass
     return
@@ -51,13 +57,6 @@ def shutdown():
 
     LOGGER.debug("Shut down.")
 
-
-_sock_addr = settings.LIVE_LISTEN_ADDRESS
-_keepListening = True
 _listeningThread = threading.Thread(target=_listen)
-
-_outputs = []
-_outputLock = threading.Lock()
-
 #now start listening...
 _listeningThread.start()
