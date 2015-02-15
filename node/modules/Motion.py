@@ -1,4 +1,6 @@
 from datetime import datetime
+from collections import Counter
+
 import numpy as np
 import cv2
 import logging
@@ -27,6 +29,24 @@ _event_buffer = []
 _last_timestamp = 0
 _last_start_time = datetime.now()
 
+
+def P(a, w):
+    o = np.zeros(a.shape, dtype='float32')
+    o_ = o.reshape(-1)
+    a = a.reshape(-1)
+    for i, v in enumerate(a):
+        o_[i] = np.extract(a, np.absolute(a - v) < 10).sum().astype('float32') / (w * w)
+    return o
+
+def A(p):
+    T = 1
+    e = p * np.log2(p)
+    E = e.sum()
+    if (-E) > T:
+        return np.ones(p.shape, dtype=bool)
+    else:
+        return np.zeros(p.shape, dtype=bool)
+	
 def _update_background(frame):
     global _background_model, _background_frame_count, _previous_frame, _candidates
 
@@ -85,13 +105,29 @@ def process_frame(data):
 
     np_frame = np.fromfile(stream, dtype='uint8', count=res[1]*res[0]).reshape((res[1], res[0]))
     
-    cv2.imshow("Frame", np_frame)
     _update_background(np_frame)
 
     motion_diff_abs = np.absolute(np.subtract(np_frame, _background_model))
 
-    kernel = np.ones((5,5),np.uint8)
-    motion_diff_abs = cv2.erode(motion_diff_abs,kernel,iterations = 1)
+
+# not currently working...
+#    p_values = np.zeros(shape=motion_diff_abs.shape)
+#    a_values = np.zeros(shape=motion_diff_abs.shape, dtype=bool)
+#    x = y = 0
+#    w = 8
+#    while x <= res[0] - w:
+#        while y <= res[1] - w:
+#            diff_block = motion_diff_abs[x:x+w, y:y+w]
+#            p_values[x:x+w, y:y+w] = P(diff_block, w)
+#            a_values[x:x+w, y:y+w] = A(p_values[x:x+w, y:y+w])
+#            y += w
+#        x += w
+
+#    print ("A: %s" % a_values)
+#    cv2.imshow("A-Values", a_values.astype('float32'))
+
+    kernel = np.ones((4,4),np.uint8)
+    motion_diff_abs = cv2.erode(motion_diff_abs,kernel,iterations = 2)
     motion_diff_abs = cv2.dilate(motion_diff_abs,kernel,iterations = 1)
 
     if _first_diff_abs is None:
@@ -136,6 +172,7 @@ def process_frame(data):
     _binary_motion_detection_mask = motion_diff_abs > _best_variance
 
     if settings.MOTION_TESTING:
+        cv2.imshow("Frame", np_frame)
         cv2.imshow("Difference", _binary_motion_detection_mask.astype('float32'))
 
     _motion_detected_pixels = len(np.extract(_binary_motion_detection_mask, _binary_motion_detection_mask))
