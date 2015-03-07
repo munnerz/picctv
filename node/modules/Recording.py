@@ -41,5 +41,8 @@ def process_frame(data):
         sbuffer.append(frame)
         return None
 
+def name():
+  return "Recording"
+  
 def shutdown():
     LOGGER.debug("Shut down.")

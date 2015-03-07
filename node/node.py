@@ -65,7 +65,7 @@ class Multiplexer(object):
                     try:
                         output = module.process_frame((self._frame_buffer, frame_info))
                         if output is not None:
-                            _NETWORK.send_data((module.__name__, output))
+                            _NETWORK.send_data((module.name(), output))
                     except Exception as e:
                         LOGGER.exception("Exception in Multiplexer for module '%s': %s" % (module, e))
                         pass
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     _CAMERA.vflip = settings.CAMERA_VFLIP
 
     from importlib import import_module
-    _MODULES = map(import_module, settings.ENABLED_MODULES)
+    _MODULES = map(lambda x: import_module("modules.%s" % x), settings.ENABLED_MODULES)
 
     _NETWORK = Networking.Networking(settings.NODE_NAME)
     
