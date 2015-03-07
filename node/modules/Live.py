@@ -38,6 +38,9 @@ def process_frame(data):
                 pass
     return None
 
+def name():
+    return "Live"
+    
 def shutdown():
     global _keepListening, _outputs
     LOGGER.debug("Shutting down...")

@@ -65,7 +65,7 @@ class Multiplexer(object):
                     try:
                         output = module.process_frame((self._frame_buffer, frame_info))
                         if output is not None:
-                            _NETWORK.send_data((module.__name__, output))
+                            _NETWORK.send_data((module.name(), output))
                     except Exception as e:
                         LOGGER.exception("Exception in Multiplexer for module '%s': %s" % (module, e))
                         pass

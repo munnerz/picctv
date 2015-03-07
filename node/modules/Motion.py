@@ -206,5 +206,8 @@ def process_frame(data):
     else:
         return None
 
+def name():
+    return "Motion"
+    
 def shutdown():
     LOGGER.debug("Shut down.")
