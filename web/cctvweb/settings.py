@@ -42,6 +42,7 @@ INSTALLED_APPS = (
     'datetimewidget',
     'graphos',
     'clips',
+    'django.contrib.humanize',
 )
 
 
