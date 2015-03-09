@@ -2,6 +2,7 @@
 
 {% load base_extra %}
 {% load bootstrap3 %}
+{% load humanize %}
 
 {% block title %}Clip list{% endblock %}
 
@@ -9,9 +10,8 @@
 
 {% block content %}
 
-  <div class="col-xs-12 col-sm-offset-1 col-sm-10 well">
-
-    <row>
+  <div class="col-xs-12 col-sm-offset-1 col-sm-10">
+    <div class="row">
       <form id="clip-form" action="{% url 'watch' %}" method="POST">
         {% csrf_token %}
         <div class="col-xs-12 col-sm-5">
@@ -40,6 +40,54 @@
         </div>
 
       </form>
-    </row>
+    </div>
+
+    <div class="spacer row">
+     <div class="col-xs-12 col-sm-3">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Cameras</h3>
+          </div>
+          <div class="panel-body">
+            <ul class="nav nav-pills nav-stacked">
+{% for c in cameras %}
+              <li role="presentation"><a href="#">{{ c }}</a></li>
+{% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-9 pull-right">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Recent events</h3>
+          </div>
+          <div class="panel-body">
+            This table shows the last 200 logged events from each camera - continous modules (like Recording) be shown near the top.
+          </div>
+          <!-- Table -->
+          <table class="table">
+            <thead>
+              <tr>
+                <th>When</th>
+                <th>Camera</th>
+                <th>Module</th>
+                <th>Message</th>
+                <th>View</th>
+              </tr>
+            </thead>
+{% for e in events_list %}
+            <tr>
+              <td>{{ e.start_time|date }} {{ e.start_time|time }} - {{ e.end_time|date }} {{ e.end_time|time }}</td>
+              <td>{{ e.camera_name }}</td>
+              <td>{{ e.module_name }}</td>
+              <td>Triggered for {{ e.length|naturaltime }}</td>
+              <td><a href="{% url 'watch' %}?start_datetime={{e.start_time|epoch}}&end_datetime={{e.end_time|epoch}}&camera_name={{e.camera_name}}">View clip</a></td>
+            </tr>
+{% endfor %}
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 {% endblock %}

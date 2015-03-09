@@ -24,7 +24,9 @@ body {
  *  Utility classes
  *
  */
-
+.spacer {
+    margin-top: 40px; /* define margin as you see fit */
+}
 
 /**
  *  Bootstrap pull 3.x-1.1 for Twitter Bootstrap v3.
