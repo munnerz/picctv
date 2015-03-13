@@ -101,7 +101,7 @@ def get_recent_events(camera_name, include_recordings=True):
                           lambda x: x.data['end_time'], 
                           lambda x: x.data['data_buffer'], 
                           lambda x: 1 if x['is_motion'] else 0,
-                          lambda x: x.getattr(x, 'triggered', None)
+                          lambda x: getattr(x, 'triggered', None)
                           )
 
     if include_recordings:
