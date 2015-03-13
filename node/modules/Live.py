@@ -12,6 +12,7 @@ _keepListening = True
 _outputs = []
 _outputLock = threading.Lock()
 
+_listeningThread = None
 
 def _listen():
     global _server_socket, _outputs
@@ -60,6 +61,7 @@ def shutdown():
 
     LOGGER.debug("Shut down.")
 
-_listeningThread = threading.Thread(target=_listen)
-#now start listening...
-_listeningThread.start()
+def module_started():
+    global _listeningThread
+    _listeningThread = threading.Thread(target=_listen)
+    _listeningThread.start()
