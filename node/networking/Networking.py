@@ -1,5 +1,6 @@
 from socket import socket, AF_INET, SOCK_STREAM
-from Queue import Empty, Queue
+from multiprocessing import Queue
+from Queue import Empty
 from logging import getLogger
 from threading import Thread
 from cPickle import dumps
@@ -23,12 +24,12 @@ class Networking(object):
         self._ip = ip
         self._port = port
         self._connections = {}
-        self._send_queue = Queue()
-        self._process = Thread(target=self.run, args=(self._send_queue,))
+        self.send_queue = Queue()
+        self._process = Thread(target=self.run, args=(self.send_queue,))
         self._process.start()
 
     def send_data(self, data):
-        self._send_queue.put(data)
+        self.send_queue.put(data)
 
     def _create_connection(self, module_name):
         sock = socket(AF_INET, SOCK_STREAM)

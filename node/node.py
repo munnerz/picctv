@@ -8,6 +8,7 @@ import settings
 from settings import _RECORDING_QUALITIES
 from networking import Networking
 
+import multiprocessing
 
 LOGGER = logging.getLogger(name="node")
 LOGGER.setLevel(logging.DEBUG)
@@ -63,9 +64,7 @@ class Multiplexer(object):
             if self._usefulFrame(frame_info.index):
                 for module in self._settings['registered_modules'][:]:
                     try:
-                        output = module.process_frame((self._frame_buffer, frame_info))
-                        if output is not None:
-                            _NETWORK.send_data((module.name(), output))
+                        module.input_queue.put((self._frame_buffer, frame_info))
                     except Exception as e:
                         LOGGER.exception("Exception in Multiplexer for module '%s': %s" % (module, e))
                         pass
@@ -83,6 +82,22 @@ def shutdown_module(module):
         print("Error shutting down module: %s" % e)
         pass
 
+def run_module(module, in_queue, out_queue):
+    try:
+        module.module_started()
+    except AttributeError:
+        LOGGER.debug("%s module does not implement a module_started() method." % module.name())
+        pass
+    while True:
+        next_data = in_queue.get()
+        if next_data is None:
+            # this module is shutting down..
+            module.shutdown()
+            break
+        output = module.process_frame(next_data)
+        if output is not None:
+            out_queue.put((module.name(), output))
+
 if __name__ == "__main__":
     _CAMERA = picamera.PiCamera()
     _CAMERA.resolution = settings.CAMERA_RESOLUTION
@@ -98,13 +113,20 @@ if __name__ == "__main__":
     _NETWORK = Networking.Networking(settings.NODE_NAME)
     
     for module in _MODULES:
-        LOGGER.info("Starting %s" % module.__name__)
+        LOGGER.info("Starting %s" % module.name())
         _RECORDING_QUALITIES[module.required_quality()]['registered_modules'].append(module)
-        LOGGER.info("Added %s module to %s quality multiplexer..." % (module.__name__, module.required_quality()))
+        module.input_queue = multiprocessing.Queue()
+        LOGGER.info("Added %s module to %s quality multiplexer..." % (module.name(), module.required_quality()))
+
+    LOGGER.info("Launching all modules...")
+    _MODULE_PROCESSES = map(lambda x: multiprocessing.Process(target=run_module,
+                                                              args=(x, x.input_queue, _NETWORK.send_queue,)), _MODULES)
+    map(lambda x: x.start(), _MODULE_PROCESSES)
+    LOGGER.info("All modules launched!")
 
     for quality in _RECORDING_QUALITIES:
         profile = _RECORDING_QUALITIES[quality]
-	profile['multiplexer'] = Multiplexer(profile)
+        profile['multiplexer'] = Multiplexer(profile)
 
         LOGGER.info("Starting %s quality recording at %s, FPS: %d, format: %s" % (quality, profile['resolution'], profile['fps'], profile['format']))
         _CAMERA.start_recording(profile['multiplexer'], profile['format'], 
