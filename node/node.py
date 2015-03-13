@@ -83,6 +83,11 @@ def shutdown_module(module):
         pass
 
 def run_module(module, in_queue, out_queue):
+    try:
+        module.module_started()
+    except AttributeError:
+        LOGGER.debug("%s module does not implement a module_started() method." % module.name())
+        pass
     while True:
         next_data = in_queue.get()
         if next_data is None:
