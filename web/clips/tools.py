@@ -89,6 +89,7 @@ def chain_events(chunks, start_field, end_field, trigger_data, is_triggered, sho
 
     return events
 
+
 # when adding a module with a weird data type, you'll need to write a custom handler here
 # look at chain_events and how it is used in order to write the correct lambda functions
 def get_recent_events(camera_name, include_recordings=True):
@@ -100,7 +101,7 @@ def get_recent_events(camera_name, include_recordings=True):
                           lambda x: x.data['end_time'], 
                           lambda x: x.data['data_buffer'], 
                           lambda x: 1 if x['is_motion'] else 0,
-                          lambda x: x.get('triggered', None)
+                          lambda x: x.getattr(x, 'triggered', None)
                           )
 
     if include_recordings:
