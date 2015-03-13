@@ -11,8 +11,14 @@ def _recording_write(info):
                                                       **metadata))
     return None
 
+def _motion_write(info):
+    true_events = sum(map(lambda x: 1 if x['is_motion'] else 0, info.data['data_buffer']))
+    info['triggered'] = true_events / len(info.data['data_buffer']) > 0.2
+    library.write(info)
 
-MODULE_PROCESSORS = { "Recording": _recording_write }
+
+MODULE_PROCESSORS = { "Recording": _recording_write,
+                      "Motion": _motion_write }
 
 PROCESSING_POOL = Pool(processes=4)
 
