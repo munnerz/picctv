@@ -49,7 +49,7 @@ def name():
     return "Live"
     
 def shutdown():
-    global _keepListening, _outputs
+    global _keepListening, _outputs, _server_socket, _listeningThread
     LOGGER.debug("Shutting down...")
 
     _keepListening = False
