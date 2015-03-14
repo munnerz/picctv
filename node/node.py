@@ -140,6 +140,6 @@ if __name__ == "__main__":
             #shut down all modules here
             map(lambda q: _CAMERA.stop_recording(splitter_port=q['splitter_port']), _RECORDING_QUALITIES.values())
             _NETWORK.shutdown()
-            map(lambda m: shutdown_module(m), _MODULES)
+            map(lambda m: m.input_queue.put(None), _MODULES)
 
             LOGGER.info("Shut down.")
