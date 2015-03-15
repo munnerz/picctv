@@ -7,7 +7,7 @@ import logging
 
 import settings
 
-LOGGER = logging.getLogger("modules.Motion")
+LOGGER = logging.getLogger("node.Motion")
 
 #initialise both of these to matrices of zeros
 _previous_frame = None
