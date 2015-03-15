@@ -3,11 +3,10 @@ from collections import Counter
 
 import numpy as np
 import cv2
-import logging
 
-import settings
+from node import settings
 
-LOGGER = logging.getLogger("node.Motion")
+LOGGER = settings.logger("node.modules.Motion")
 
 #initialise both of these to matrices of zeros
 _previous_frame = None
@@ -52,7 +51,7 @@ def _update_background(frame):
 
     if _background_model is None:
         _background_model = frame
-    elif _background_frame_count < settings.MOTION_BACKGROUND_FRAME_COUNT_THRESHOLD:
+    elif _background_frame_count < arguments['background_frame_count_threshold']:
         # initial background modelling
         _background_model += (1 / _background_frame_count) * \
                                     np.subtract(frame, _background_model)
@@ -78,19 +77,15 @@ def _update_background(frame):
         _accurate_matches = np.ma.array(_background_model, mask=_accurate_matching_candidates_mask, copy=False)
         _accurate_matches += (frame - _accurate_matches)
 
-        if settings.MOTION_TESTING:
-            cv2.imshow("Rapid Matches", (~_rapid_matching_candidates_mask).astype('float32'))
-            cv2.imshow("Accurate Matches", (~_accurate_matching_candidates_mask).astype('float32'))
-            cv2.imshow("Background", _background_model)
-
     _background_frame_count += 1
 
 def required_quality():
     return "low"
 
-def process_frame(data):
+def process_data(data):
     global process_frame, _first_diff_abs, _short_variance, _long_variance, _event_buffer, _last_start_time, _last_timestamp, _previous_frame
 
+    (_, data) = data
     (frame, frame_info) = data
 
     res = settings._RECORDING_QUALITIES[required_quality()]['resolution']
@@ -99,7 +94,7 @@ def process_frame(data):
         print ("Fake frame... (len: %d, expected: %d)" % (len(frame), res[0]*res[1]))
         return None # we have a fake frame!
 
-    stream = open(settings.MOTION_TMP_FILE, 'w+b')
+    stream = open(arguments['tmp_file'], 'w+b')
     stream.write(frame)
     stream.seek(0)
 
@@ -108,7 +103,6 @@ def process_frame(data):
     _update_background(np_frame)
 
     motion_diff_abs = np.absolute(np.subtract(np_frame, _background_model))
-
 
 # not currently working...
 #    p_values = np.zeros(shape=motion_diff_abs.shape)
@@ -171,22 +165,16 @@ def process_frame(data):
 
     _binary_motion_detection_mask = motion_diff_abs > _best_variance
 
-    if settings.MOTION_TESTING:
-        cv2.imshow("Frame", np_frame)
-        cv2.imshow("Difference", _binary_motion_detection_mask.astype('float32'))
-
     _motion_detected_pixels = len(np.extract(_binary_motion_detection_mask, _binary_motion_detection_mask))
 
-    _event_buffer.append({"is_motion": _motion_detected_pixels > settings.MOTION_LEVEL,
+    _event_buffer.append({"is_motion": _motion_detected_pixels > arguments['level'],
                                "motion_magnitude": _motion_detected_pixels,
                                "frame_number": frame_info.index})
 
     _previous_frame = np_frame # save this frame as the previous one for next call
 
-    cv2.waitKey(1)
-
     # actually send data off (or don't, depending on amount of data)
-    if len(_event_buffer) > settings.MOTION_CHUNK_LENGTH:
+    if len(_event_buffer) > arguments['chunk_length']:
         data_buffer = _event_buffer[:]
         _event_buffer = []
 
