@@ -5,7 +5,7 @@ from picamera import PiVideoFrameType
 
 import settings
 
-LOGGER = logging.getLogger("node.Recording")
+LOGGER = logging.getLogger("modules.Recording")
 
 sbuffer = []
 _last_timestamp = 0

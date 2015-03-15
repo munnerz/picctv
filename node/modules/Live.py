@@ -4,7 +4,7 @@ import logging
 
 import settings
 
-LOGGER = logging.getLogger("node.Live")
+LOGGER = logging.getLogger("modules.Live")
 
 _sock_addr = settings.LIVE_LISTEN_ADDRESS
 _keepListening = True
