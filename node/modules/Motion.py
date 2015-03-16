@@ -46,8 +46,6 @@ def process_data(data):
 
     np_frame = np.fromfile(stream, dtype='uint8', count=res[1]*res[0]).reshape((res[1], res[0]))
     
-    _update_background(np_frame)
-
     motion_diff_abs = np.absolute(np.subtract(np_frame, _background_model))
 
     kernel = np.ones((4,4),np.uint8)
