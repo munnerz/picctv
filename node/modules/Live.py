@@ -31,9 +31,6 @@ def _listen():
             pass
     return
 
-def required_quality():
-    return "high"
-
 def process_data(data):
     with _outputLock:
         for output in _outputs[:]:

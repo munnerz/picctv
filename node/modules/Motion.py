@@ -79,9 +79,6 @@ def _update_background(frame):
 
     _background_frame_count += 1
 
-def required_quality():
-    return "low"
-
 def process_data(data):
     global process_frame, _first_diff_abs, _short_variance, _long_variance, _event_buffer, _last_start_time, _last_timestamp, _previous_frame
 

@@ -12,9 +12,6 @@ _last_timestamp = 0
 _last_frame_index = 0
 _last_start_time = datetime.now()
 
-def required_quality():
-    return "high"
-
 def process_data(data):
     global sbuffer, _last_timestamp, _last_frame_index, _last_start_time
     (_, data) = data
