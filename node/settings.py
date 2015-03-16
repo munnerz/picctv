@@ -42,6 +42,7 @@ ENABLED_MODULES = {
                     },
                     "Motion": {
                         "inputs": {
+                            "BackgroundExtraction": "all",
                             "PiCamera": "low",
                         },
                         "arguments": {
@@ -85,6 +86,11 @@ ENABLED_MODULES = {
                         "arguments": {
                             "buffer_size": 30,
                         }
+                    },
+                    "BackgroundExtraction": {
+                        "inputs": {
+                            "PiCamera": "high",
+                        },
                     },
                 }
 
