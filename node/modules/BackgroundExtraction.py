@@ -1,6 +1,10 @@
 import numpy as np
 import cv2
 
+from node import settings
+
+LOGGER = settings.logger("node.modules.BackgroundExtraction")
+
 _background_model = None
 _background_frame_count = 0
 _candidates = None
@@ -10,6 +14,7 @@ def process_data(data):
     global _background_model, _background_frame_count, _previous_frame, _candidates
 
     (module, data) = data
+    LOGGER.debug("Got some data from %s:%s" % module)
     (frame, frame_info) = data
 
     if _background_model is None:
