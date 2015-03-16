@@ -12,8 +12,12 @@ def _recording_write(info):
     return None
 
 def _motion_write(info):
-    true_events = sum(map(lambda x: 1 if x['is_motion'] else 0, info['data']['data_buffer']))
-    info['triggered'] = true_events / len(info['data']['data_buffer']) > 0.2
+    true_events = sum(map(lambda x: 1 if x['is_motion'] else 0, info['data']))
+    info['triggered'] = true_events / len(info['data']) > 0.2
+    info['start_time'] = info['data'][0]['time']
+    info['end_time'] = info['data'][-1]['time']
+    info['start_timestamp'] = info['data'][0]['timestamp']
+    info['end_timestamp'] = info['data'][-1]['timestamp']
     library.write(info)
 
 
