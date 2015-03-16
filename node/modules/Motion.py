@@ -20,7 +20,7 @@ _long_variance = None
 _short_variance = None
 
 def process_data(data):
-    global process_frame, _first_diff_abs, _short_variance, _long_variance
+    global process_frame, _first_diff_abs, _short_variance, _long_variance, _background_model
 
     (module, data) = data
 
@@ -31,7 +31,7 @@ def process_data(data):
     if _background_model is None:
         LOGGER.debug("Skipping motion detection on this frame as we don't have a background image yet...")
         return None
-        
+
     (frame, frame_info) = data
 
     res = arguments['resolution']
