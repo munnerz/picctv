@@ -1,3 +1,6 @@
+import numpy as np
+import cv2
+
 _background_model = None
 _background_frame_count = 0
 _candidates = None
