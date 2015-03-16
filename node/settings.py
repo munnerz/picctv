@@ -96,6 +96,11 @@ ENABLED_MODULES = {
                             "tmp_file": '/run/shm/picamtemp_bg.dat',
                         }
                     },
+                    "Annotator": {
+                        "inputs": {
+                            "Motion": "all",
+                        },
+                    },
                 }
 
 import logging
