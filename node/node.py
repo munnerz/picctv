@@ -27,7 +27,8 @@ def run_module(module):
             break
         output = module.process_data(next_data)
         if output is not None:
-            map(lambda x: x.put((module.name(), output)), module._output_queues.get('all', []))
+            for output_name, output_data in output.items():
+                map(lambda x: x.put(((module.name(), output_name), output_data)), module._output_queues.get(output_name, []))
 
 if __name__ == "__main__":
 

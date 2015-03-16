@@ -187,7 +187,7 @@ def process_data(data):
         _last_start_time = end_time
         _last_timestamp = end_timestamp
 
-        return to_send
+        return {"all": to_send}
     else:
         return None
 

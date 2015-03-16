@@ -92,15 +92,22 @@ def run(queue):
                 LOGGER.debug("Flushed all data.")
                 break
             if not queue_buffer.empty():
-                (module_name, data) = queue_buffer.get()
+                (module, data) = queue_buffer.get()
             else:
-                (module_name, data) = queue.get()
-            if(module_name == "RootNode"):
+                (module, data) = queue.get()
+            module_name = module[0]
+            if module_name == "RootNode":
                 if data == None:
                     kill_received = True
                     LOGGER.debug("Shutdown signal received. Flushing data...")
                     continue
             elif data is not None:
+                if module_name == "Buffer":
+                    try:
+                        module_name = module[1].split(":")[0]
+                    except Exception as e:
+                        LOGGER.error("Exception raised reading data from Buffer module! Exception: %s" % e)
+                        continue
                 connection = _get_connection(module_name)
                 if connection is None:
                     queue_buffer.put((module_name, data))
@@ -121,7 +128,7 @@ def run(queue):
 
 def shutdown_module():
     LOGGER.debug("Sending kill request to Networking processor...")
-    send_data(("RootNode", None))
+    send_data((("RootNode", None), None))
 
 def name():
     return "Networking"

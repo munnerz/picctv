@@ -22,13 +22,15 @@ def process_data(data):
         sbuffer = [frame]
 
         end_time = datetime.now()
-        to_send = {"frame_data": data_to_send, 
-                   "start_frame_index": _last_frame_index,
-                   "end_frame_index": info.index,
-                   "start_timestamp": _last_timestamp,
-                   "end_timestamp": info.timestamp,
-                   "start_time": _last_start_time,
-                   "end_time": end_time}
+        to_send = {"all": {"frame_data": data_to_send, 
+                           "start_frame_index": _last_frame_index,
+                           "end_frame_index": info.index,
+                           "start_timestamp": _last_timestamp,
+                           "end_timestamp": info.timestamp,
+                           "start_time": _last_start_time,
+                           "end_time": end_time
+                          }
+                        }
 
         _last_timestamp = info.timestamp
         _last_frame_index = info.index

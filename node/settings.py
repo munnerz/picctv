@@ -70,12 +70,20 @@ ENABLED_MODULES = {
                     "Networking": {
                         "inputs": {
                             "Recording": "all",
-                            "Motion": "all",
+                            "Buffer": "Motion:all",
                         },
                         "arguments": {
                             "node_name": NODE_NAME,
                             "server_address": ('cctv.phlat493', 8000),
                         },
+                    },
+                    "Buffer": {
+                        "inputs": {
+                            "Motion": "all",
+                        },
+                        "arguments": {
+                            "buffer_size": 30,
+                        }
                     },
                 }
 
