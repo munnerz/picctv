@@ -88,7 +88,7 @@ ENABLED_MODULES = {
                     },
                     "BackgroundExtraction": {
                         "inputs": {
-                            "PiCamera": "high",
+                            "PiCamera": "low",
                         },
                         "arguments": {
                             "resolution": _RECORDING_QUALITIES["low"]["resolution"],
