@@ -51,11 +51,6 @@ if __name__ == "__main__":
                 queue_temp = settings.ENABLED_MODULES[input_module]['runtime']['module']._output_queues[input_xtra] = []
             queue_temp.append(module._input_queue)
 
-        for output_module, output_xtra in settings.ENABLED_MODULES[module.name()]['outputs'].items():
-            queue_temp = module._output_queues.get(output_xtra, None)
-            if queue_temp is None:
-                queue_temp = module._output_queues[output_xtra] = []
-            queue_temp.append(settings.ENABLED_MODULES[output_module]['runtime']['module']._input_queue)
 
         LOGGER.info("Set up inputs for module %s" % module.name())
 

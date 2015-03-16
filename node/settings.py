@@ -28,8 +28,6 @@ ENABLED_MODULES = {
                         "inputs": {
                             "PiCamera": "high",
                         },
-                        "outputs": {
-                        },
                         "arguments": {
                             "chunk_length": 4,
                         }
@@ -38,7 +36,6 @@ ENABLED_MODULES = {
                         "inputs": {
                             "PiCamera": "high",
                         },
-                        "outputs": {},
                         "arguments": {
                             "listen_address": ('0.0.0.0', 8000),
                         },
@@ -46,8 +43,6 @@ ENABLED_MODULES = {
                     "Motion": {
                         "inputs": {
                             "PiCamera": "low",
-                        },
-                        "outputs": {
                         },
                         "arguments": {
                             "level": 100,
@@ -62,7 +57,6 @@ ENABLED_MODULES = {
                     },
                     "PiCamera": {
                         "inputs": {},
-                        "outputs": {},
                         "arguments": {
                             "resolution": (1280, 720),
                             "fps": 24,
@@ -78,7 +72,6 @@ ENABLED_MODULES = {
                             "Recording": "all",
                             "Motion": "all",
                         },
-                        "outputs": {},
                         "arguments": {
                             "node_name": NODE_NAME,
                             "server_address": ('cctv.phlat493', 8000),
