@@ -97,9 +97,9 @@ def get_recent_events(camera_name, include_recordings=True):
     analysis_chunks = analysis.objects.filter(camera_name=camera_name).order_by('-data.end_time').limit(200)
 
     events = chain_events(analysis_chunks, 
-                          lambda x: x.data['start_time'], 
-                          lambda x: x.data['end_time'], 
-                          lambda x: x.data['data_buffer'], 
+                          lambda x: x.data[0]['time'],
+                          lambda x: x.data[-1]['time'],
+                          lambda x: x.data,
                           lambda x: 1 if x['is_motion'] else 0,
                           lambda x: getattr(x, 'triggered', None)
                           )
