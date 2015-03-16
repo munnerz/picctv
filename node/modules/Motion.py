@@ -164,32 +164,14 @@ def process_data(data):
 
     _motion_detected_pixels = len(np.extract(_binary_motion_detection_mask, _binary_motion_detection_mask))
 
-    _event_buffer.append({"is_motion": _motion_detected_pixels > arguments['level'],
-                               "motion_magnitude": _motion_detected_pixels,
-                               "frame_number": frame_info.index})
-
     _previous_frame = np_frame # save this frame as the previous one for next call
 
-    # actually send data off (or don't, depending on amount of data)
-    if len(_event_buffer) > arguments['chunk_length']:
-        data_buffer = _event_buffer[:]
-        _event_buffer = []
+    return {"all": {"time": datetime.now(),
+                    "timestamp": frame_info.timestamp,
+                    "is_motion": _motion_detected_pixels > arguments['level'],
+                    "motion_magnitude": _motion_detected_pixels,
+                    "frame_number": frame_info.index}}
 
-        end_time = datetime.now()
-        end_timestamp = frame_info.timestamp
-
-        to_send = dict(start_time=_last_start_time,
-                       end_time=end_time,
-                       start_timestamp=_last_timestamp,
-                       end_timestamp=end_timestamp,
-                       data_buffer=data_buffer)
-
-        _last_start_time = end_time
-        _last_timestamp = end_timestamp
-
-        return {"all": to_send}
-    else:
-        return None
 
 def name():
     return "Motion"
