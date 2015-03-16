@@ -68,9 +68,9 @@ if __name__ == "__main__":
                 try:
                     module.shutdown_module()
                 except Exception:
-                    print("Error shutting down module: %s" % module.name())
+                    LOGGER.debug("Module %s does not implement a shutdown_module method." % module.name())
                     pass
 
             map(shutdown_module, _MODULES)
 
-            LOGGER.info("Shut down.")
+            LOGGER.info("Finished shutting down. Exiting...")
