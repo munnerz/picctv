@@ -48,7 +48,7 @@ class Multiplexer(object):
             if frame_info.complete:
                 if self._useful_frame(frame_info.index):
                     global _output_queues
-                    map(lambda x: x.put( ( ("PiCamera", self._quality), (self._frame_buffer, frame_info) ), _output_queues[self._quality])
+                    map(lambda x: x.put( ( ("PiCamera", self._quality), (self._frame_buffer, frame_info) ), _output_queues[self._quality]))
                 self._frame_buffer = b''
 
             return len(frame)
