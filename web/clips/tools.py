@@ -112,9 +112,9 @@ def get_recent_events(camera_name, include_recordings=True):
         except:
             return x.data
     events = chain_events(analysis_chunks, 
-                          lambda x: event_start_time(),
-                          lambda x: event_end_time,
-                          lambda x: event_data,
+                          event_start_time,
+                          event_end_time,
+                          event_data,
                           lambda x: 1 if x['is_motion'] else 0,
                           lambda x: getattr(x, 'triggered', None)
                           )
