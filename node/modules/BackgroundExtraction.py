@@ -5,6 +5,9 @@ _previous_frame = None
 
 def process_data(data):
     global _background_model, _background_frame_count, _previous_frame, _candidates
+    
+    (module, data) = data
+    (frame, frame_info) = data
 
     if _background_model is None:
         _background_model = frame
