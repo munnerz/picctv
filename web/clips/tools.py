@@ -94,27 +94,12 @@ def chain_events(chunks, start_field, end_field, trigger_data, is_triggered, sho
 # look at chain_events and how it is used in order to write the correct lambda functions
 def get_recent_events(camera_name, include_recordings=True):
     print ("Getting events for %s" % camera_name)
-    analysis_chunks = analysis.objects.filter(camera_name=camera_name).order_by('-data.end_time').limit(200)
+    analysis_chunks = analysis.objects.filter(camera_name=camera_name).order_by('-end_time').limit(200)
 
-    def event_start_time(x):
-        try:
-            return x.data[0]['time']
-        except:
-            return x.data['start_time']
-    def event_end_time(x):
-        try:
-            return x.data[-1]['time']
-        except:
-            return x.data['end_time']
-    def event_data(x):
-        try:
-            return x.data['data_buffer']
-        except:
-            return x.data
     events = chain_events(analysis_chunks, 
-                          event_start_time,
-                          event_end_time,
-                          event_data,
+                          lambda x: x.start_time,
+                          lambda x: x.end_time,
+                          lambda x: x.data,
                           lambda x: 1 if x['is_motion'] else 0,
                           lambda x: getattr(x, 'triggered', None)
                           )
