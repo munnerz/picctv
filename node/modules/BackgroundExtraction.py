@@ -5,17 +5,25 @@ from node import settings
 
 LOGGER = settings.logger("node.modules.BackgroundExtraction")
 
+arguments = None
 _background_model = None
 _background_frame_count = 0
 _candidates = None
 _previous_frame = None
 
 def process_data(data):
-    global _background_model, _background_frame_count, _previous_frame, _candidates
+    global _background_model, _background_frame_count, _previous_frame, _candidates, arguments
 
     (module, data) = data
-    LOGGER.debug("Got some data from %s:%s" % module)
     (frame, frame_info) = data
+
+    res = arguments['resolution']
+
+    stream = open(arguments['tmp_file'], 'w+b')
+    stream.write(frame)
+    stream.seek(0)
+
+    frame = np.fromfile(stream, dtype='uint8', count=res[1]*res[0]).reshape((res[1], res[0]))
 
     if _background_model is None:
         _background_model = frame

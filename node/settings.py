@@ -91,7 +91,9 @@ ENABLED_MODULES = {
                             "PiCamera": "high",
                         },
                         "arguments": {
+                            "resolution": _RECORDING_QUALITIES["low"]["resolution"],
                             "frame_count_threshold": 20,
+                            "tmp_file": '/run/shm/picamtemp_bg.dat',
                         }
                     },
                 }
