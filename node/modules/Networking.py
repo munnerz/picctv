@@ -117,7 +117,7 @@ def run(queue):
                         continue
                 connection = _get_connection(module_name)
                 if connection is None:
-                    queue_buffer.put((module_name, data))
+                    queue_buffer.put((module, data))
                     sleep(1)
                     continue
                 if not _pickle_and_send(data, connection):
