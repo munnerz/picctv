@@ -1,3 +1,5 @@
+import settings
+
 event_buffers = {}
 arguments = None
 
