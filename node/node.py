@@ -24,7 +24,7 @@ def run_module(module):
                 for output_name, output_data in output.items():
                     map(lambda x: x.put(((module.name(), output_name), output_data)), module._output_queues.get(output_name, []))
     except KeyboardInterrupt:
-        LOGGER.debug("%s module received KeyboardInterrupt. Shutting down...")
+        LOGGER.debug("%s module received KeyboardInterrupt. Shutting down..." % module.name())
         pass
 
 if __name__ == "__main__":
@@ -68,7 +68,7 @@ if __name__ == "__main__":
                 try:
                     module.shutdown_module()
                 except Exception:
-                    print("Error shutting down module: %s" % e)
+                    print("Error shutting down module: %s" % module.name())
                     pass
 
             map(shutdown_module, _MODULES)
