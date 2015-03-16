@@ -4,22 +4,22 @@ import logging
 
 import settings
 
-LOGGER = logging.getLogger("node.Live")
+LOGGER = settings.logger("node.modules.Live")
 
-_sock_addr = settings.LIVE_LISTEN_ADDRESS
+
 _keepListening = True
 
 _outputs = []
 _outputLock = threading.Lock()
-
+arguments = None
 _listeningThread = None
 
 def _listen():
-    global _server_socket, _outputs
+    global _server_socket, _outputs, arguments
     _server_socket = socket.socket()
     _server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     _server_socket.settimeout(1)
-    _server_socket.bind(_sock_addr)
+    _server_socket.bind(arguments['listen_address'])
     _server_socket.listen(0)
 
     while _keepListening:
@@ -31,14 +31,11 @@ def _listen():
             pass
     return
 
-def required_quality():
-    return "high"
-
-def process_frame(data):
+def process_data(data):
     with _outputLock:
         for output in _outputs[:]:
             try:
-                output.write(data[0])
+                output.write(data[1][0])
             except IOError as e:
                 LOGGER.exception("IOException in Live module during processFrame: %s" % e)
                 _outputs.remove(output)

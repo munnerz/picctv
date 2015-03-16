@@ -27,7 +27,7 @@ def wrap_h264(clips):
     except Exception as e:
         from traceback import print_exc
         print_exc(e)
-        logging.getLogger("views").info("ERRROR: %s" % e)
+        logging.getLogger("views").info("ERROR: %s" % e)
 
     return None
 
@@ -46,9 +46,9 @@ def find_datetime_segments(clips):
 
 def get_analysis_chunks(datetime_segment, camera, module=None):
     (start, end) = datetime_segment
-    return [x.data for x in analysis.objects.filter(module_name=module, camera_name=camera).filter(data__start_time__gte=start, data__end_time__lte=end)]
+    return analysis.objects.filter(module_name=module, camera_name=camera).filter(start_time__gte=start, end_time__lte=end)
 
-def chain_events(chunks, start_field, end_field, trigger_data, is_triggered):
+def chain_events(chunks, start_field, end_field, trigger_data, is_triggered, shortcut=lambda _: None):
     create_event = lambda x, y: {"camera_name": x.camera_name,
                                  "module_name": x.module_name,
                                  "start_time":  start_field(x),
@@ -59,8 +59,10 @@ def chain_events(chunks, start_field, end_field, trigger_data, is_triggered):
     event_start = {}
     for chunk in chunks:
         try:
-            true_events = sum(map(is_triggered, trigger_data(chunk)))
-            chunk_triggered = true_events / len(trigger_data(chunk)) > 0.2
+            chunk_triggered = shortcut(chunk)
+            if chunk_triggered is None:
+                true_events = sum(map(is_triggered, trigger_data(chunk)))
+                chunk_triggered = true_events / len(trigger_data(chunk)) > 0.2
 
             if chunk_triggered:
                 if event_end.get(chunk.module_name) is None:
@@ -87,17 +89,19 @@ def chain_events(chunks, start_field, end_field, trigger_data, is_triggered):
 
     return events
 
+
 # when adding a module with a weird data type, you'll need to write a custom handler here
 # look at chain_events and how it is used in order to write the correct lambda functions
 def get_recent_events(camera_name, include_recordings=True):
     print ("Getting events for %s" % camera_name)
-    analysis_chunks = analysis.objects.filter(camera_name=camera_name).order_by('-data.end_time').limit(200)
+    analysis_chunks = analysis.objects.filter(camera_name=camera_name).order_by('-end_time').limit(200)
 
     events = chain_events(analysis_chunks, 
-                          lambda x: x.data['start_time'], 
-                          lambda x: x.data['end_time'], 
-                          lambda x: x.data['data_buffer'], 
-                          lambda x: 1 if x['is_motion'] else 0
+                          lambda x: x.start_time,
+                          lambda x: x.end_time,
+                          lambda x: x.data,
+                          lambda x: 1 if x['is_motion'] else 0,
+                          lambda x: getattr(x, 'triggered', None)
                           )
 
     if include_recordings:
