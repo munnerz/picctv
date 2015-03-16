@@ -45,6 +45,7 @@ ENABLED_MODULES = {
                             "PiCamera": "low",
                         },
                         "arguments": {
+                            "resolution": _RECORDING_QUALITIES["low"]["resolution"],
                             "level": 100,
                             "threshold": 35,
                             "tmp_file": '/run/shm/picamtemp.dat',

@@ -85,7 +85,7 @@ def process_data(data):
     (_, data) = data
     (frame, frame_info) = data
 
-    res = settings._RECORDING_QUALITIES[required_quality()]['resolution']
+    res = arguments['resolution']
 
     if(len(frame) < res[0] * res[1]):
         print ("Fake frame... (len: %d, expected: %d)" % (len(frame), res[0]*res[1]))
