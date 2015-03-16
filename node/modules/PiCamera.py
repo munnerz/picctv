@@ -77,7 +77,7 @@ def process_data(data):
 
     display = ""
     for m, n in flags.items():
-        display += "%s: %n, "
+        display += "%s: %s, " % (m, n)
     display = display[0:-2]
 
     _CAMERA.annotate_text = display
