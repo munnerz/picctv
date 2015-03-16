@@ -90,7 +90,7 @@ def module_started():
 def name():
 	return "PiCamera"
 
-def shutdown():
+def shutdown_module():
 	global _CAMERA
 	map(lambda q: _CAMERA.stop_recording(splitter_port=q['splitter_port']), arguments['recording_qualities'].values())
 

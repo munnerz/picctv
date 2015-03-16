@@ -115,5 +115,5 @@ def process_data(data):
 def name():
     return "Motion"
     
-def shutdown():
+def shutdown_module():
     LOGGER.debug("Shut down.")

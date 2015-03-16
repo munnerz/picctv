@@ -67,6 +67,13 @@ if __name__ == "__main__":
             time.sleep(1)
     except KeyboardInterrupt:
             #shut down all modules here
-            map(lambda m: shutdown_module(m), _MODULES)
+            def shutdown_module(module):
+                try:
+                    module.shutdown_module()
+                except Exception:
+                    print("Error shutting down module: %s" % e)
+                    pass
+
+            map(shutdown_module, _MODULES)
 
             LOGGER.info("Shut down.")

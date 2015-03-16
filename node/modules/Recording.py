@@ -57,5 +57,5 @@ def process_data(data):
 def name():
   return "Recording"
   
-def shutdown():
+def shutdown_module():
     LOGGER.debug("Shut down.")
