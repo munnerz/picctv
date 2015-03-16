@@ -46,7 +46,7 @@ def find_datetime_segments(clips):
 
 def get_analysis_chunks(datetime_segment, camera, module=None):
     (start, end) = datetime_segment
-    return [x.data for x in analysis.objects.filter(module_name=module, camera_name=camera).filter(data__start_time__gte=start, data__end_time__lte=end)]
+    return analysis.objects.filter(module_name=module, camera_name=camera).filter(start_time__gte=start, end_time__lte=end)
 
 def chain_events(chunks, start_field, end_field, trigger_data, is_triggered, shortcut=lambda _: None):
     create_event = lambda x, y: {"camera_name": x.camera_name,
