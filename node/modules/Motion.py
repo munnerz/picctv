@@ -1,3 +1,13 @@
+# Description: Performs motion detection on the frames.
+#
+# Inputs:      BackgroundExtraction, PiCamera (frame, frame_info) tuples
+# Output:      {"time": _, # current datetime at the time of this frame
+#               "timestamp": _, # timestamp into the current recording
+#               "is_motion": _, # whether or not motion has been triggered
+#               "motion_magnitude": _, # the calculated amount motion pixels
+#               "frame_number": _} # the frame number in this recording
+
+
 from datetime import datetime
 from collections import Counter
 

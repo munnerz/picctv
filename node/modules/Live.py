@@ -1,3 +1,10 @@
+# Description: This module reads data from the PiCamera, at various configured qualities,
+#              and sends its output as a (frame, frame_info) tuple (where frame_info is a
+#              PiVideoFrame object.
+#
+# Inputs:      None
+# Output:      (frame, frame_info)
+
 import threading
 import socket
 import logging
