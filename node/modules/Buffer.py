@@ -19,7 +19,7 @@ def process_data(data):
 	except KeyError:
 		input_buffer = module_buffers[input_name] = []
 
-	input_buffer.append(data)
+	input_buffer += [data]
 
 	if len(input_buffer) >= arguments['buffer_size']:
 		buffer_to_send = input_buffer
