@@ -5,10 +5,11 @@ import picamera
 
 _CAMERA = None
 flags = {}
+arguments = None
 
 def start_module():
-	global _CAMERA
-	_CAMERA = picamera.PiCamera()
+	global _CAMERA, arguments
+	_CAMERA = arguments['camera']
 
 def process_data(data):
 	(module, data) = data

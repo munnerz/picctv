@@ -1,5 +1,9 @@
+import picamera
+
 ## Node settings
 NODE_NAME = "ChangeMe" # the name of this camera to report to the server - should be unique!
+
+PI_CAMERA = picamera.PiCamera()
 
 _RECORDING_QUALITIES =   { 
                             "low": { 
@@ -59,6 +63,7 @@ ENABLED_MODULES = {
                     "PiCamera": {
                         "inputs": {},
                         "arguments": {
+                            "camera": PI_CAMERA,
                             "resolution": (1280, 720),
                             "fps": 24,
                             "exposure_mode": 'night',
@@ -99,6 +104,9 @@ ENABLED_MODULES = {
                     "Annotator": {
                         "inputs": {
                             "Motion": "all",
+                        },
+                        "arguments": {
+                            "camera": PI_CAMERA,
                         },
                     },
                 }

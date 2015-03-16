@@ -70,8 +70,8 @@ def process_data(data):
     return None
 
 def module_started():
-	global _CAMERA
-	_CAMERA = picamera.PiCamera()
+	global _CAMERA, arguments
+	_CAMERA = arguments['camera']
 	_CAMERA.resolution = arguments['resolution']
 	_CAMERA.framerate = arguments['fps']
 	_CAMERA.exposure_mode = arguments['exposure_mode']
