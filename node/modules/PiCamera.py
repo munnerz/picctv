@@ -11,6 +11,7 @@ from node import settings
 
 LOGGER = settings.logger("node.modules.PiCamera")
 _CAMERA = None
+flags = {}
 
 class Multiplexer(object):
     ''' Multiplexes one video stream out to many modules '''
@@ -66,12 +67,26 @@ class Multiplexer(object):
         return # modules can't really be flushed...
 
 def process_data(data):
-    # this module shouldn't ever process data...
+    global _CAMERA, flags
+    (module, data) = data
+
+    if module[0] != "Motion":
+        LOGGER.error("Invalid input. Annotator only accepts Motion data.")
+
+    flags[module[0]] = data['is_motion']
+
+    display = ""
+    for m, n in flags.items():
+        display += "%s: %n, "
+    display = display[0:-2]
+
+    _CAMERA.annotate_text = display
+
     return None
 
 def module_started():
 	global _CAMERA, arguments
-	_CAMERA = arguments['camera']
+	_CAMERA = picamera.PiCamera()
 	_CAMERA.resolution = arguments['resolution']
 	_CAMERA.framerate = arguments['fps']
 	_CAMERA.exposure_mode = arguments['exposure_mode']
