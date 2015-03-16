@@ -30,3 +30,6 @@ def process_data(data):
 
 def shutdown_module():
 	LOGGER.info("TODO: Flush all data on shutdown")
+
+def name():
+	return "Buffer"
