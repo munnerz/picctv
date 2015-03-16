@@ -5,7 +5,7 @@ _previous_frame = None
 
 def process_data(data):
     global _background_model, _background_frame_count, _previous_frame, _candidates
-    
+
     (module, data) = data
     (frame, frame_info) = data
 
@@ -39,7 +39,7 @@ def process_data(data):
 
     _background_frame_count += 1
 
-    _previous_frame = np_frame
+    _previous_frame = frame
 
     return {"all": _background_model}
 
