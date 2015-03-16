@@ -51,7 +51,6 @@ ENABLED_MODULES = {
                             "threshold": 35,
                             "tmp_file": '/run/shm/picamtemp.dat',
                             "chunk_length": 20,
-                            "background_frame_count_threshold": 20,
                             "pixel_change_threshold_scale_factor": 3.5,
                             "total_pixel_change_threshold": 0.1, # percentage of the image that must have changed pixels
                                                                  # to qualify the frame as 'motion'     
@@ -91,6 +90,9 @@ ENABLED_MODULES = {
                         "inputs": {
                             "PiCamera": "high",
                         },
+                        "arguments": {
+                            "frame_count_threshold": 20,
+                        }
                     },
                 }
 

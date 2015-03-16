@@ -11,7 +11,7 @@ def process_data(data):
 
     if _background_model is None:
         _background_model = frame
-    elif _background_frame_count < arguments['background_frame_count_threshold']:
+    elif _background_frame_count < arguments['frame_count_threshold']:
         # initial background modelling
         _background_model += (1 / _background_frame_count) * \
                                     np.subtract(frame, _background_model)
