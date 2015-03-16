@@ -24,3 +24,6 @@ def process_data(data):
 	display = display[0:-2]
 
 	return None
+
+def name():
+	return "Annotator"
