@@ -12,6 +12,7 @@ def start_module():
 	_CAMERA = arguments['camera']
 
 def process_data(data):
+	global _CAMERA
 	(module, data) = data
 
 	if module[0] != "Motion":
@@ -23,6 +24,8 @@ def process_data(data):
 	for m, n in flags.items():
 		display += "%s: %n, "
 	display = display[0:-2]
+
+	_CAMERA.annotate_text = display
 
 	return None
 
