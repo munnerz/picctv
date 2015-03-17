@@ -67,9 +67,8 @@ def process_data(data):
     motion_diff_abs = cv2.absdiff(np_frame, _background_mean())
     detected_motion_condition = motion_diff_abs > arguments['pixel_change_threshold_scale_factor'] * _background_standard_dev()
     detected_motion_pixels = np.extract(detected_motion_condition, motion_diff_abs)
-    if len(detected_motion_pixels) < res[0]*res[1]*arguments['total_pixel_change_threshold'] or \
-            _background_frame_count < arguments['background_frame_count_threshold']:
-        _update_background(np_frame)
+
+    _update_background(np_frame)
 
     return {"all": {"time": datetime.now(),
                     "timestamp": frame_info.timestamp,
