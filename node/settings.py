@@ -131,7 +131,7 @@ ENABLED_MODULES = {
                         },
                     },
                     "OpenCV": {
-                        "input": [
+                        "inputs": [
                             ("PiCamera", "low"),
                         ],
                         "arguments": {
