@@ -21,3 +21,6 @@ def shutdown_module():
     global _files
     map(lambda x: x.close(), _files)
     return None
+
+def name():
+    return "CSVOutput"
