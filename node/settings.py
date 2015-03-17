@@ -106,6 +106,15 @@ ENABLED_MODULES = {
                             "save_path": "/run/shm/motion-captures",
                         },
                     },
+                    "CameraFileCapture": {
+                        "inputs": {
+                            "PiCamera": "high",
+                            "PiCamera": "low",
+                        },
+                        "arguments": {
+                            "save_path": "/run/shm/motion-captures",
+                        },
+                    },
                 }
 
 import logging
