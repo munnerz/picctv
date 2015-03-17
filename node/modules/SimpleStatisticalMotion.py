@@ -73,8 +73,8 @@ def process_data(data):
 
     return {"all": {"time": datetime.now(),
                     "timestamp": frame_info.timestamp,
-                    "is_motion": detected_motion_pixels > arguments['total_pixel_change_threshold'],
-                    "motion_magnitude": detected_motion_pixels,
+                    "is_motion": len(detected_motion_pixels) > arguments['total_pixel_change_threshold'],
+                    "motion_magnitude": len(detected_motion_pixels),
                     "frame_number": frame_info.index}}
 
 def shutdown_module():
