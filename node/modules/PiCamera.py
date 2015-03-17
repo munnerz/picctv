@@ -56,7 +56,7 @@ class Multiplexer(object):
             if frame_info.complete:
                 if self._useful_frame(frame_info.index):
                     global _output_queues
-                    LOGGER.debug("Outputting frame %d, quality: %s. %d modules to send to." % (frame_info.index, self._quality, len(_output_queues['self._quality'])))
+                    LOGGER.debug("Outputting frame %d, quality: %s. %d modules to send to." % (frame_info.index, self._quality, len(_output_queues[self._quality])))
                     map(lambda x: x.put( ( ("PiCamera", self._quality), (self._frame_buffer, frame_info) )), _output_queues[self._quality])
                 self._frame_buffer = b''
 
