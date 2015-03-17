@@ -60,6 +60,7 @@ ENABLED_MODULES = {
                         "inputs": [
                             ("Motion", "all"),
                             ("SimpleStatisticalMotion", "all"),
+                            ("OpenCV", "all"),
                         ],
                         "arguments": {
                             "resolution": (1280, 720),
@@ -103,6 +104,7 @@ ENABLED_MODULES = {
                         "inputs": [
                             ("Motion", "all"),
                             ("SimpleStatisticalMotion", "all"),
+                            ("OpenCV", "all"),
                         ],
                         "arguments": {
                             "save_path": "/run/shm/motion-captures",
@@ -126,6 +128,17 @@ ENABLED_MODULES = {
                             "background_frame_count_threshold": 20,
                             "pixel_change_threshold_scale_factor": 3.5,
                             "total_pixel_change_threshold": 0.1,
+                        },
+                    },
+                    "OpenCV": {
+                        "input": [
+                            ("PiCamera", "low"),
+                        ],
+                        "arguments": {
+                            "frame_limit": 5,
+                            "motion_level": 500,
+                            "threshold": 35,
+                            "tmp_file": "/run/shm/picamtempopencv",
                         },
                     },
                 }
