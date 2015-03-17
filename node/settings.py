@@ -25,26 +25,26 @@ _RECORDING_QUALITIES =   {
 
 ENABLED_MODULES = {
                     "Recording": {
-                        "inputs": {
-                            "PiCamera": "high",
-                        },
+                        "inputs": [
+                            ("PiCamera", "high"),
+                        ],
                         "arguments": {
                             "chunk_length": 4,
                         },
-                   },
+                    },
                     "Live": {
-                        "inputs": {
-                            "PiCamera": "high",
-                        },
+                        "inputs": [
+                            ("PiCamera", "high"),
+                        ],
                         "arguments": {
                             "listen_address": ('0.0.0.0', 8000),
                         },
                     },
                     "Motion": {
-                        "inputs": {
-                            "BackgroundExtraction": "all",
-                            "PiCamera": "low",
-                        },
+                        "inputs": [
+                            ("BackgroundExtraction", "all"),
+                            ("PiCamera", "low"),
+                        ],
                         "arguments": {
                             "resolution": _RECORDING_QUALITIES["low"]["resolution"],
                             "level": 100,
@@ -57,9 +57,9 @@ ENABLED_MODULES = {
                         },
                     },
                     "PiCamera": {
-                        "inputs": {
-                            "Motion": "all",
-                        },
+                        "inputs": [
+                            ("Motion", "all"),
+                        ],
                         "arguments": {
                             "resolution": (1280, 720),
                             "fps": 24,
@@ -71,27 +71,27 @@ ENABLED_MODULES = {
                         },
                     },
                     "Networking": {
-                        "inputs": {
-                            "Recording": "all",
-                            "Buffer": "Motion:all",
-                        },
+                        "inputs": [
+                            ("Recording", "all"),
+                            ("Buffer", "Motion:all"),
+                        ],
                         "arguments": {
                             "node_name": NODE_NAME,
                             "server_address": ('cctv.phlat493', 8000),
                         },
                     },
                     "Buffer": {
-                        "inputs": {
-                            "Motion": "all",
-                        },
+                        "inputs": [
+                            ("Motion", "all"),
+                        ],
                         "arguments": {
                             "buffer_size": 30,
                         },
                     },
                     "BackgroundExtraction": {
-                        "inputs": {
-                            "PiCamera": "low",
-                        },
+                        "inputs": [
+                            ("PiCamera", "low"),
+                        ],
                         "arguments": {
                             "resolution": _RECORDING_QUALITIES["low"]["resolution"],
                             "frame_count_threshold": 20,
@@ -99,18 +99,18 @@ ENABLED_MODULES = {
                         },
                     },
                     "CSVOutput": {
-                        "inputs": {
-                            "Motion": "all",
-                        },
+                        "inputs": [
+                            ("Motion", "all"),
+                        ],
                         "arguments": {
                             "save_path": "/run/shm/motion-captures",
                         },
                     },
                     "CameraFileCapture": {
-                        "inputs": {
-                            "PiCamera": "high",
-                            "PiCamera": "low",
-                        },
+                        "inputs": [
+                            ("PiCamera", "high"),
+                            ("PiCamera", "low"),
+                        ],
                         "arguments": {
                             "save_path": "/run/shm/motion-captures",
                         },
