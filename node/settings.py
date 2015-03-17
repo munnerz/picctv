@@ -101,6 +101,7 @@ ENABLED_MODULES = {
                     "CSVOutput": {
                         "inputs": [
                             ("Motion", "all"),
+                            ("SimpleStatisticalMotion", "all"),
                         ],
                         "arguments": {
                             "save_path": "/run/shm/motion-captures",
@@ -113,6 +114,17 @@ ENABLED_MODULES = {
                         ],
                         "arguments": {
                             "save_path": "/run/shm/motion-captures",
+                        },
+                    },
+                    "SimpleStatisticalMotion": {
+                        "inputs": [
+                            ("PiCamera", "low"),
+                        ],
+                        "arguments": {
+                            "tmp_file": "/run/shm/picamtempssm",
+                            "background_frame_count_threshold": 20,
+                            "pixel_change_threshold_scale_factor": 3.5,
+                            "total_pixel_change_threshold": 0.1,
                         },
                     },
                 }
