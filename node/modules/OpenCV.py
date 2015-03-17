@@ -17,27 +17,13 @@ def _storeFrame(frame):
     if len(_frames) > arguments['frame_limit']:
         _frames.pop(len(_frames) - 1)
 
-def _getMotion():
+def diff_img():
+    global _frames
+    if len(_frames) < 3:
+        return None
     d1 = cv2.absdiff(_frames[1], _frames[0])
     d2 = cv2.absdiff(_frames[2], _frames[0])
-    result = cv2.bitwise_and(d1, d2)
-
-    (value, r) = cv2.threshold(result, arguments['threshold'], 255, cv2.THRESH_BINARY)
-
-    scalar = cv2.sumElems(r)
-
-    return scalar
-
-def _analyse(frame):
-    _storeFrame(frame)
-    m = 0
-    if len(_frames) >= 3:
-        motion = _getMotion()
-        m = motion[0]
-        if motion and motion[0] > arguments['motion_level']:
-            return (True, m)
-
-    return (False, m)
+    return cv2.bitwise_and(d1, d2)
 
 def required_quality():
     return "low"
@@ -59,13 +45,20 @@ def process_data(data):
 
     np_frame = np.fromfile(stream, dtype='uint8', count=res[1]*res[0]).reshape((res[1], res[0])).astype('float32')
 
-    (is_motion, motion_val) = _analyse(np_frame)
+    _storeFrame(np_frame)
+    diff = diff_img()
 
-    return {"all": {"time": datetime.now(),
-                    "timestamp": frame_info.timestamp,
-                    "is_motion": is_motion,
-                    "motion_magnitude": motion_val,
-                    "frame_number": frame_info.index}}
+    if diff is None:
+        return None
+
+    LOGGER.info("Diff: %s" % diff)
+
+    return None
+#    return {"all": {"time": datetime.now(),
+#                    "timestamp": frame_info.timestamp,
+#                    "is_motion": is_motion,
+#                    "motion_magnitude": motion_val,
+#                    "frame_number": frame_info.index}}
 
 def shutdown_module():
     LOGGER.debug("Shut down.")
