@@ -30,7 +30,7 @@ ENABLED_MODULES = {
                         },
                         "arguments": {
                             "chunk_length": 4,
-                        }
+                        },
                    },
                     "Live": {
                         "inputs": {
@@ -86,7 +86,7 @@ ENABLED_MODULES = {
                         },
                         "arguments": {
                             "buffer_size": 30,
-                        }
+                        },
                     },
                     "BackgroundExtraction": {
                         "inputs": {
@@ -96,7 +96,15 @@ ENABLED_MODULES = {
                             "resolution": _RECORDING_QUALITIES["low"]["resolution"],
                             "frame_count_threshold": 20,
                             "tmp_file": '/run/shm/picamtemp_bg.dat',
-                        }
+                        },
+                    },
+                    "CSVOutput": {
+                        "inputs": {
+                            "Motion": "all",
+                        },
+                        "arguments": {
+                            "save_path": "/run/shm/motion-captures",
+                        },
                     },
                 }
 
