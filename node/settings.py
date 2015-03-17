@@ -59,6 +59,7 @@ ENABLED_MODULES = {
                     "PiCamera": {
                         "inputs": [
                             ("Motion", "all"),
+                            ("SimpleStatisticalMotion", "all"),
                         ],
                         "arguments": {
                             "resolution": (1280, 720),
