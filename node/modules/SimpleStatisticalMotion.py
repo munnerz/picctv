@@ -58,7 +58,7 @@ def process_data(data):
     stream.write(frame)
     stream.seek(0)
 
-    np_frame = np.fromfile(stream, dtype='uint8', count=res[1]*res[0]).reshape((res[1], res[0]))
+    np_frame = np.fromfile(stream, dtype='uint8', count=res[1]*res[0]).reshape((res[1], res[0])).astype('float32')
     
     if _background_sum is None:
         _update_background(np_frame)
