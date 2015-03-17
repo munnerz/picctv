@@ -43,7 +43,7 @@ if __name__ == "__main__":
         
         module._input_queue = multiprocessing.Queue()
 
-        for input_module, input_xtra in settings.ENABLED_MODULES[module.name()]['inputs'].items():
+        for input_module, input_xtra in settings.ENABLED_MODULES[module.name()]['inputs']:
             queue_temp = settings.ENABLED_MODULES[input_module]['runtime']['module']._output_queues.get(input_xtra, None)
             if queue_temp is None:
                 queue_temp = settings.ENABLED_MODULES[input_module]['runtime']['module']._output_queues[input_xtra] = []
