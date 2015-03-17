@@ -11,9 +11,9 @@ def process_data(data):
     f = _files.get(module[0], None)
     if f is None:
         f = _files[module[0]] = open('%s/%s.csv' % (arguments['save_path'], module[0]), 'w')
-        f.write("Timestamp,Triggered,Magnitude,Frame Num")
+        f.write("Timestamp,Triggered,Magnitude,Frame Num\n")
 
-    f.write("%s,%s,%s,%s" % (data['timestamp'], data['is_motion'], data['motion_magnitude'], data['frame_number']))
+    f.write("%s,%s,%s,%s\n" % (data['timestamp'], data['is_motion'], data['motion_magnitude'], data['frame_number']))
 
     return None
 
