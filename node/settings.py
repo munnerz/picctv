@@ -42,6 +42,7 @@ ENABLED_MODULES = {
                     },
                     "Motion": {
                         "inputs": {
+                            "BackgroundExtraction": "all",
                             "PiCamera": "low",
                         },
                         "arguments": {
@@ -50,14 +51,15 @@ ENABLED_MODULES = {
                             "threshold": 35,
                             "tmp_file": '/run/shm/picamtemp.dat',
                             "chunk_length": 20,
-                            "background_frame_count_threshold": 20,
                             "pixel_change_threshold_scale_factor": 3.5,
                             "total_pixel_change_threshold": 0.1, # percentage of the image that must have changed pixels
                                                                  # to qualify the frame as 'motion'     
                         },
                     },
                     "PiCamera": {
-                        "inputs": {},
+                        "inputs": {
+                            "Motion": "all",
+                        },
                         "arguments": {
                             "resolution": (1280, 720),
                             "fps": 24,
@@ -84,6 +86,16 @@ ENABLED_MODULES = {
                         },
                         "arguments": {
                             "buffer_size": 30,
+                        }
+                    },
+                    "BackgroundExtraction": {
+                        "inputs": {
+                            "PiCamera": "low",
+                        },
+                        "arguments": {
+                            "resolution": _RECORDING_QUALITIES["low"]["resolution"],
+                            "frame_count_threshold": 20,
+                            "tmp_file": '/run/shm/picamtemp_bg.dat',
                         }
                     },
                 }

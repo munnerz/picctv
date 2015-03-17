@@ -1,3 +1,10 @@
+# Description: This module accepts any pickleable data structure
+#              and sends it off to the CCTV recording server as
+#              defined in settings.py arguments
+#
+# Inputs:      Any pickleable data structure
+# Output:      None
+
 from socket import socket, AF_INET, SOCK_STREAM
 from multiprocessing import Queue
 from Queue import Empty
@@ -110,7 +117,7 @@ def run(queue):
                         continue
                 connection = _get_connection(module_name)
                 if connection is None:
-                    queue_buffer.put((module_name, data))
+                    queue_buffer.put((module, data))
                     sleep(1)
                     continue
                 if not _pickle_and_send(data, connection):

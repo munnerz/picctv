@@ -1,3 +1,10 @@
+# Description: This module reads data from the PiCamera, at various configured qualities,
+#              and sends its output as a (frame, frame_info) tuple (where frame_info is a
+#              PiVideoFrame object.
+#
+# Inputs:      None
+# Output:      (frame, frame_info)
+
 import threading
 import socket
 import logging
@@ -30,6 +37,11 @@ def _listen():
         except socket.timeout:
             pass
     return
+    
+def module_started():
+    global _listeningThread
+    _listeningThread = threading.Thread(target=_listen)
+    _listeningThread.start()
 
 def process_data(data):
     with _outputLock:
@@ -45,8 +57,8 @@ def process_data(data):
 def name():
     return "Live"
     
-def shutdown():
-    global _keepListening, _outputs, _server_socket, _listeningThread
+def shutdown_module():
+    global _keepListening, _outputs
     LOGGER.debug("Shutting down...")
 
     _keepListening = False
@@ -58,7 +70,4 @@ def shutdown():
 
     LOGGER.debug("Shut down.")
 
-def module_started():
-    global _listeningThread
-    _listeningThread = threading.Thread(target=_listen)
-    _listeningThread.start()
+

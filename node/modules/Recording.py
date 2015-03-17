@@ -1,3 +1,16 @@
+# Description: This module accepts (frame, frame_info) tuples, it
+#              creates a running buffer of the frames and implements
+#              its own custom buffering so as to include custom metadata.
+#
+# Inputs:      (frame, frame_info)
+# Output:      {"frame_data": _, #all the frame data in this chunk
+#               "start_frame_index": _, # the index of the first frame in this chunk
+#               "end_frame_index": _, # the index of the last frame in this chunk
+#               "start_timestamp": _, # the first timestamp in this chunk
+#               "end_timestamp": _, # the last timestamp in the chunk
+#               "start_time": _,  # datetime object containing the start time of this chunk
+#               "end_time": _} # datetime object containing the end time of this chunk
+
 import logging
 from datetime import datetime
 
@@ -44,5 +57,5 @@ def process_data(data):
 def name():
   return "Recording"
   
-def shutdown():
+def shutdown_module():
     LOGGER.debug("Shut down.")

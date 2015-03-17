@@ -1,9 +1,17 @@
+# Description: This module reads data from the PiCamera, at various configured qualities,
+#              and sends its output as a (frame, frame_info) tuple (where frame_info is a
+#              PiVideoFrame object.
+#
+# Inputs:      None
+# Output:      (frame, frame_info)
+
 import picamera
 import math
 from node import settings
 
 LOGGER = settings.logger("node.modules.PiCamera")
 _CAMERA = None
+flags = {}
 
 class Multiplexer(object):
     ''' Multiplexes one video stream out to many modules '''
@@ -59,11 +67,25 @@ class Multiplexer(object):
         return # modules can't really be flushed...
 
 def process_data(data):
-    # this module shouldn't ever process data...
+    global _CAMERA, flags
+    (module, data) = data
+
+    if module[0] != "Motion":
+        LOGGER.error("Invalid input. Annotator only accepts Motion data.")
+
+    flags[module[0]] = data['is_motion']
+
+    display = ""
+    for m, n in flags.items():
+        display += "%s: %s, " % (m, n)
+    display = display[0:-2]
+
+    _CAMERA.annotate_text = display
+
     return None
 
 def module_started():
-	global _CAMERA
+	global _CAMERA, arguments
 	_CAMERA = picamera.PiCamera()
 	_CAMERA.resolution = arguments['resolution']
 	_CAMERA.framerate = arguments['fps']
@@ -83,7 +105,7 @@ def module_started():
 def name():
 	return "PiCamera"
 
-def shutdown():
+def shutdown_module():
 	global _CAMERA
 	map(lambda q: _CAMERA.stop_recording(splitter_port=q['splitter_port']), arguments['recording_qualities'].values())
 

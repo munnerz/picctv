@@ -6,29 +6,26 @@ import settings
 
 LOGGER = settings.logger("node")
 
-def shutdown_module(module):
-    try:
-        module.shutdown()
-    except NotImplementedError as e:
-        print("Error shutting down module: %s" % e)
-        pass
-
 def run_module(module):
     try:
-        module.module_started()
-    except AttributeError:
-        LOGGER.debug("%s module does not implement a module_started() method." % module.name())
+        try:
+            module.module_started()
+        except AttributeError:
+            LOGGER.debug("%s module does not implement a module_started() method." % module.name())
+            pass
+        while True:
+            next_data = module._input_queue.get()
+            if next_data is None:
+                # this module is shutting down..
+                module.shutdown()
+                break
+            output = module.process_data(next_data)
+            if output is not None:
+                for output_name, output_data in output.items():
+                    map(lambda x: x.put(((module.name(), output_name), output_data)), module._output_queues.get(output_name, []))
+    except KeyboardInterrupt:
+        LOGGER.debug("%s module received KeyboardInterrupt. Shutting down..." % module.name())
         pass
-    while True:
-        next_data = module._input_queue.get()
-        if next_data is None:
-            # this module is shutting down..
-            module.shutdown()
-            break
-        output = module.process_data(next_data)
-        if output is not None:
-            for output_name, output_data in output.items():
-                map(lambda x: x.put(((module.name(), output_name), output_data)), module._output_queues.get(output_name, []))
 
 if __name__ == "__main__":
 
@@ -67,6 +64,13 @@ if __name__ == "__main__":
             time.sleep(1)
     except KeyboardInterrupt:
             #shut down all modules here
-            map(lambda m: shutdown_module(m), _MODULES)
+            def shutdown_module(module):
+                try:
+                    module.shutdown_module()
+                except Exception:
+                    LOGGER.debug("Module %s does not implement a shutdown_module method." % module.name())
+                    pass
 
-            LOGGER.info("Shut down.")
+            map(shutdown_module, _MODULES)
+
+            LOGGER.info("Finished shutting down. Exiting...")
