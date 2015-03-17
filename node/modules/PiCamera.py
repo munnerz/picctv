@@ -62,7 +62,7 @@ class Multiplexer(object):
 
             return len(frame)
         except Exception as e:
-            print ("EXCEPTION %s" % e)
+            LOGGER.error("Exception in Multiplexer for quality %s. Exception: %s." % (self._quality, e))
 
     def flush(self):
         return # modules can't really be flushed...
@@ -70,9 +70,6 @@ class Multiplexer(object):
 def process_data(data):
     global _CAMERA, flags
     (module, data) = data
-
-    if module[0] != "Motion":
-        LOGGER.error("Invalid input. Annotator only accepts Motion data.")
 
     flags[module[0]] = data['is_motion']
 
