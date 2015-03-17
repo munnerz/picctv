@@ -22,4 +22,4 @@ def shutdown_module():
     return None
 
 def name():
-    return " v"
+    return "CameraFileCapture"
