@@ -15,6 +15,8 @@ def process_data(data):
 
     f.write("%s,%s,%s,%s\n" % (data['timestamp'], data['is_motion'], data['motion_magnitude'], data['frame_number']))
 
+    f.flush()
+
     return None
 
 def shutdown_module():
