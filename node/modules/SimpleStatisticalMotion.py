@@ -60,6 +60,10 @@ def process_data(data):
 
     np_frame = np.fromfile(stream, dtype='uint8', count=res[1]*res[0]).reshape((res[1], res[0]))
     
+    if _background_sum is None:
+        _update_background(np_frame)
+        return
+
     motion_diff_abs = cv2.absdiff(np_frame, _background_mean())
     detected_motion_condition = motion_diff_abs > arguments['pixel_change_threshold_scale_factor'] * _background_standard_dev()
     detected_motion_pixels = np.extract(detected_motion_condition, motion_diff_abs)
