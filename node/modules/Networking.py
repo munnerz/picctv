@@ -135,7 +135,7 @@ def run(queue):
 
 def shutdown_module():
     LOGGER.debug("Sending kill request to Networking processor...")
-    send_data((("RootNode", None), None))
+    process_data((("RootNode", None), None))
 
 def name():
     return "Networking"
