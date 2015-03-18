@@ -68,4 +68,4 @@ if __name__ == "__main__":
         while True: #main process loop
             time.sleep(1)
     except KeyboardInterrupt:
-            LOGGER.info("Finished shutting down. Exiting...")
+            LOGGER.info("Shut down signal received in root process")
