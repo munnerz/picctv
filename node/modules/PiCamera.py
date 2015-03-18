@@ -9,6 +9,9 @@ import picamera
 import math
 from node import settings
 
+arguments = None
+_output_queues = None
+
 LOGGER = settings.logger("node.modules.PiCamera")
 _CAMERA = None
 flags = {}
@@ -82,27 +85,28 @@ def process_data(data):
     return None
 
 def module_started():
-	global _CAMERA, arguments
-	_CAMERA = picamera.PiCamera()
-	_CAMERA.resolution = arguments['resolution']
-	_CAMERA.framerate = arguments['fps']
-	_CAMERA.exposure_mode = arguments['exposure_mode']
-	_CAMERA.brightness = arguments['brightness']
-	_CAMERA.hflip = arguments['hflip']
-	_CAMERA.vflip = arguments['vflip']
+    global _CAMERA, arguments
+    _CAMERA = picamera.PiCamera()
+    _CAMERA.resolution = arguments['resolution']
+    _CAMERA.framerate = arguments['fps']
+    _CAMERA.exposure_mode = arguments['exposure_mode']
+    _CAMERA.brightness = arguments['brightness']
+    _CAMERA.hflip = arguments['hflip']
+    _CAMERA.vflip = arguments['vflip']
 
-	for quality, profile in arguments['recording_qualities'].items():
-	    profile['multiplexer'] = Multiplexer(quality, profile)
+    for quality, profile in arguments['recording_qualities'].items():
+        profile['multiplexer'] = Multiplexer(quality, profile)
 
-	    LOGGER.info("Starting %s quality recording at %s, FPS: %d, format: %s" % (quality, profile['resolution'], profile['fps'], profile['format']))
-	    _CAMERA.start_recording(profile['multiplexer'], profile['format'], 
-	                            profile['resolution'], profile['splitter_port'], **profile['extra_params'])
+        LOGGER.info("Starting %s quality recording at %s, FPS: %d, format: %s" % (quality, profile['resolution'], profile['fps'], profile['format']))
+        _CAMERA.start_recording(profile['multiplexer'], profile['format'],
+                                profile['resolution'], profile['splitter_port'], **profile['extra_params'])
 
 
 def name():
-	return "PiCamera"
+    return "PiCamera"
 
 def shutdown_module():
-	global _CAMERA
-	map(lambda q: _CAMERA.stop_recording(splitter_port=q['splitter_port']), arguments['recording_qualities'].values())
+    global _CAMERA, arguments
+    map(lambda q: _CAMERA.stop_recording(splitter_port=q['splitter_port']), arguments['recording_qualities'].values())
+    _CAMERA.close()
 
