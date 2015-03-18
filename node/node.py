@@ -25,6 +25,10 @@ def run_module(module):
                     map(lambda x: x.put(((module.name(), output_name), output_data)), module._output_queues.get(output_name, []))
     except KeyboardInterrupt:
         LOGGER.debug("%s module received KeyboardInterrupt. Shutting down..." % module.name())
+        try:
+            module.shutdown_module()
+        except NotImplementedError:
+            LOGGER.debug("%s module does not implement a shutdown_module function." % module.name())
         pass
 
 if __name__ == "__main__":
@@ -64,14 +68,4 @@ if __name__ == "__main__":
         while True: #main process loop
             time.sleep(1)
     except KeyboardInterrupt:
-            #shut down all modules here
-            def shutdown_module(module):
-                try:
-                    module.shutdown_module()
-                except Exception:
-                    LOGGER.debug("Module %s does not implement a shutdown_module method." % module.name())
-                    pass
-
-            map(shutdown_module, _MODULES)
-
             LOGGER.info("Finished shutting down. Exiting...")
