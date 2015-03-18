@@ -27,7 +27,7 @@ def run_module(module):
         LOGGER.debug("%s module received KeyboardInterrupt. Shutting down..." % module.name())
         try:
             module.shutdown_module()
-        except NotImplementedError:
+        except AttributeError:
             LOGGER.debug("%s module does not implement a shutdown_module function." % module.name())
         pass
 
