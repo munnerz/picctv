@@ -5,7 +5,7 @@ import cv2
 
 import settings
 
-LOGGER = settings.logger("node.modules.SimpleStatisticalMotion")
+LOGGER = settings.logger("node.modules.OpenCV")
 arguments = None
 
 _frames = []
@@ -51,14 +51,14 @@ def process_data(data):
     if diff is None:
         return None
 
-    LOGGER.info("Diff: %s" % diff)
+    detected_motion_condition = diff > 6
+    detected_motion_pixels = np.extract(detected_motion_condition, diff)
 
-    return None
-#    return {"all": {"time": datetime.now(),
-#                    "timestamp": frame_info.timestamp,
-#                    "is_motion": is_motion,
-#                    "motion_magnitude": motion_val,
-#                    "frame_number": frame_info.index}}
+    return {"all": {"time": datetime.now(),
+                    "timestamp": frame_info.timestamp,
+                    "is_motion": len(detected_motion_pixels) > 0.25 * len(np_frame),
+                    "motion_magnitude": len(detected_motion_pixels),
+                    "frame_number": frame_info.index}}
 
 def shutdown_module():
     LOGGER.debug("Shut down.")
