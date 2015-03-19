@@ -127,7 +127,7 @@ ENABLED_MODULES = {
                             "tmp_file": "/run/shm/picamtempssm",
                             "background_frame_count_threshold": 20,
                             "pixel_change_threshold_scale_factor": 3.5,
-                            "total_pixel_change_threshold": 0.1,
+                            "total_pixel_change_threshold": 0.4,
                         },
                     },
                     "OpenCV": {
