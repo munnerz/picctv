@@ -16,6 +16,10 @@ def _motion_write(info):
     info['triggered'] = true_events / len(info['data']) > 0.2
     info['start_time'] = info['data'][0]['time']
     info['end_time'] = info['data'][-1]['time']
+    if len(info['data'] == 0):
+        info['average_motion'] = 0
+    else:
+        info['average_motion'] = sum([x['motion_magnitude'] for x in info['data']]) / len(info['data'])
     info['start_timestamp'] = info['data'][0]['timestamp']
     info['end_timestamp'] = info['data'][-1]['timestamp']
     library.write(info)
