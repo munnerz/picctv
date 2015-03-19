@@ -93,7 +93,7 @@ def module_started():
     _CAMERA.brightness = arguments['brightness']
     _CAMERA.hflip = arguments['hflip']
     _CAMERA.vflip = arguments['vflip']
-    _CAMERA.annotate_background = picamera.Color('black')
+    _CAMERA.annotate_background = True
 
     for quality, profile in arguments['recording_qualities'].items():
         profile['multiplexer'] = Multiplexer(quality, profile)
