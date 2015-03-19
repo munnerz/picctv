@@ -42,22 +42,9 @@ def watch(request):
 
             if mp4_file:
 
-                graph_data = [
-                    ['Frame No.', 'Motion']
-                ]
-
-                for seg in datetime_segments:
-                    chunk = tools.get_analysis_chunks(seg, form.cleaned_data['camera_name'], "Motion")
-                    for x in chunk:
-                        [graph_data.append([(c['timestamp']-chunk[0].data[0]['timestamp'])/1000000, c['motion_magnitude']]) for c in x.data]
-                
-                chart = flot.LineChart(SimpleDataSource(data=graph_data), width='100%')
-
-                stream_url = "http://cctv.phlat493/stream/%s" % os.path.basename(mp4_file.name)
-
-                return render(request, 'clips/watch.html', {"clip_url": stream_url,
+                return render(request, 'clips/watch.html', {"clip_url": "http://cctv.phlat493/stream/%s" % os.path.basename(mp4_file.name),
                                                             "datetime_segments": datetime_segments,
-                                                            "motion_data": chart})
+                                                            "motion_data": tools.generate_motion_graph(form.cleaned_data['camera_name'], datetime_segments)})
             else:
                 error = "Error creating MP4 file from chunks..."
         else:
