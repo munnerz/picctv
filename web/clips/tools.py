@@ -4,6 +4,9 @@ from tempfile import _get_candidate_names
 from datetime import timedelta
 from models import analysis, clip
 
+from graphos.sources.simple import SimpleDataSource
+from graphos.renderers import flot
+
 def wrap_h264(clips):
     _out_file = open('/run/shm/tmp/%s' % _get_candidate_names().next(), 'w+b')
     
@@ -116,3 +119,24 @@ def get_recent_events(camera_name, include_recordings=True):
 
     return events
             
+def generate_motion_graph(camera_name, datetime_segments):
+    graph_data = [ ['Frame No.', 'Motion'] ]
+
+    first_start = None
+    for seg in datetime_segments:
+        chunk = get_analysis_chunks(seg, camera_name, "Motion")
+
+        for x in chunk:
+            avg_motion = getattr(x, 'average_motion', None)
+            if avg_motion is None:
+                print ("Generatng avg_motion...")
+                avg_motion = sum([y['motion_magnitude'] for y in x.data]) / len(x.data)
+                x.average_motion = avg_motion
+                x.save()
+            if first_start is None:
+                first_start = x.start_time
+            graph_data.append([(x.start_time - first_start).total_seconds(), avg_motion])
+
+    chart = flot.LineChart(SimpleDataSource(data=graph_data), width='100%')
+
+    return chart
