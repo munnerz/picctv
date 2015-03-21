@@ -141,6 +141,15 @@ ENABLED_MODULES = {
                             "tmp_file": "/run/shm/picamtempopencv",
                         },
                     },
+                    "MotionDebug": {
+                        "inputs": [
+                            ("BackgroundExtraction", "all"),
+                            ("Motion", "diff"),
+                            ("Motion", "mask"),
+                            ("Motion", "long_variance"),
+                            ("Motion", "short_variance"),
+                        ],
+                    },
                 }
 
 import logging
