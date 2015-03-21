@@ -24,8 +24,12 @@ def watch(request):
         form = models.ClipForm(request.POST)
     else:
         print(datetime.fromtimestamp(float(request.GET['start_datetime'])))
-        form = models.ClipForm({"start_datetime":   datetime.fromtimestamp(float(request.GET['start_datetime'])),
-                                "end_datetime":     datetime.fromtimestamp(float(request.GET['end_datetime'])),
+        start_datetime = float(request.GET['start_datetime'])
+        end_datetime = float(request.GET['end_datetime'])
+        if start_datetime < 0:
+            start_datetime = end_datetime + start_datetime
+        form = models.ClipForm({"start_datetime":   datetime.fromtimestamp(start_datetime),
+                                "end_datetime":     datetime.fromtimestamp(end_datetime),
                                 "camera_name":      request.GET['camera_name']})
 
     if form.is_valid(): # All validation rules pass
@@ -34,15 +38,12 @@ def watch(request):
 
         datetime_segments = tools.find_datetime_segments(clips)
         if len(datetime_segments) > 0:
-            motion_chunks = []
-
-            clips_fh = [c.data for c in clips]
-
-            mp4_file = tools.wrap_h264(clips_fh)
-
+            mp4_file = tools.wrap_h264([c.data for c in clips])
             if mp4_file:
-
                 return render(request, 'clips/watch.html', {"clip_url": "http://cctv.phlat493/stream/%s" % os.path.basename(mp4_file.name),
+                                                            "camera_name": form.cleaned_data['camera_name'],
+                                                            "start_datetime": form.cleaned_data['start_datetime'],
+                                                            "end_datetime": form.cleaned_data['end_datetime'],
                                                             "datetime_segments": datetime_segments,
                                                             "motion_data": tools.generate_motion_graph(form.cleaned_data['camera_name'], datetime_segments)})
             else:
@@ -66,3 +67,4 @@ def list(request):
 
 def camera(request):
     return
+
