@@ -75,7 +75,7 @@ def process_data(data):
 
     flags[module[0]] = data['is_motion']
 
-    display = ""
+    display = "%d: " % (arguments['recording_qualities']['low']['multiplexer']._frame_info().index)
     for m, n in flags.items():
         display += "%s: %s, " % (m, n)
     display = display[0:-2]
