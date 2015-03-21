@@ -113,7 +113,11 @@ def process_data(data):
                     "timestamp": frame_info.timestamp,
                     "is_motion": _motion_detected_pixels > arguments['level'],
                     "motion_magnitude": _motion_detected_pixels,
-                    "frame_number": frame_info.index}}
+                    "frame_number": frame_info.index},
+            "diff": motion_diff_abs,
+            "mask": _binary_motion_detection_mask.astype('float32'),
+            "short_variance": _short_variance,
+            "long_variance": _long_variance}
 
 
 def name():
