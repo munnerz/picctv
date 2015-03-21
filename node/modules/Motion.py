@@ -44,6 +44,10 @@ def process_data(data):
 
     (frame, frame_info) = data
 
+    if frame_info.index < 50:
+        #let's wait...
+        return None
+
     res = arguments['resolution']
 
     if(len(frame) < res[0] * res[1]):
