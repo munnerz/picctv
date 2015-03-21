@@ -24,6 +24,8 @@
             Your browser does not support the video tag.
             </video>
           </div>
+          <span class="pull-left"><a href="{% url 'watch' %}?start_datetime=-300&end_datetime={{start_datetime|epoch}}&camera_name={{camera_name}}">Previous 5 minutes</a></span>
+          <span class="pull-right"><a href="{% url 'watch' %}?start_datetime={{end_datetime|epoch}}&end_datetime={{end_datetime|epoch|add:"300"}}&camera_name={{camera_name}}">Next 5 minutes</a></span>
         </div>
       </div>
     </row>

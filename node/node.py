@@ -25,6 +25,10 @@ def run_module(module):
                     map(lambda x: x.put(((module.name(), output_name), output_data)), module._output_queues.get(output_name, []))
     except KeyboardInterrupt:
         LOGGER.debug("%s module received KeyboardInterrupt. Shutting down..." % module.name())
+        try:
+            module.shutdown_module()
+        except AttributeError:
+            LOGGER.debug("%s module does not implement a shutdown_module function." % module.name())
         pass
 
 if __name__ == "__main__":
@@ -43,10 +47,11 @@ if __name__ == "__main__":
         
         module._input_queue = multiprocessing.Queue()
 
-        for input_module, input_xtra in settings.ENABLED_MODULES[module.name()]['inputs'].items():
+        for input_module, input_xtra in settings.ENABLED_MODULES[module.name()]['inputs']:
             queue_temp = settings.ENABLED_MODULES[input_module]['runtime']['module']._output_queues.get(input_xtra, None)
             if queue_temp is None:
                 queue_temp = settings.ENABLED_MODULES[input_module]['runtime']['module']._output_queues[input_xtra] = []
+            LOGGER.debug("Adding %s:%s to %s inputs..." % (input_module, input_xtra, module.name()))
             queue_temp.append(module._input_queue)
 
 
@@ -63,14 +68,4 @@ if __name__ == "__main__":
         while True: #main process loop
             time.sleep(1)
     except KeyboardInterrupt:
-            #shut down all modules here
-            def shutdown_module(module):
-                try:
-                    module.shutdown_module()
-                except Exception:
-                    LOGGER.debug("Module %s does not implement a shutdown_module method." % module.name())
-                    pass
-
-            map(shutdown_module, _MODULES)
-
-            LOGGER.info("Finished shutting down. Exiting...")
+            LOGGER.info("Shut down signal received in root process")

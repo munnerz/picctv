@@ -24,8 +24,12 @@ def watch(request):
         form = models.ClipForm(request.POST)
     else:
         print(datetime.fromtimestamp(float(request.GET['start_datetime'])))
-        form = models.ClipForm({"start_datetime":   datetime.fromtimestamp(float(request.GET['start_datetime'])),
-                                "end_datetime":     datetime.fromtimestamp(float(request.GET['end_datetime'])),
+        start_datetime = float(request.GET['start_datetime'])
+        end_datetime = float(request.GET['end_datetime'])
+        if start_datetime < 0:
+            start_datetime = end_datetime + start_datetime
+        form = models.ClipForm({"start_datetime":   datetime.fromtimestamp(start_datetime),
+                                "end_datetime":     datetime.fromtimestamp(end_datetime),
                                 "camera_name":      request.GET['camera_name']})
 
     if form.is_valid(): # All validation rules pass
@@ -34,30 +38,14 @@ def watch(request):
 
         datetime_segments = tools.find_datetime_segments(clips)
         if len(datetime_segments) > 0:
-            motion_chunks = []
-
-            clips_fh = [c.data for c in clips]
-
-            mp4_file = tools.wrap_h264(clips_fh)
-
+            mp4_file = tools.wrap_h264([c.data for c in clips])
             if mp4_file:
-
-                graph_data = [
-                    ['Frame No.', 'Motion']
-                ]
-
-                for seg in datetime_segments:
-                    chunk = tools.get_analysis_chunks(seg, form.cleaned_data['camera_name'], "Motion")
-                    for x in chunk:
-                        [graph_data.append([(c['timestamp']-chunk[0].data[0]['timestamp'])/1000000, c['motion_magnitude']]) for c in x.data]
-                
-                chart = flot.LineChart(SimpleDataSource(data=graph_data), width='100%')
-
-                stream_url = "http://cctv.phlat493/stream/%s" % os.path.basename(mp4_file.name)
-
-                return render(request, 'clips/watch.html', {"clip_url": stream_url,
+                return render(request, 'clips/watch.html', {"clip_url": "http://cctv.phlat493/stream/%s" % os.path.basename(mp4_file.name),
+                                                            "camera_name": form.cleaned_data['camera_name'],
+                                                            "start_datetime": form.cleaned_data['start_datetime'],
+                                                            "end_datetime": form.cleaned_data['end_datetime'],
                                                             "datetime_segments": datetime_segments,
-                                                            "motion_data": chart})
+                                                            "motion_data": tools.generate_motion_graph(form.cleaned_data['camera_name'], datetime_segments)})
             else:
                 error = "Error creating MP4 file from chunks..."
         else:
@@ -77,5 +65,21 @@ def list(request):
                                                "events_list": events_list,
                                                })
 
-def camera(request):
-    return
+def camera(request, camera_name):
+    camera_list = models.clip.objects.distinct("camera_name")
+    unsorted_events = tools.get_recent_events(camera_name)
+    events_list = sorted(unsorted_events, key=lambda x: x['end_time'], reverse=True)
+    now = datetime.now()
+    start_datetime = now-timedelta(seconds=45)
+    end_datetime = now
+    clips = models.clip.objects.filter(camera_name=camera_name).filter(start_time__gte=start_datetime, end_time__lte=end_datetime).order_by('start_time')
+    mp4_file = tools.wrap_h264([c.data for c in clips])
+    return render(request, 'clips/camera.html', {"cameras": camera_list,
+                                                 "clip_url": "http://cctv.phlat493/stream/%s" % os.path.basename(mp4_file.name),
+                                                 "search_form": models.ClipForm(),
+                                                 "recent_motion_chart": tools.generate_motion_graph(camera_name, [(now-timedelta(minutes=15),now)]),
+                                                 "events_list": events_list,
+                                                 "camera_name": camera_name,
+                                                 "start_datetime": start_datetime,
+                                                 "end_datetime": end_datetime, })
+

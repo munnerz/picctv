@@ -3,10 +3,15 @@
 {% load base_extra %}
 {% load bootstrap3 %}
 {% load humanize %}
+{% load static %}
 
 {% block title %}Clip list{% endblock %}
 
-{% block bootstrap3_extra_head %}{{ search_form.media }}{% endblock %}
+{% block bootstrap3_extra_head %}
+{{ search_form.media }}
+<script src="{% static 'clips/jquery.flot.min.js' %}"></script>
+{{ search_form.media }}
+{% endblock %}
 
 {% block content %}
 
@@ -51,13 +56,37 @@
           <div class="panel-body">
             <ul class="nav nav-pills nav-stacked">
 {% for c in cameras %}
-              <li role="presentation"><a href="{% url 'camera' camera_name=c %}">{{ c }}</a></li>
+              <li role="presentation" class="{% active_camera request c %}"><a href="{% url 'camera' camera_name=c %}">{{ c }}</a></li>
 {% endfor %}
             </ul>
           </div>
         </div>
       </div>
       <div class="col-xs-12 col-sm-9 pull-right">
+        <row>
+          <div class="panel panel-default">
+            <div class="panel-body">
+              <div class="embed-responsive embed-responsive-16by9">
+                <video width="1280" height="720" controls>
+                  <source src="{{ clip_url }}" type="video/mp4" />
+                    Your browser does not support the video tag.
+                </video>
+              </div>
+              <span class="pull-left"><a href="{% url 'watch' %}?start_datetime=-300&end_datetime={{start_datetime|epoch}}&camera_name={{camera_name}}">Previous 5 minutes</a></span>
+              <span class="pull-right"><a href="{% url 'watch' %}?start_datetime={{end_datetime|epoch}}&end_datetime={{end_datetime|epoch|add:"300"}}&camera_name={{camera_name}}">Next 5 minutes</a></span>
+            </div>
+          </div>
+        </row>
+        <row>
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Last 15 minutes of motion</h3>
+            </div>
+            <div class="panel-body">              
+              {{ recent_motion_chart.as_html }}
+            </div>
+          </div>
+        </row>
         <div class="panel panel-default">
           <div class="panel-heading">
             <h3 class="panel-title">Recent events</h3>

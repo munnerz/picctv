@@ -9,6 +9,9 @@ import picamera
 import math
 from node import settings
 
+arguments = None
+_output_queues = None
+
 LOGGER = settings.logger("node.modules.PiCamera")
 _CAMERA = None
 flags = {}
@@ -61,7 +64,7 @@ class Multiplexer(object):
 
             return len(frame)
         except Exception as e:
-            print ("EXCEPTION %s" % e)
+            LOGGER.error("Exception in Multiplexer for quality %s. Exception: %s." % (self._quality, e))
 
     def flush(self):
         return # modules can't really be flushed...
@@ -70,12 +73,9 @@ def process_data(data):
     global _CAMERA, flags
     (module, data) = data
 
-    if module[0] != "Motion":
-        LOGGER.error("Invalid input. Annotator only accepts Motion data.")
-
     flags[module[0]] = data['is_motion']
 
-    display = ""
+    display = "%d: " % (arguments['recording_qualities']['low']['multiplexer']._frame_info().index)
     for m, n in flags.items():
         display += "%s: %s, " % (m, n)
     display = display[0:-2]
@@ -85,27 +85,29 @@ def process_data(data):
     return None
 
 def module_started():
-	global _CAMERA, arguments
-	_CAMERA = picamera.PiCamera()
-	_CAMERA.resolution = arguments['resolution']
-	_CAMERA.framerate = arguments['fps']
-	_CAMERA.exposure_mode = arguments['exposure_mode']
-	_CAMERA.brightness = arguments['brightness']
-	_CAMERA.hflip = arguments['hflip']
-	_CAMERA.vflip = arguments['vflip']
+    global _CAMERA, arguments
+    _CAMERA = picamera.PiCamera()
+    _CAMERA.resolution = arguments['resolution']
+    _CAMERA.framerate = arguments['fps']
+    _CAMERA.exposure_mode = arguments['exposure_mode']
+    _CAMERA.brightness = arguments['brightness']
+    _CAMERA.hflip = arguments['hflip']
+    _CAMERA.vflip = arguments['vflip']
+    _CAMERA.annotate_background = True
 
-	for quality, profile in arguments['recording_qualities'].items():
-	    profile['multiplexer'] = Multiplexer(quality, profile)
+    for quality, profile in arguments['recording_qualities'].items():
+        profile['multiplexer'] = Multiplexer(quality, profile)
 
-	    LOGGER.info("Starting %s quality recording at %s, FPS: %d, format: %s" % (quality, profile['resolution'], profile['fps'], profile['format']))
-	    _CAMERA.start_recording(profile['multiplexer'], profile['format'], 
-	                            profile['resolution'], profile['splitter_port'], **profile['extra_params'])
+        LOGGER.info("Starting %s quality recording at %s, FPS: %d, format: %s" % (quality, profile['resolution'], profile['fps'], profile['format']))
+        _CAMERA.start_recording(profile['multiplexer'], profile['format'],
+                                profile['resolution'], profile['splitter_port'], **profile['extra_params'])
 
 
 def name():
-	return "PiCamera"
+    return "PiCamera"
 
 def shutdown_module():
-	global _CAMERA
-	map(lambda q: _CAMERA.stop_recording(splitter_port=q['splitter_port']), arguments['recording_qualities'].values())
+    global _CAMERA, arguments
+    map(lambda q: _CAMERA.stop_recording(splitter_port=q['splitter_port']), arguments['recording_qualities'].values())
+    _CAMERA.close()
 

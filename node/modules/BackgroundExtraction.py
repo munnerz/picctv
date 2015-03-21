@@ -37,7 +37,7 @@ def process_data(data):
             _candidates = frame
 
         #rapid matching
-        _rapid_matching_candidates_mask = ~(np.absolute(frame - _previous_frame) < 10)
+        _rapid_matching_candidates_mask = ~(np.absolute(frame - _previous_frame) < 2)
 
         _rapid_matching_candidates = np.ma.array(_candidates, mask=_rapid_matching_candidates_mask, copy=False)
 

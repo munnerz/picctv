@@ -4,6 +4,9 @@ from tempfile import _get_candidate_names
 from datetime import timedelta
 from models import analysis, clip
 
+from graphos.sources.simple import SimpleDataSource
+from graphos.renderers import flot
+
 def wrap_h264(clips):
     _out_file = open('/run/shm/tmp/%s' % _get_candidate_names().next(), 'w+b')
     
@@ -46,7 +49,7 @@ def find_datetime_segments(clips):
 
 def get_analysis_chunks(datetime_segment, camera, module=None):
     (start, end) = datetime_segment
-    return analysis.objects.filter(module_name=module, camera_name=camera).filter(start_time__gte=start, end_time__lte=end)
+    return analysis.objects.filter(module_name=module, camera_name=camera).filter(start_time__gte=start-timedelta(seconds=10), end_time__lte=end+timedelta(seconds=10)).order_by('end_time')
 
 def chain_events(chunks, start_field, end_field, trigger_data, is_triggered, shortcut=lambda _: None):
     create_event = lambda x, y: {"camera_name": x.camera_name,
@@ -68,7 +71,7 @@ def chain_events(chunks, start_field, end_field, trigger_data, is_triggered, sho
                 if event_end.get(chunk.module_name) is None:
                     event_start[chunk.module_name] = chunk
                     event_end[chunk.module_name] = chunk
-                elif start_field(event_start[chunk.module_name]) == end_field(chunk):
+                elif start_field(event_start[chunk.module_name]) - end_field(chunk) < timedelta(seconds=1):
                     event_start[chunk.module_name] = chunk
                 else:
                     events.append(create_event(event_start[chunk.module_name], event_end[chunk.module_name]))
@@ -92,9 +95,9 @@ def chain_events(chunks, start_field, end_field, trigger_data, is_triggered, sho
 
 # when adding a module with a weird data type, you'll need to write a custom handler here
 # look at chain_events and how it is used in order to write the correct lambda functions
-def get_recent_events(camera_name, include_recordings=True):
+def get_recent_events(camera_name, limit=200, include_recordings=True):
     print ("Getting events for %s" % camera_name)
-    analysis_chunks = analysis.objects.filter(camera_name=camera_name).order_by('-end_time').limit(200)
+    analysis_chunks = analysis.objects.filter(camera_name=camera_name).order_by('-end_time').limit(limit)
 
     events = chain_events(analysis_chunks, 
                           lambda x: x.start_time,
@@ -105,7 +108,7 @@ def get_recent_events(camera_name, include_recordings=True):
                           )
 
     if include_recordings:
-        recording_chunks = clip.objects.filter(camera_name=camera_name).order_by('-end_time').limit(200)
+        recording_chunks = clip.objects.filter(camera_name=camera_name).order_by('-end_time').limit(limit)
         events += chain_events(recording_chunks,
                                lambda x: x['start_time'],
                                lambda x: x['end_time'],
@@ -116,3 +119,24 @@ def get_recent_events(camera_name, include_recordings=True):
 
     return events
             
+def generate_motion_graph(camera_name, datetime_segments):
+    graph_data = [ ['Frame No.', 'Motion'] ]
+
+    first_start = None
+    for seg in datetime_segments:
+        chunk = get_analysis_chunks(seg, camera_name, "Motion")
+
+        for x in chunk:
+            avg_motion = getattr(x, 'average_motion', None)
+            if avg_motion is None:
+                print ("Generatng avg_motion...")
+                avg_motion = sum([y['motion_magnitude'] for y in x.data]) / len(x.data)
+                x.average_motion = avg_motion
+                x.save()
+            if first_start is None:
+                first_start = x.start_time
+            graph_data.append([(x.start_time - first_start).total_seconds(), avg_motion])
+
+    chart = flot.LineChart(SimpleDataSource(data=graph_data), width='100%')
+
+    return chart

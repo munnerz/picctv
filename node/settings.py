@@ -1,11 +1,11 @@
 ## Node settings
-NODE_NAME = "ChangeMe" # the name of this camera to report to the server - should be unique!
+NODE_NAME = "Kitchen" # the name of this camera to report to the server - should be unique!
 
 _RECORDING_QUALITIES =   { 
                             "low": { 
                                 "format": "yuv", 
                                 "resolution": (256, 128),
-                                "fps": 8,
+                                "fps": 5,
                                 "multiplexer": None,
                                 "splitter_port": 1,
                                 "registered_modules": [],
@@ -15,7 +15,7 @@ _RECORDING_QUALITIES =   {
                             "high": {
                                 "format": "h264",
                                 "resolution": (1280, 720),
-                                "fps": 24,
+                                "fps": 25,
                                 "multiplexer": None,
                                 "splitter_port": 2,
                                 "registered_modules": [],
@@ -25,78 +25,128 @@ _RECORDING_QUALITIES =   {
 
 ENABLED_MODULES = {
                     "Recording": {
-                        "inputs": {
-                            "PiCamera": "high",
-                        },
+                        "inputs": [
+                            ("PiCamera", "high"),
+                        ],
                         "arguments": {
                             "chunk_length": 4,
-                        }
-                   },
-                    "Live": {
-                        "inputs": {
-                            "PiCamera": "high",
                         },
+                    },
+                    "Live": {
+                        "inputs": [
+                            ("PiCamera", "high"),
+                        ],
                         "arguments": {
                             "listen_address": ('0.0.0.0', 8000),
                         },
                     },
                     "Motion": {
-                        "inputs": {
-                            "BackgroundExtraction": "all",
-                            "PiCamera": "low",
-                        },
+                        "inputs": [
+                            ("BackgroundExtraction", "all"),
+                            ("PiCamera", "low"),
+                        ],
                         "arguments": {
                             "resolution": _RECORDING_QUALITIES["low"]["resolution"],
-                            "level": 100,
+                            "level": 250,
                             "threshold": 35,
                             "tmp_file": '/run/shm/picamtemp.dat',
                             "chunk_length": 20,
                             "pixel_change_threshold_scale_factor": 3.5,
-                            "total_pixel_change_threshold": 0.1, # percentage of the image that must have changed pixels
-                                                                 # to qualify the frame as 'motion'     
                         },
                     },
                     "PiCamera": {
-                        "inputs": {
-                            "Motion": "all",
-                        },
+                        "inputs": [
+                            ("Motion", "all"),
+                            ("SimpleStatisticalMotion", "all"),
+                            ("OpenCV", "all"),
+                        ],
                         "arguments": {
                             "resolution": (1280, 720),
-                            "fps": 24,
+                            "fps": 25,
                             "exposure_mode": 'night',
-                            "brightness": 60,
+                            "brightness": 65,
                             "hflip": True,
                             "vflip": True,
                             "recording_qualities": _RECORDING_QUALITIES,
                         },
                     },
                     "Networking": {
-                        "inputs": {
-                            "Recording": "all",
-                            "Buffer": "Motion:all",
-                        },
+                        "inputs": [
+                            ("Recording", "all"),
+                            ("Buffer", "Motion:all"),
+                        ],
                         "arguments": {
                             "node_name": NODE_NAME,
                             "server_address": ('cctv.phlat493', 8000),
                         },
                     },
                     "Buffer": {
-                        "inputs": {
-                            "Motion": "all",
-                        },
+                        "inputs": [
+                            ("Motion", "all"),
+                        ],
                         "arguments": {
                             "buffer_size": 30,
-                        }
+                        },
                     },
                     "BackgroundExtraction": {
-                        "inputs": {
-                            "PiCamera": "low",
-                        },
+                        "inputs": [
+                            ("PiCamera", "low"),
+                        ],
                         "arguments": {
                             "resolution": _RECORDING_QUALITIES["low"]["resolution"],
                             "frame_count_threshold": 20,
                             "tmp_file": '/run/shm/picamtemp_bg.dat',
-                        }
+                        },
+                    },
+                    "CSVOutput": {
+                        "inputs": [
+                            ("Motion", "all"),
+                            ("SimpleStatisticalMotion", "all"),
+                            ("OpenCV", "all"),
+                        ],
+                        "arguments": {
+                            "save_path": "/run/shm/motion-captures",
+                        },
+                    },
+                    "CameraFileCapture": {
+                        "inputs": [
+                            ("PiCamera", "high"),
+                            ("PiCamera", "low"),
+                        ],
+                        "arguments": {
+                            "save_path": "/run/shm/motion-captures",
+                        },
+                    },
+                    "SimpleStatisticalMotion": {
+                        "inputs": [
+                            ("PiCamera", "low"),
+                        ],
+                        "arguments": {
+                            "tmp_file": "/run/shm/picamtempssm",
+                            "background_frame_count_threshold": 20,
+                            "pixel_change_threshold_scale_factor": 3.5,
+                            "total_pixel_change_threshold": 0.4,
+                        },
+                    },
+                    "OpenCV": {
+                        "inputs": [
+                            ("PiCamera", "low"),
+                        ],
+                        "arguments": {
+                            "frame_limit": 5,
+                            "motion_level": 500,
+                            "threshold": 35,
+                            "tmp_file": "/run/shm/picamtempopencv",
+                        },
+                    },
+                    "MotionDebug": {
+                        "inputs": [
+                            ("BackgroundExtraction", "all"),
+                            ("Motion", "diff"),
+                            ("Motion", "mask"),
+                            ("Motion", "long_variance"),
+                            ("Motion", "short_variance"),
+                        ],
                     },
                 }
 
