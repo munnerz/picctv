@@ -95,9 +95,9 @@ def chain_events(chunks, start_field, end_field, trigger_data, is_triggered, sho
 
 # when adding a module with a weird data type, you'll need to write a custom handler here
 # look at chain_events and how it is used in order to write the correct lambda functions
-def get_recent_events(camera_name, include_recordings=True):
+def get_recent_events(camera_name, limit=200, include_recordings=True):
     print ("Getting events for %s" % camera_name)
-    analysis_chunks = analysis.objects.filter(camera_name=camera_name).order_by('-end_time').limit(200)
+    analysis_chunks = analysis.objects.filter(camera_name=camera_name).order_by('-end_time').limit(limit)
 
     events = chain_events(analysis_chunks, 
                           lambda x: x.start_time,
@@ -108,7 +108,7 @@ def get_recent_events(camera_name, include_recordings=True):
                           )
 
     if include_recordings:
-        recording_chunks = clip.objects.filter(camera_name=camera_name).order_by('-end_time').limit(200)
+        recording_chunks = clip.objects.filter(camera_name=camera_name).order_by('-end_time').limit(limit)
         events += chain_events(recording_chunks,
                                lambda x: x['start_time'],
                                lambda x: x['end_time'],
