@@ -71,7 +71,7 @@ def chain_events(chunks, start_field, end_field, trigger_data, is_triggered, sho
                 if event_end.get(chunk.module_name) is None:
                     event_start[chunk.module_name] = chunk
                     event_end[chunk.module_name] = chunk
-                elif start_field(event_start[chunk.module_name]) == end_field(chunk):
+                elif start_field(event_start[chunk.module_name]) - end_field(chunk) < timedelta(seconds=1):
                     event_start[chunk.module_name] = chunk
                 else:
                     events.append(create_event(event_start[chunk.module_name], event_end[chunk.module_name]))
