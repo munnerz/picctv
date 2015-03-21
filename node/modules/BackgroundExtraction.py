@@ -51,7 +51,7 @@ def process_data(data):
         _accurate_matching_candidates_mask = ~(_candidates == frame)
 
         _accurate_matches = np.ma.array(_background_model, mask=_accurate_matching_candidates_mask, copy=False)
-        _accurate_matches += (frame - _accurate_matches)
+        _accurate_matches += (frame - _accurate_matches) * (1/8)
 
     _background_frame_count += 1
 
