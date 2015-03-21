@@ -65,6 +65,21 @@ def list(request):
                                                "events_list": events_list,
                                                })
 
-def camera(request):
-    return
+def camera(request, camera_name):
+    camera_list = models.clip.objects.distinct("camera_name")
+    unsorted_events = tools.get_recent_events(camera_name)
+    events_list = sorted(unsorted_events, key=lambda x: x['end_time'], reverse=True)
+    now = datetime.now()
+    start_datetime = now-timedelta(seconds=45)
+    end_datetime = now
+    clips = models.clip.objects.filter(camera_name=camera_name).filter(start_time__gte=start_datetime, end_time__lte=end_datetime).order_by('start_time')
+    mp4_file = tools.wrap_h264([c.data for c in clips])
+    return render(request, 'clips/camera.html', {"cameras": camera_list,
+                                                 "clip_url": "http://cctv.phlat493/stream/%s" % os.path.basename(mp4_file.name),
+                                                 "search_form": models.ClipForm(),
+                                                 "recent_motion_chart": tools.generate_motion_graph(camera_name, [(now-timedelta(minutes=15),now)]),
+                                                 "events_list": events_list,
+                                                 "camera_name": camera_name,
+                                                 "start_datetime": start_datetime,
+                                                 "end_datetime": end_datetime, })
 
