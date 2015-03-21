@@ -47,13 +47,11 @@ ENABLED_MODULES = {
                         ],
                         "arguments": {
                             "resolution": _RECORDING_QUALITIES["low"]["resolution"],
-                            "level": 100,
+                            "level": 250,
                             "threshold": 35,
                             "tmp_file": '/run/shm/picamtemp.dat',
                             "chunk_length": 20,
                             "pixel_change_threshold_scale_factor": 3.5,
-                            "total_pixel_change_threshold": 0.1, # percentage of the image that must have changed pixels
-                                                                 # to qualify the frame as 'motion'     
                         },
                     },
                     "PiCamera": {
