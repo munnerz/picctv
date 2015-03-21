@@ -1,11 +1,11 @@
 ## Node settings
-NODE_NAME = "ChangeMe" # the name of this camera to report to the server - should be unique!
+NODE_NAME = "Kitchen" # the name of this camera to report to the server - should be unique!
 
 _RECORDING_QUALITIES =   { 
                             "low": { 
                                 "format": "yuv", 
                                 "resolution": (256, 128),
-                                "fps": 8,
+                                "fps": 5,
                                 "multiplexer": None,
                                 "splitter_port": 1,
                                 "registered_modules": [],
@@ -15,7 +15,7 @@ _RECORDING_QUALITIES =   {
                             "high": {
                                 "format": "h264",
                                 "resolution": (1280, 720),
-                                "fps": 24,
+                                "fps": 25,
                                 "multiplexer": None,
                                 "splitter_port": 2,
                                 "registered_modules": [],
@@ -64,9 +64,9 @@ ENABLED_MODULES = {
                         ],
                         "arguments": {
                             "resolution": (1280, 720),
-                            "fps": 24,
+                            "fps": 25,
                             "exposure_mode": 'night',
-                            "brightness": 60,
+                            "brightness": 65,
                             "hflip": True,
                             "vflip": True,
                             "recording_qualities": _RECORDING_QUALITIES,
