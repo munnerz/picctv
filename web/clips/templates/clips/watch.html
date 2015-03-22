@@ -7,44 +7,93 @@
 
 {% block bootstrap3_extra_head %}
 <script src="{% static 'clips/jquery.flot.min.js' %}"></script>
+{{ search_form.media }}
 {% endblock %}
 
 {% block content %}
-  <div class="well col-xs-12 col-sm-offset-1 col-sm-2">
-    
-  </div>
 
-  <div class="col-xs-12 col-sm-8">
-    <row>
-      <div class="panel panel-default">
-        <div class="panel-body">
-          <div class="embed-responsive embed-responsive-16by9">
-            <video width="1280" height="720" controls>
-              <source src="{{ clip_url }}" type="video/mp4">
-            Your browser does not support the video tag.
-            </video>
-          </div>
-          <span class="pull-left"><a href="{% url 'watch' %}?start_datetime=-300&end_datetime={{start_datetime|epoch}}&camera_name={{camera_name}}">Previous 5 minutes</a></span>
-          <span class="pull-right"><a href="{% url 'watch' %}?start_datetime={{end_datetime|epoch}}&end_datetime={{end_datetime|epoch|add:"300"}}&camera_name={{camera_name}}">Next 5 minutes</a></span>
-        </div>
-      </div>
-    </row>
+  <div class="col-xs-12 col-sm-offset-1 col-sm-10">
 
-    <row>
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h3 class="panel-title">Clip info</h3>
+    <div class="row">
+      <form id="clip-form" action="{% url 'watch' %}" method="POST">
+        {% csrf_token %}
+        <div class="col-xs-12 col-sm-5">
+          {{ search_form.start_datetime }}
         </div>
-        <div class="panel-body">
-          <ul>
-{% for start,end in datetime_segments %}
-          <li>{{ start|date:"dS M Y H:i:s" }} - {{ end|date:"d/m/Y H:i:s" }}</li>
+
+        <div class="col-xs-12 col-sm-5">
+          {{ search_form.end_datetime }}
+        </div>
+
+        <input type="hidden" id="id_camera_name" name="camera_name" />
+
+        <div class="col-xs-12 col-sm-2">
+          <div class="btn-group pull-right">
+            <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
+              Watch <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+{% for c in cameras %}      
+              <li onclick="$('#id_camera_name').val('{{ c }}'); $('#clip-form').submit()">
+                <a href="#">{{ c }}</a>
+              </li>
 {% endfor %}
-          </ul>
-          
-          {{ motion_data.as_html }}
+            </ul>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="spacer row">
+
+      <div class="col-xs-12 col-sm-3">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Cameras</h3>
+          </div>
+          <div class="panel-body">
+            <ul class="nav nav-pills nav-stacked">
+{% for c in cameras %}
+              <li role="presentation" class="{% if c == camera_name %}active{% endif %}"><a href="{% url 'camera' camera_name=c %}">{{ c }}</a></li>
+{% endfor %}
+            </ul>
+          </div>
         </div>
       </div>
-    </row>
+      <div class="col-xs-12 col-sm-9 pull-right">
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="embed-responsive embed-responsive-16by9">
+              <video width="1280" height="720" controls>
+                <source src="{{ clip_url }}" type="video/mp4">
+              Your browser does not support the video tag.
+              </video>
+            </div>
+            <span class="pull-left"><a href="{% url 'watch' %}?start_datetime=-300&end_datetime={{start_datetime|epoch}}&camera_name={{camera_name}}">Previous 5 minutes</a></span>
+            <span class="pull-right"><a href="{% url 'watch' %}?start_datetime={{end_datetime|epoch}}&end_datetime={{end_datetime|epoch|add:"300"}}&camera_name={{camera_name}}">Next 5 minutes</a></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xs-12 col-sm-9 pull-right">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Clip info</h3>
+          </div>
+          <div class="panel-body">
+            <ul>
+  {% for start,end in datetime_segments %}
+            <li>{{ start|date:"dS M Y H:i:s" }} - {{ end|date:"d/m/Y H:i:s" }}</li>
+  {% endfor %}
+            </ul>
+            
+            {{ motion_data.as_html }}
+          </div>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 {% endblock %}
