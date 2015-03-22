@@ -39,11 +39,20 @@ def watch(request):
         datetime_segments = tools.find_datetime_segments(clips)
         if len(datetime_segments) > 0:
             mp4_file = tools.wrap_h264([c.data for c in clips])
+            start_datetime = None
+            c = None
+            for c in clips:
+                if start_datetime is None:
+                    start_datetime = c.start_time
+            end_datetime = c.end_time
             if mp4_file:
+                camera_list = models.clip.objects.distinct("camera_name")
                 return render(request, 'clips/watch.html', {"clip_url": "http://cctv.phlat493/stream/%s" % os.path.basename(mp4_file.name),
                                                             "camera_name": form.cleaned_data['camera_name'],
-                                                            "start_datetime": form.cleaned_data['start_datetime'],
-                                                            "end_datetime": form.cleaned_data['end_datetime'],
+                                                            "cameras": camera_list,
+                                                            "search_form": models.ClipForm(),
+                                                            "start_datetime": start_datetime,
+                                                            "end_datetime": end_datetime,
                                                             "datetime_segments": datetime_segments,
                                                             "motion_data": tools.generate_motion_graph(form.cleaned_data['camera_name'], datetime_segments)})
             else:
@@ -74,6 +83,13 @@ def camera(request, camera_name):
     end_datetime = now
     clips = models.clip.objects.filter(camera_name=camera_name).filter(start_time__gte=start_datetime, end_time__lte=end_datetime).order_by('start_time')
     mp4_file = tools.wrap_h264([c.data for c in clips])
+    _start_datetime = None
+    c = None
+    for c in clips:
+        if _start_datetime is None:
+            _start_datetime = c.start_time
+    start_datetime = _start_datetime
+    end_datetime = c.end_time
     return render(request, 'clips/camera.html', {"cameras": camera_list,
                                                  "clip_url": "http://cctv.phlat493/stream/%s" % os.path.basename(mp4_file.name),
                                                  "search_form": models.ClipForm(),

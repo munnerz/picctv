@@ -56,7 +56,7 @@
           <div class="panel-body">
             <ul class="nav nav-pills nav-stacked">
 {% for c in cameras %}
-              <li role="presentation" class="{% active_camera request c %}"><a href="{% url 'camera' camera_name=c %}">{{ c }}</a></li>
+              <li role="presentation" class="{% if c == camera_name %}active{% endif %}"><a href="{% url 'camera' camera_name=c %}">{{ c }}</a></li>
 {% endfor %}
             </ul>
           </div>
