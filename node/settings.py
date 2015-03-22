@@ -47,7 +47,7 @@ ENABLED_MODULES = {
                         ],
                         "arguments": {
                             "resolution": _RECORDING_QUALITIES["low"]["resolution"],
-                            "level": 250,
+                            "level": 750,
                             "threshold": 35,
                             "tmp_file": '/run/shm/picamtemp.dat',
                             "chunk_length": 20,
