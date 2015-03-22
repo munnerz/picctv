@@ -62,9 +62,11 @@ def process_data(data):
     
     motion_diff_abs = np.absolute(np.subtract(np_frame, _background_model))
 
-    kernel = np.ones((5,5),np.uint8)
-    motion_diff_abs = cv2.erode(motion_diff_abs,kernel,iterations = 1)
-    motion_diff_abs = cv2.dilate(motion_diff_abs,np.ones((3,3),np.uint8),iterations = 2)
+    kernel = np.array([[0, 1, 0],
+                       [1, 1, 1],
+                       [0, 1, 0]],dtype=np.uint8)
+    motion_diff_abs = cv2.erode(motion_diff_abs,kernel,iterations = 4)
+    motion_diff_abs = cv2.dilate(motion_diff_abs,kernel,iterations = 4)
 
     if _first_diff_abs is None:
         _first_diff_abs = motion_diff_abs # this should possibly be the second abs diff,
@@ -76,13 +78,13 @@ def process_data(data):
     if _short_variance is None:
         _short_variance = _first_diff_abs
 
-    N = 3.5
+    N = 2
 
     _short_variance_gt_mask = ~(np.greater(N * motion_diff_abs, _short_variance))
     _short_variance_lt_mask = ~(np.less(N * motion_diff_abs, _short_variance))
 
     t = np.ma.array(_short_variance, mask=_short_variance_gt_mask, copy=False)
-    t += 2
+    t += 1
 
     t = np.ma.array(_short_variance, mask=_short_variance_lt_mask, copy=False)
     t -= 1
@@ -98,7 +100,7 @@ def process_data(data):
     _long_variance_lt_mask = np.greater(_short_variance, _long_variance)
 
     t = np.ma.array(_long_variance, mask=_long_variance_gt_mask, copy=False)
-    t += 2
+    t += 1
 
     t = np.ma.array(_long_variance, mask=_long_variance_lt_mask, copy=False)
     t -= 1
