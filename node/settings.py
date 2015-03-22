@@ -57,8 +57,6 @@ ENABLED_MODULES = {
                     "PiCamera": {
                         "inputs": [
                             ("Motion", "all"),
-                            ("SimpleStatisticalMotion", "all"),
-                            ("OpenCV", "all"),
                         ],
                         "arguments": {
                             "resolution": (1280, 720),
@@ -97,56 +95,6 @@ ENABLED_MODULES = {
                             "frame_count_threshold": 20,
                             "tmp_file": '/run/shm/picamtemp_bg.dat',
                         },
-                    },
-                    "CSVOutput": {
-                        "inputs": [
-                            ("Motion", "all"),
-                            ("SimpleStatisticalMotion", "all"),
-                            ("OpenCV", "all"),
-                        ],
-                        "arguments": {
-                            "save_path": "/run/shm/motion-captures",
-                        },
-                    },
-                    "CameraFileCapture": {
-                        "inputs": [
-                            ("PiCamera", "high"),
-                            ("PiCamera", "low"),
-                        ],
-                        "arguments": {
-                            "save_path": "/run/shm/motion-captures",
-                        },
-                    },
-                    "SimpleStatisticalMotion": {
-                        "inputs": [
-                            ("PiCamera", "low"),
-                        ],
-                        "arguments": {
-                            "tmp_file": "/run/shm/picamtempssm",
-                            "background_frame_count_threshold": 20,
-                            "pixel_change_threshold_scale_factor": 3.5,
-                            "total_pixel_change_threshold": 0.4,
-                        },
-                    },
-                    "OpenCV": {
-                        "inputs": [
-                            ("PiCamera", "low"),
-                        ],
-                        "arguments": {
-                            "frame_limit": 5,
-                            "motion_level": 500,
-                            "threshold": 35,
-                            "tmp_file": "/run/shm/picamtempopencv",
-                        },
-                    },
-                    "MotionDebug": {
-                        "inputs": [
-                            ("BackgroundExtraction", "all"),
-                            ("Motion", "diff"),
-                            ("Motion", "mask"),
-                            ("Motion", "long_variance"),
-                            ("Motion", "short_variance"),
-                        ],
                     },
                 }
 
