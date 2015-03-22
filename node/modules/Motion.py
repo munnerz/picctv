@@ -58,7 +58,7 @@ def process_data(data):
     stream.write(frame)
     stream.seek(0)
 
-    np_frame = np.fromfile(stream, dtype='uint8', count=res[1]*res[0]).reshape((res[1], res[0]))
+    np_frame = np.fromfile(stream, dtype='uint8', count=res[1]*res[0]).reshape((res[1], res[0])).astype('float32')
     
     motion_diff_abs = np.absolute(np.subtract(np_frame, _background_model))
 

@@ -23,7 +23,7 @@ def process_data(data):
     stream.write(frame)
     stream.seek(0)
 
-    frame = np.fromfile(stream, dtype='uint8', count=res[1]*res[0]).reshape((res[1], res[0]))
+    frame = np.fromfile(stream, dtype='uint8', count=res[1]*res[0]).reshape((res[1], res[0])).astype('float32')
 
     if _background_model is None:
         _background_model = frame
@@ -51,7 +51,7 @@ def process_data(data):
         _accurate_matching_candidates_mask = ~(_candidates == frame)
 
         _accurate_matches = np.ma.array(_background_model, mask=_accurate_matching_candidates_mask, copy=False)
-        _accurate_matches += (frame - _accurate_matches) * (1/8)
+        _accurate_matches += (frame - _accurate_matches) * (1/4)
 
     _background_frame_count += 1
 
