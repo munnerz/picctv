@@ -58,7 +58,7 @@ def process_data(data):
     stream.write(frame)
     stream.seek(0)
 
-    np_frame = np.fromfile(stream, dtype='uint8', count=res[1]*res[0]).reshape((res[1], res[0])).astype('float32')
+    np_frame = np.fromfile(stream, dtype='uint8', count=res[1]*res[0]).reshape((res[1], res[0]))
     
     motion_diff_abs = np.absolute(np.subtract(np_frame, _background_model))
 
@@ -76,7 +76,7 @@ def process_data(data):
     if _short_variance is None:
         _short_variance = _first_diff_abs
 
-    N = 2.1
+    N = 3.5
 
     _short_variance_gt_mask = ~(np.greater(N * motion_diff_abs, _short_variance))
     _short_variance_lt_mask = ~(np.less(N * motion_diff_abs, _short_variance))
