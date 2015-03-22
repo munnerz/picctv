@@ -63,7 +63,7 @@ ENABLED_MODULES = {
                         "arguments": {
                             "resolution": (1280, 720),
                             "fps": 25,
-                            "exposure_mode": 'night',
+                            "exposure_mode": 'auto',
                             "brightness": 65,
                             "hflip": True,
                             "vflip": True,
