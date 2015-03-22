@@ -38,7 +38,7 @@ def process_data(data):
             _candidates = frame
 
         #rapid matching
-        _rapid_matching_candidates_mask = ~(np.absolute(frame - _previous_frame) < (0.5/255.0)) # the threshold for a change in pixel value to register as rapid matching
+        _rapid_matching_candidates_mask = ~(np.absolute(frame - _previous_frame) < (1.0/255.0)) # the threshold for a change in pixel value to register as rapid matching
 
         _rapid_matching_candidates = np.ma.array(_candidates, mask=_rapid_matching_candidates_mask, copy=False)
 
@@ -48,10 +48,10 @@ def process_data(data):
         _candidates_gt += 0.5 / 255.0 # make this smaller to make the algorithm accept a change in pixel colour quicker
         _candidates_lt -= 0.5 / 255.0 # eg. the smaller this number, the quicker the background will accept the new colour as truth
 
-        _accurate_matching_candidates_mask = ~(_candidates - frame < (0.5/255.0)) # increase this fraction to 'accept' new background pixels quicker
+        _accurate_matching_candidates_mask = ~(_candidates - frame < (0.2/255.0)) # increase this fraction to 'accept' new background pixels quicker
 
         _accurate_matches = np.ma.array(_background_model, mask=_accurate_matching_candidates_mask, copy=False)
-        _accurate_matches += (frame - _accurate_matches) * (0.01)  # this should be a small increment, else we'll keep shooting either side of the actual value
+        _accurate_matches += (frame - _accurate_matches) * (0.0625)  # this should be a small increment, else we'll keep shooting either side of the actual value
                                                                  # the greater the factor, the quicker the background will actually take on new colours (once it has accepted the
                                                                  # colour has changed by _candidates == frame
 
