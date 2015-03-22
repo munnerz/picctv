@@ -59,6 +59,14 @@ class Multiplexer(object):
             if frame_info.index < 40:
                 return None
 
+            if frame_info.index % 15000 == 0:
+                LOGGER.debug("Enabling auto exposure")
+                _CAMERA.exposure_mode = 'auto'
+
+            if (frame_info.index - 125) % 15000 == 0:
+                LOGGER.debug("Turning off auto exposure")
+                _CAMERA.exposure_mode = 'off'
+
             if frame_info.complete:
                 if self._useful_frame(frame_info.index):
                     global _output_queues
@@ -96,6 +104,8 @@ def module_started():
     _CAMERA.brightness = arguments['brightness']
     _CAMERA.hflip = arguments['hflip']
     _CAMERA.vflip = arguments['vflip']
+    _CAMERA.awb_mode = 'off'
+    _CAMERA.awb_gains = 1.4
     _CAMERA.annotate_background = True
 
     for quality, profile in arguments['recording_qualities'].items():
