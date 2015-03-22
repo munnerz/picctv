@@ -56,6 +56,9 @@ class Multiplexer(object):
             if frame_info is None:
                 return None
 
+            if frame_info.index < 40:
+                return None
+
             if frame_info.complete:
                 if self._useful_frame(frame_info.index):
                     global _output_queues
