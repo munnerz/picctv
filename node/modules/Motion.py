@@ -28,7 +28,7 @@ _accurate_matching_candidates = None
 
 _long_variance = None
 _short_variance = None
-_last_updated_variance
+_last_updated_variance = 0
 
 def process_data(data):
     global process_frame, _first_diff_abs, _short_variance, _long_variance, _background_model, _last_updated_variance
