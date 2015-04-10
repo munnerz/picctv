@@ -75,7 +75,7 @@ ENABLED_MODULES = {
                         ],
                         "arguments": {
                             "node_name": NODE_NAME,
-                            "server_address": ('cctv.phlat493', 8000),
+                            "server_address": ('cctv.lan', 8000),
                         },
                     },
                     "Buffer": {
