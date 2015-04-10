@@ -28,9 +28,10 @@ _accurate_matching_candidates = None
 
 _long_variance = None
 _short_variance = None
+_last_updated_variance
 
 def process_data(data):
-    global process_frame, _first_diff_abs, _short_variance, _long_variance, _background_model
+    global process_frame, _first_diff_abs, _short_variance, _long_variance, _background_model, _last_updated_variance
 
     (module, data) = data
 
@@ -107,6 +108,7 @@ def process_data(data):
 
         t = np.ma.array(_long_variance, mask=_long_variance_lt_mask, copy=False)
         t -= 1
+        _last_updated_variance = frame_info.index
 
     _best_variance = N * np.minimum(_long_variance, _short_variance)
 
