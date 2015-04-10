@@ -8,7 +8,7 @@ from graphos.sources.simple import SimpleDataSource
 from graphos.renderers import flot
 
 def wrap_h264(clips):
-    _out_file = open('/run/shm/tmp/%s' % _get_candidate_names().next(), 'w+b')
+    _out_file = open('/run/shm/%s' % _get_candidate_names().next(), 'w+b')
     
     try:
         p = Popen(["/usr/local/bin/ffmpeg",
