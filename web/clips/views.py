@@ -50,7 +50,7 @@ def watch(request):
             end_datetime = c.end_time
             if mp4_file:
                 camera_list = models.clip.objects.distinct("camera_name")
-                return render(request, 'clips/watch.html', {"clip_url": "http://cctv.phlat493/stream/%s" % os.path.basename(mp4_file.name),
+                return render(request, 'clips/watch.html', {"clip_url": "http://cctv.lan/stream/%s" % os.path.basename(mp4_file.name),
                                                             "camera_name": form.cleaned_data['camera_name'],
                                                             "cameras": camera_list,
                                                             "search_form": models.ClipForm(),
