@@ -31,10 +31,6 @@ class Settings:
                     "chunkSize": 22,
     }
 
-    webServerSettings = {
-
-    }
-
     @staticmethod
     def get(name, owner):
         toExec = Settings.lookup(Settings.settingMappings, owner)

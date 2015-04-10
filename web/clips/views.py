@@ -34,6 +34,9 @@ def watch(request):
 
     if form.is_valid(): # All validation rules pass
         from itertools import chain
+        # retrieve all clips between the entered datetimes
+        # allow 15 seconds either side to ensure the datetimes
+        # requested are included in the video
         clips = models.clip.objects.filter(camera_name=form.cleaned_data['camera_name']).filter(start_time__gte=form.cleaned_data['start_datetime']-timedelta(seconds=15), end_time__lte=form.cleaned_data['end_datetime']+timedelta(seconds=15)).order_by('start_time')
 
         datetime_segments = tools.find_datetime_segments(clips)

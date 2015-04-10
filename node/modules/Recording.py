@@ -24,13 +24,15 @@ sbuffer = []
 _last_timestamp = 0
 _last_frame_index = 0
 _last_start_time = datetime.now()
+arguments = None
 
 def process_data(data):
-    global sbuffer, _last_timestamp, _last_frame_index, _last_start_time
+    global sbuffer, _last_timestamp, _last_frame_index, _last_start_time, arguments
     (_, data) = data
     (frame, info) = data
 
-    if info.frame_type == PiVideoFrameType.sps_header and (datetime.now() - _last_start_time).seconds > arguments['chunk_length']:
+    if info.frame_type == PiVideoFrameType.sps_header and \
+                          (datetime.now() - _last_start_time).seconds > arguments['chunk_length']:
         data_to_send = b''.join(sbuffer)
         sbuffer = [frame]
 

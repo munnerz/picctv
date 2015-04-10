@@ -10,6 +10,8 @@ import networking_processor
 
 class Network(object):
 
+    # start listening on ip:port for connections
+    # from nodes
     def __init__(self, ip="0.0.0.0", port=8000):
         self._ip = ip
         self._port = port

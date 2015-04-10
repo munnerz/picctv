@@ -9,6 +9,10 @@ connect('cctv')
 
 Utils.msg("Client & fs created", "library")
 
+# define some data structures in the database
+# we use DynamicDocument so we don't have to define
+# a database schema and can leave database design
+# flexible for now
 class clip(DynamicDocument):
     data = FileField()
     pass
@@ -19,6 +23,7 @@ class analysis(DynamicDocument):
 class logmsg(DynamicDocument):
     pass
 
+# save a file to gridfs
 def save_file(data, info):
     try:
         Utils.dbg("Saving file to database... info: %s" % info, "library.save_file")
@@ -33,6 +38,7 @@ def save_file(data, info):
         traceback.print_exc()
         pass
 
+# save a python structure to the database
 def write(data):
     try:
         Utils.dbg("Saving data: %s to database..." % data, "library.write")
@@ -45,6 +51,8 @@ def write(data):
         traceback.print_exc()
         pass
 
+# save a log message to be displayed on the web interface
+# to the database
 def log(text, level, sender):
     try:
         c = logmsg()

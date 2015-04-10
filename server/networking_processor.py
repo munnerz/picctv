@@ -6,9 +6,12 @@ from multiprocessing.reduction import rebuild_handle, reduce_handle
 from utils import Utils
 import modules
 
+# this method initialises a new connection from a node
+# it receives the camera and modules name, and constructs
+# a dictionary of information relating to this connection
+# for use in the process_incoming and various other functions
 def initialise_connection(connection):
     try:
-        #connection = socket.fromfd(rebuild_handle(fd), socket.AF_INET, socket.SOCK_STREAM)
         Utils.dbg("Getting camera name & module name", "networking_processor")
         camera_name_length = struct.unpack("I", connection.recv(4))[0] #read the camera ID
         camera_name_pickled = struct.unpack(str(camera_name_length) + 's', connection.recv(camera_name_length))[0]
@@ -26,6 +29,10 @@ def initialise_connection(connection):
         Utils.err("Error initialising connection: %s" % e, "networking_processor")
         raise #TODO: handle this gracefully
 
+# one instance of this function is executed per connection
+# the function will not return until the connection
+# closes. it receives data from the node, and sends
+# it to the module post-processor for storage.
 def process_incoming(connectionDict):
     while connectionDict['active']:
         try:

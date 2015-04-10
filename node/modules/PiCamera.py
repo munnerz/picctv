@@ -45,6 +45,8 @@ class Multiplexer(object):
             return True
         return False
 
+    # we must implement a write method as this is a
+    # type of file
     def write(self, frame):
         try:
             if self._settings is None: #not ready yet...
@@ -56,9 +58,13 @@ class Multiplexer(object):
             if frame_info is None:
                 return None
 
+            # skip the first 40 frames as
+            # the camera is still adjusting
             if frame_info.index < 40:
                 return None
 
+            # automatically enable auto exposure for
+            # 125 frames, every 15000 frames
             if frame_info.index % 15000 == 0:
                 LOGGER.debug("Enabling auto exposure")
                 _CAMERA.exposure_mode = 'auto'
@@ -69,8 +75,17 @@ class Multiplexer(object):
 
             if frame_info.complete:
                 if self._useful_frame(frame_info.index):
+                    # get the list of this modules output queues
+                    # and place the new frame into the input queue
+                    # of each subscribed module
                     global _output_queues
-                    map(lambda x: x.put( ( ("PiCamera", self._quality), (self._frame_buffer, frame_info) )), _output_queues[self._quality])
+                    map(lambda x: x.put(
+                            # the first value in the tuple is so the receiving module
+                            # can identify the module that sent the data.
+                            # the second value is another tuple containing the
+                            # actual frame data, and the frames info (ie. timestamp, index)
+                            (("PiCamera", self._quality), (self._frame_buffer, frame_info))
+                        ), _output_queues[self._quality])
                 self._frame_buffer = b''
 
             return len(frame)
@@ -80,6 +95,9 @@ class Multiplexer(object):
     def flush(self):
         return # modules can't really be flushed...
 
+# this is implemented just to draw text
+# from motion detection modules onto
+# the recording
 def process_data(data):
     global _CAMERA, flags
     (module, data) = data
@@ -95,6 +113,7 @@ def process_data(data):
 
     return None
 
+# configure the picamera and start recordings
 def module_started():
     global _CAMERA, arguments
     _CAMERA = picamera.PiCamera()
@@ -112,6 +131,9 @@ def module_started():
         profile['multiplexer'] = Multiplexer(quality, profile)
 
         LOGGER.info("Starting %s quality recording at %s, FPS: %d, format: %s" % (quality, profile['resolution'], profile['fps'], profile['format']))
+        
+        # start the PiCamera recording, using the multiplexer object
+        # as the file to write to
         _CAMERA.start_recording(profile['multiplexer'], profile['format'],
                                 profile['resolution'], profile['splitter_port'], **profile['extra_params'])
 

@@ -98,6 +98,7 @@ ENABLED_MODULES = {
                     },
                 }
 
+# set up the Python logging module
 import logging
 LOGGER = logging.getLogger(name="node")
 LOGGER.setLevel(logging.DEBUG)
@@ -112,3 +113,4 @@ LOGGER.addHandler(ch)
 
 def logger(name):
     return logging.getLogger(name)
+# end logging module stuff
