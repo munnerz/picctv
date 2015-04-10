@@ -93,17 +93,20 @@ def process_data(data):
     if _long_variance is None:
         _long_variance = _first_diff_abs
 
-    # these are sort of swapped, as an efficiency improvement.
-    # masks are represented inverted (ie. True values ARE masked), we need
-    # to invert the result to make values we WANT, be False. This is it:
-    _long_variance_gt_mask = np.less(_short_variance, _long_variance)
-    _long_variance_lt_mask = np.greater(_short_variance, _long_variance)
+    # only update the long variance every alpha (16) times
+    # as set in BackgroundExtraction (0.0625 = 1/16)
+    if frame_info.index - _last_updated_variance > 16:
+        # these are sort of swapped, as an efficiency improvement.
+        # masks are represented inverted (ie. True values ARE masked), we need
+        # to invert the result to make values we WANT, be False. This is it:
+        _long_variance_gt_mask = np.less(_short_variance, _long_variance)
+        _long_variance_lt_mask = np.greater(_short_variance, _long_variance)
 
-    t = np.ma.array(_long_variance, mask=_long_variance_gt_mask, copy=False)
-    t += 1
+        t = np.ma.array(_long_variance, mask=_long_variance_gt_mask, copy=False)
+        t += 1
 
-    t = np.ma.array(_long_variance, mask=_long_variance_lt_mask, copy=False)
-    t -= 1
+        t = np.ma.array(_long_variance, mask=_long_variance_lt_mask, copy=False)
+        t -= 1
 
     _best_variance = N * np.minimum(_long_variance, _short_variance)
 
