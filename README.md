@@ -12,12 +12,16 @@ Componenets
 * **Server** : The server accepts data from connected Nodes, and stores it away in a MongoDB backend. It is possible to write custom plugins for processing of Node data differently, otherwise it is just stored as-is.
 * **Web** : The web client is a Django+Bootstrap3 interface for viewing notifications from the Server,  viewing clips that have been recorded and their associated analysis data.
 
-Default Plugins (node)
-----------------------
+Plugins (node)
+--------------
 
-* **Motion** : does motion detection using a bespoke algorithm
-* **Recording** : records h264 frames and sends them off to the server
-* **Live** : sets up a basic TCP socket_server so users can view cameras data live
+* **PiCamera** : Captures video frames from the PiCamera in a number of formats
+* **Recording** : Reads H264 frames from PiCamera module and concatenates them and wraps in metadata.
+* **Motion** : Performs motion detection using a bespoke algorithm
+* **Networking** : Data input to this module will be sent to the server, alongside the modules name for cataloguing.
+* **Live** : Sets up a basic TCP socket_server so users can view cameras data live
+* **CSVOutput** : Writes motion detection output to a CSV file
+* **CameraFileCapture** : Saves camera frames to a file
 
 Requirements
 ------------
